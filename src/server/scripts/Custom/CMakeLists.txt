@@ -8,8 +8,12 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
+  Custom/vendor_multi.cpp
+  Custom/vendor_general.cpp
+  Custom/ItemSwitcher.cpp
 )
 
 message("  -> Prepared: Custom")

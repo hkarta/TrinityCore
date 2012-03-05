@@ -74,6 +74,7 @@ set(game_STAT_SRCS
   ${sources_Combat}
   ${sources_Conditions}
   ${sources_DataStores}
+  ${sources_Custom}
   ${sources_DungeonFinding}
   ${sources_Entities}
   ${sources_Events}
@@ -145,6 +146,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Chat/Commands
   ${CMAKE_CURRENT_SOURCE_DIR}/Combat
   ${CMAKE_CURRENT_SOURCE_DIR}/Conditions
+  ${CMAKE_CURRENT_SOURCE_DIR}/Custom
   ${CMAKE_CURRENT_SOURCE_DIR}/DataStores
   ${CMAKE_CURRENT_SOURCE_DIR}/DungeonFinding
   ${CMAKE_CURRENT_SOURCE_DIR}/Entities
