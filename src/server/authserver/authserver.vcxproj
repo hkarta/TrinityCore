@@ -1,0 +1,424 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{00F86798-5CA7-451A-95D3-CFC2171B5BE0}</ProjectGUID>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>authserver</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup>
+      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Admin\TrinityCore\bin\Debug\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">authserver.dir\Debug\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">authserver</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Admin\TrinityCore\bin\Release\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">authserver.dir\Release\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">authserver</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Admin\TrinityCore\bin\MinSizeRel\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">authserver.dir\MinSizeRel\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">authserver</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Admin\TrinityCore\bin\RelWithDebInfo\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">authserver.dir\RelWithDebInfo\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">authserver</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+      <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+      <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+    </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalOptions> /Zm1000 /bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4355;4244;4985;4267;4619</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ForcedIncludeFiles>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</ForcedIncludeFiles>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_BUILD_DIRECTIVE="$(ConfigurationName)";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>Debug</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/Debug/authserver.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_BUILD_DIRECTIVE=\"$(ConfigurationName)\";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -E copy C:/Users/Admin/TrinityCore/src/server/authserver/authserver.conf.dist C:/Users/Admin/TrinityCore/bin/$(ConfigurationName)/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\shared\Debug\shared.lib;..\..\..\dep\mysqllite\Debug\libmysql.lib;C:\OpenSSL\lib\VC\libeay32MD.lib;C:\OpenSSL\lib\VC\ssleay32MDd.lib;C:\OpenSSL\lib\VC\libeay32MDd.lib;..\..\..\dep\acelite\ace\Debug\ace.lib;..\..\..\dep\zlib\Debug\zlib.lib;ws2_32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>C:/Users/Admin/TrinityCore/src/server/authserver/Debug/authserver.lib</ImportLibrary>
+      <LinkIncremental>true</LinkIncremental>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/Debug/authserver.pdb</ProgramDataBaseFileName>
+      <StackReserveSize>10000000</StackReserveSize>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalOptions> /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4996;4355;4244;4985;4267;4619</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ForcedIncludeFiles>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</ForcedIncludeFiles>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_BUILD_DIRECTIVE="$(ConfigurationName)";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>Release</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/Release/authserver.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_BUILD_DIRECTIVE=\"$(ConfigurationName)\";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -E copy C:/Users/Admin/TrinityCore/src/server/authserver/authserver.conf.dist C:/Users/Admin/TrinityCore/bin/$(ConfigurationName)/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\shared\Release\shared.lib;..\..\..\dep\mysqllite\Release\libmysql.lib;C:\OpenSSL\lib\VC\ssleay32MD.lib;C:\OpenSSL\lib\VC\libeay32MD.lib;C:\OpenSSL\lib\VC\libeay32MDd.lib;..\..\..\dep\acelite\ace\Release\ace.lib;..\..\..\dep\zlib\Release\zlib.lib;ws2_32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ImportLibrary>C:/Users/Admin/TrinityCore/src/server/authserver/Release/authserver.lib</ImportLibrary>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/Release/authserver.pdb</ProgramDataBaseFileName>
+      <StackReserveSize>10000000</StackReserveSize>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalOptions> /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4996;4355;4244;4985;4267;4619</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ForcedIncludeFiles>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</ForcedIncludeFiles>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_BUILD_DIRECTIVE="$(ConfigurationName)";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>MinSizeRel</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/MinSizeRel/authserver.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_BUILD_DIRECTIVE=\"$(ConfigurationName)\";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -E copy C:/Users/Admin/TrinityCore/src/server/authserver/authserver.conf.dist C:/Users/Admin/TrinityCore/bin/$(ConfigurationName)/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\shared\MinSizeRel\shared.lib;..\..\..\dep\mysqllite\MinSizeRel\libmysql.lib;C:\OpenSSL\lib\VC\ssleay32MD.lib;C:\OpenSSL\lib\VC\libeay32MD.lib;C:\OpenSSL\lib\VC\libeay32MDd.lib;..\..\..\dep\acelite\ace\MinSizeRel\ace.lib;..\..\..\dep\zlib\MinSizeRel\zlib.lib;ws2_32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ImportLibrary>C:/Users/Admin/TrinityCore/src/server/authserver/MinSizeRel/authserver.lib</ImportLibrary>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/MinSizeRel/authserver.pdb</ProgramDataBaseFileName>
+      <StackReserveSize>10000000</StackReserveSize>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalOptions> /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4355;4244;4985;4267;4619</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ForcedIncludeFiles>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</ForcedIncludeFiles>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_BUILD_DIRECTIVE="$(ConfigurationName)";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>RelWithDebInfo</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/RelWithDebInfo/authserver.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_BUILD_DIRECTIVE=\"$(ConfigurationName)\";_WIN64;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;SCRIPTS;USE_SFMT_FOR_RNG;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:/Users/Admin/TrinityCore/src/server/authserver;C:/Users/Admin/TrinityCore;C:/Users/Admin/TrinityCore/src/server/shared;C:/Users/Admin/TrinityCore/src/server/shared/Database;C:/Users/Admin/TrinityCore/src/server/shared/Debugging;C:/Users/Admin/TrinityCore/src/server/shared/Packets;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography;C:/Users/Admin/TrinityCore/src/server/shared/Cryptography/Authentication;C:/Users/Admin/TrinityCore/src/server/shared/Logging;C:/Users/Admin/TrinityCore/src/server/shared/Threading;C:/Users/Admin/TrinityCore/src/server/shared/Utilities;C:/Users/Admin/TrinityCore/src/server/authserver/Authentication;C:/Users/Admin/TrinityCore/src/server/authserver/Realms;C:/Users/Admin/TrinityCore/src/server/authserver/Server;C:/Users/Admin/TrinityCore/dep/acelite;C:/Users/Admin/TrinityCore/dep/mysqllite/include;C:/OpenSSL/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message></Message>
+      <Command>setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -E copy C:/Users/Admin/TrinityCore/src/server/authserver/authserver.conf.dist C:/Users/Admin/TrinityCore/bin/$(ConfigurationName)/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalOptions> /machine:x64 /debug %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;..\shared\RelWithDebInfo\shared.lib;..\..\..\dep\mysqllite\RelWithDebInfo\libmysql.lib;C:\OpenSSL\lib\VC\ssleay32MD.lib;C:\OpenSSL\lib\VC\libeay32MD.lib;C:\OpenSSL\lib\VC\libeay32MDd.lib;..\..\..\dep\acelite\ace\RelWithDebInfo\ace.lib;..\..\..\dep\zlib\RelWithDebInfo\zlib.lib;ws2_32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>C:/Users/Admin/TrinityCore/src/server/authserver/RelWithDebInfo/authserver.lib</ImportLibrary>
+      <LinkIncremental>true</LinkIncremental>
+      <ProgramDataBaseFileName>C:/Users/Admin/TrinityCore/bin/RelWithDebInfo/authserver.pdb</ProgramDataBaseFileName>
+      <StackReserveSize>10000000</StackReserveSize>
+      <SubSystem>Console</SubSystem>
+      <Version></Version>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -HC:/Users/Admin/TrinityCore -BC:/Users/Admin/TrinityCore --check-stamp-file C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -HC:/Users/Admin/TrinityCore -BC:/Users/Admin/TrinityCore --check-stamp-file C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -HC:/Users/Admin/TrinityCore -BC:/Users/Admin/TrinityCore --check-stamp-file C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -HC:/Users/Admin/TrinityCore -BC:/Users/Admin/TrinityCore --check-stamp-file C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;C:\Users\Admin\TrinityCore\src\server\authserver\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Admin\TrinityCore\src\server\authserver\CMakeFiles\generate.stamp</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Admin\TrinityCore\src\server\authserver\PrecompiledHeaders\authPCH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/Admin/TrinityCore/src/server/authserver/PrecompiledHeaders/authPCH.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\authserver\PrecompiledHeaders\authPCH.h" />
+    <ClCompile Include="C:\Users\Admin\TrinityCore\src\server\authserver\Authentication\AuthCodes.cpp" />
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\authserver\Authentication\AuthCodes.h" />
+    <ClCompile Include="C:\Users\Admin\TrinityCore\src\server\authserver\Realms\RealmList.cpp" />
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\authserver\Realms\RealmList.h" />
+    <ClCompile Include="C:\Users\Admin\TrinityCore\src\server\authserver\Server\AuthSocket.cpp" />
+    <ClCompile Include="C:\Users\Admin\TrinityCore\src\server\authserver\Server\RealmSocket.cpp" />
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\authserver\Server\AuthSocket.h" />
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\authserver\Server\RealmAcceptor.h" />
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\authserver\Server\RealmSocket.h" />
+    <ClCompile Include="C:\Users\Admin\TrinityCore\src\server\authserver\Main.cpp" />
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\authserver\resource.h" />
+    <ClCompile Include="C:\Users\Admin\TrinityCore\src\server\shared\Debugging\WheatyExceptionReport.cpp" />
+    <ClInclude Include="C:\Users\Admin\TrinityCore\src\server\shared\Debugging\WheatyExceptionReport.h" />
+    <ResourceCompile Include="C:\Users\Admin\TrinityCore\src\server\authserver\authserver.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:/Users/Admin/TrinityCore/ZERO_CHECK.vcxproj">
+      <Project>2744154C-9F64-4BEA-A308-644FF610592A</Project>
+    </ProjectReference>
+    <ProjectReference Include="C:/Users/Admin/TrinityCore/dep/mysqllite/libmysql.vcxproj">
+      <Project>3F730047-1B8F-4F7C-932C-20207D50E578</Project>
+    </ProjectReference>
+    <ProjectReference Include="C:/Users/Admin/TrinityCore/src/genrev/revision.h.vcxproj">
+      <Project>89672E88-B8C2-4F93-9FB3-E7EE53C97939</Project>
+    </ProjectReference>
+    <ProjectReference Include="C:/Users/Admin/TrinityCore/src/server/shared/shared.vcxproj">
+      <Project>5517D9F5-9DC2-441F-9453-656622412B94</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
