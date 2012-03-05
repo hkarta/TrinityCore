@@ -862,6 +862,7 @@ class ObjectMgr
         void LoadGameobjects();
         void LoadGameobjectRespawnTimes();
         void LoadItemTemplates();
+		bool AddOrReloadItem(uint32);
         void LoadItemLocales();
         void LoadItemSetNames();
         void LoadItemSetNameLocales();

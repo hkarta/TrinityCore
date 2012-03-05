@@ -807,6 +807,95 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     SendPacket(&data);
 }
 
+void WorldSession::SendListInventory(uint64 vendorGuid, int entry)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LIST_INVENTORY");
+
+    Creature* vendor = GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_VENDOR);
+    if (!vendor)
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SendListInventory - Unit (GUID: %u) not found or you can not interact with him.", uint32(GUID_LOPART(vendorGuid)));
+        _player->SendSellError(SELL_ERR_CANT_FIND_VENDOR, NULL, 0, 0);
+        return;
+    }
+
+    // remove fake death
+    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
+
+    // Stop the npc if moving
+    if (vendor->HasUnitState(UNIT_STATE_MOVING))
+        vendor->StopMoving();
+
+    VendorItemData const* items = sObjectMgr->GetNpcVendorItemList(entry);//vendor->GetVendorItems();
+
+    if (!items)
+    {
+        WorldPacket data(SMSG_LIST_INVENTORY, 8 + 1 + 1);
+        data << uint64(vendorGuid);
+        data << uint8(0);                                   // count == 0, next will be error code
+        data << uint8(0);                                   // "Vendor has no inventory"
+        SendPacket(&data);
+        return;
+    }
+
+    uint8 itemCount = items->GetItemCount();
+    uint8 count = 0;
+
+    WorldPacket data(SMSG_LIST_INVENTORY, 8 + 1 + itemCount * 8 * 4);
+    data << uint64(vendorGuid);
+
+    size_t countPos = data.wpos();
+    data << uint8(count);
+
+    float discountMod = _player->GetReputationPriceDiscount(vendor);
+
+    for (uint8 slot = 0; slot < itemCount; ++slot)
+    {
+        if (VendorItem const* item = items->GetItem(slot))
+        {
+            if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(item->item))
+            {
+                if (!(itemTemplate->AllowableClass & _player->getClassMask()) && itemTemplate->Bonding == BIND_WHEN_PICKED_UP && !_player->isGameMaster())
+                    continue;
+                // Only display items in vendor lists for the team the
+                // player is on. If GM on, display all items.
+                if (!_player->isGameMaster() && ((itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeam() == ALLIANCE) || (itemTemplate->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeam() == HORDE)))
+                    continue;
+
+                // Items sold out are not displayed in list
+                uint32 leftInStock = !item->maxcount ? 0xFFFFFFFF : vendor->GetVendorItemCurrentCount(item);
+                if (!_player->isGameMaster() && !leftInStock)
+                    continue;
+
+                ++count;
+
+                // reputation discount
+                int32 price = item->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice * discountMod)) : 0;
+
+                data << uint32(slot + 1);       // client expects counting to start at 1
+                data << uint32(item->item);
+                data << uint32(itemTemplate->DisplayInfoID);
+                data << int32(leftInStock);
+                data << uint32(price);
+                data << uint32(itemTemplate->MaxDurability);
+                data << uint32(itemTemplate->BuyCount);
+                data << uint32(item->ExtendedCost);
+            }
+        }
+    }
+
+    if (count == 0)
+    {
+        data << uint8(0);
+        SendPacket(&data);
+        return;
+    }
+
+    data.put<uint8>(countPos, count);
+    SendPacket(&data);
+}
+
 void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket & recv_data)
 {
     //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_AUTOSTORE_BAG_ITEM");

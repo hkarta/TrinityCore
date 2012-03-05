@@ -36,6 +36,8 @@
 #include "Unit.h"
 #include "Util.h"                                           // for Tokens typedef
 #include "WorldSession.h"
+#include "AllowedAreas.h"
+#include "ItemLoader.h"
 
 // for template
 #include "SpellMgr.h"
@@ -1064,6 +1066,9 @@ class Player : public Unit, public GridObject<Player>
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
         explicit Player (WorldSession* session);
+		LastPosition lastPosition;
+		ItemLoader *itemLoader;
+		int currentVendorEntry;
         ~Player ();
 
         void CleanupsBeforeDelete(bool finalCleanup = true);

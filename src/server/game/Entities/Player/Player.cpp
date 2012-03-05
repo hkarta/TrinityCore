@@ -646,6 +646,9 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_speakTime = 0;
     m_speakCount = 0;
 
+	itemLoader = new ItemLoader(this);
+	currentVendorEntry = -1;
+
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
 
@@ -6714,6 +6717,31 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
         GetSession()->SendCancelTrade();
 
     CheckAreaExploreAndOutdoor();
+
+	if(!isGameMaster() && !InArena())
+	{
+		if(AllowedAreasMgr.HasAccessToArea(this))
+		{
+			lastPosition.x = x;
+			lastPosition.y = y;
+			lastPosition.z = z;
+			lastPosition.o = orientation;
+			lastPosition.map_id = GetMapId();
+		}
+		else
+		{
+			if(lastPosition.map_id != -1)
+			{
+				float temp_o;
+				if(lastPosition.o > 3.14159)
+					temp_o = lastPosition.o - 3.14159;
+				else
+					temp_o = lastPosition.o + 3.14159;
+				this->TeleportTo(lastPosition.map_id, lastPosition.x, lastPosition.y, lastPosition.z, temp_o);
+				this->RepopAtGraveyard();
+			}
+		}
+	}
 
     return true;
 }
@@ -20747,7 +20775,12 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         return false;
     }
 
-    VendorItemData const* vItems = creature->GetVendorItems();
+    VendorItemData const* vItems;
+	if(currentVendorEntry != -1)
+		vItems = sObjectMgr->GetNpcVendorItemList(currentVendorEntry); // creature->GetVendorItems();
+	else
+		vItems = creature->GetVendorItems();
+
     if (!vItems || vItems->Empty())
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, creature, item, 0);
@@ -20769,7 +20802,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     }
 
     // check current item amount if it limited
-    if (crItem->maxcount != 0)
+    if (crItem->maxcount != 0  && currentVendorEntry == -1)
     {
         if (creature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count)
         {

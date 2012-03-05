@@ -17,6 +17,11 @@
 
 #include "ScriptLoader.h"
 
+//Custom
+void AddSC_npc_item_switcher();
+void AddSC_vendor_multi();
+void AddSC_vendor_general();
+
 //examples
 void AddSC_example_creature();
 void AddSC_example_escort();
@@ -1235,6 +1240,8 @@ void AddCustomScripts()
 {
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
-
+	AddSC_npc_item_switcher();
+	AddSC_vendor_general();
+	AddSC_vendor_multi();
 #endif
 }

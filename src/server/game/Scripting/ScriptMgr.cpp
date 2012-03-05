@@ -27,6 +27,8 @@
 #include "ScriptSystem.h"
 #include "Transport.h"
 #include "Vehicle.h"
+#include "AllowedAreas.h"
+#include "CustomVendor.h"
 
 // This is the global static registry of scripts.
 template<class TScript>
@@ -255,6 +257,16 @@ void ScriptMgr::Initialize()
 
     sLog->outString(">> Loaded %u C++ scripts in %u ms", GetScriptCount(), GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
+
+	oldMSTime = getMSTime();
+	sLog->outString("Loading allowed areas");
+	sLog->outString(">> Loaded %u allowed areas in %u ms", AllowedAreasMgr.LoadAreas(), GetMSTimeDiffToNow(oldMSTime));
+	sLog->outString();
+
+	oldMSTime = getMSTime();
+	sLog->outString("Loading custom vendors");
+	sLog->outString(">> Loaded %u custom vendor catageory entries in %u ms", CustomVendorMgr.LoadVendors(), GetMSTimeDiffToNow(oldMSTime));
+	sLog->outString();
 }
 
 void ScriptMgr::Unload()
