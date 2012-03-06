@@ -2788,7 +2788,7 @@ bool ObjectMgr::AddOrReloadItem(uint32 entry)
     }
 
 
-    ItemTemplate& itemTemplate = ItemTemplateStore[entry];
+    ItemTemplate& itemTemplate = _itemTemplateStore[entry];
 
     itemTemplate.ItemId                    = entry;
     itemTemplate.Class                     = uint32(fields[1].GetUInt8());

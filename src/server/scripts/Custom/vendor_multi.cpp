@@ -25,7 +25,7 @@ EndScriptData */
 
 #include "ScriptPCH.h"
 #include <cstring>
-#include "../CustomVendor.h"
+#include "../../game/Custom/CustomVendor.h"
 
 class vendor_multi : public CreatureScript
 {
@@ -50,9 +50,9 @@ class vendor_multi : public CreatureScript
 			VendorEntryList *result;
 			
 			if(category == 0)
-				result = CustomVendorMgr.GetBaseItemsForEntry(creature->GetCreatureInfo()->Entry);
+				result = CustomVendorMgr.GetBaseItemsForEntry(creature->GetEntry());
 			else 
-				result = CustomVendorMgr.GetItemsForEntry(creature->GetCreatureInfo()->Entry, category);
+				result = CustomVendorMgr.GetItemsForEntry(creature->GetEntry(), category);
 			VendorEntryList::iterator i;
 
 			int x = 0;
@@ -61,7 +61,7 @@ class vendor_multi : public CreatureScript
 				VendorEntry *vendorEntry = *i;
 
 				int icon = GOSSIP_ICON_CHAT;
-				if(CustomVendorMgr.GetNext(creature->GetCreatureInfo()->Entry, vendorEntry->next) < 0)
+				if(CustomVendorMgr.GetNext(creature->GetEntry(), vendorEntry->next) < 0)
 					icon = GOSSIP_ICON_MONEY_BAG;
 
 				player->ADD_GOSSIP_ITEM(icon, vendorEntry->desc, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2+vendorEntry->next);
@@ -95,7 +95,7 @@ class vendor_multi : public CreatureScript
             else if (uiAction > GOSSIP_ACTION_INFO_DEF+1)
             {
 				int id = uiAction-GOSSIP_ACTION_INFO_DEF-2;
-				int next = CustomVendorMgr.GetNext(creature->GetCreatureInfo()->Entry, id);
+				int next = CustomVendorMgr.GetNext(creature->GetEntry(), id);
 				if(next < 0)
 				{
 					next = (-1) * next;

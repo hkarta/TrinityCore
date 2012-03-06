@@ -36,8 +36,8 @@
 #include "Unit.h"
 #include "Util.h"                                           // for Tokens typedef
 #include "WorldSession.h"
-#include "AllowedAreas.h"
-#include "ItemLoader.h"
+#include "../Custom/AllowedAreas.h"
+#include "../Custom/ItemLoader.h"
 
 // for template
 #include "SpellMgr.h"
