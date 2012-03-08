@@ -17244,7 +17244,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 	lasthouse = fields[67].GetUInt32();
 	sLog->outString(">> player lasthouse: %u", lasthouse);
 	house = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
-	PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
+	if(lasthouse != 0)
+		PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
 
 	//this->SetPhaseMask(
 
