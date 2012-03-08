@@ -92,7 +92,9 @@ public:
 	HouseLocationList houseLocationList;
 	bool CanEnterGuildHouse(Player *player, uint32 guid);
 	void EnterGuildHouse(Player *player, uint32 guid);
-	Unit *SpawnUnit(Player *p);
+	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true);
+	HouseItem* GetUnusedItem(House * house, int entry);
+	Unit *SpawnUnit(Player *player, int entry);
 
 	HouseList houseList;
 	PlayerHousing(void);

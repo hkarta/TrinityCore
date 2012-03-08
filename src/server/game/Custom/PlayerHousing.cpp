@@ -52,6 +52,82 @@ int PlayerHousing::LoadHouses(void)
 	return i;
 }
 
+int PlayerHousing::GetItemCount(Player *player, int entry, bool onlyAvaiable = true)
+{
+	House *house = GetPlayerHouse(player->GetGUIDLow());
+	if(house)
+	{
+		int x = 0;
+		HouseItemList::iterator i;
+		for (i = house->houseItemList.begin(); i != house->houseItemList.end(); ++i)
+		{
+			HouseItem *houseItem = *i;
+			if(onlyAvaiable)
+			{
+				if(houseItem->entry == entry && houseItem->spawned == false)
+					x++;
+			}
+			else if (houseItem->entry == entry)
+				x++;
+		}
+		return x;
+	}
+	return 0;
+}
+
+HouseItem* PlayerHousing::GetUnusedItem(House * house, int entry)
+{
+	if(house)
+	{
+		HouseItemList::iterator i;
+		for (i = house->houseItemList.begin(); i != house->houseItemList.end(); ++i)
+		{
+			HouseItem *houseItem = *i;
+			if(houseItem->entry == entry && houseItem->spawned == false)
+				return houseItem;
+		}
+	}
+
+	return NULL;
+}
+
+Unit * PlayerHousing::SpawnUnit(Player *player, int entry)
+{
+	Unit *result = NULL;
+	if(GetItemCount(player, entry) > 0)
+	{
+		House *house = GetPlayerHouse(player->GetGUIDLow());
+		bool creature = false;
+		if(entry < 0)
+			creature = true;
+		Map* map = player->GetMap();
+
+		if(creature)
+		{				
+			Creature* creature = new Creature;
+			creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, house->owner_guid + PHASE_OFFSET, entry * (-1), 0, 0,
+				house->houseTemplate->x, house->houseTemplate->y, house->houseTemplate->z, house->houseTemplate->o);
+			creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->owner_guid + PHASE_OFFSET);
+			uint32 db_guid = creature->GetDBTableGUIDLow();
+			sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
+		}
+		else
+		{
+			GameObject* object = new GameObject;
+			uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+			object->Create(guidLow, entry, map, house->owner_guid + PHASE_OFFSET, house->houseTemplate->x, 
+				house->houseTemplate->y, house->houseTemplate->z, house->houseTemplate->o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY);
+			object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->owner_guid + PHASE_OFFSET);
+			object->LoadGameObjectFromDB(guidLow, map);
+			sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
+		}
+		GetUnusedItem(house, entry)->spawned = true;
+		house->SaveHouse();
+	}
+
+	return result;
+}
+
 House* PlayerHousing::GetPlayerHouse(uint32 guid)
 {
 	HouseList::iterator i;
@@ -141,7 +217,7 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 {
 }
 
-void House::SaveHouse(Player *player, bool fresh)
+void House::SaveHouse(Player *player, bool fresh = false)
 {
 	if(fresh)
 	{
