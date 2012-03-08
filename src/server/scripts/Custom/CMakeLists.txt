@@ -14,6 +14,10 @@ set(scripts_STAT_SRCS
   Custom/vendor_multi.cpp
   Custom/vendor_general.cpp
   Custom/ItemSwitcher.cpp
+  Custom/object_house_browser.cpp
+  Custom/object_house_controler.cpp
+  Custom/object_house_gobject.cpp
+  Custom/object_house_npc.cpp
 )
 
 message("  -> Prepared: Custom")

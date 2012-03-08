@@ -46,6 +46,10 @@
 #define HAVE_ERRNO_AS_DEFINE
 #endif /* __CYGWIN__ */
 
+#ifndef SIZEOF_CHARP
+#define SIZEOF_CHARP SIZEOF_LONG
+#endif
+
 /* to make command line shorter we'll define USE_PRAGMA_INTERFACE here */
 #ifdef USE_PRAGMA_IMPLEMENTATION
 #define USE_PRAGMA_INTERFACE

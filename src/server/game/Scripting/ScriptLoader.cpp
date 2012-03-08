@@ -21,6 +21,7 @@
 void AddSC_npc_item_switcher();
 void AddSC_vendor_multi();
 void AddSC_vendor_general();
+void AddSC_object_house_gobject();
 
 //examples
 void AddSC_example_creature();
@@ -1243,5 +1244,6 @@ void AddCustomScripts()
 	AddSC_npc_item_switcher();
 	AddSC_vendor_general();
 	AddSC_vendor_multi();
+	AddSC_object_house_gobject();
 #endif
 }
