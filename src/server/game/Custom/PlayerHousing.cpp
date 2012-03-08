@@ -49,3 +49,67 @@ int PlayerHousing::LoadHouses(void)
 
 	return i;
 }
+
+House* PlayerHousing::GetPlayerHouse(uint32 guid)
+{
+	HouseList::iterator i;
+	for (i = houseList.begin(); i != houseList.end(); ++i)
+	{
+		House *house = *i;
+		if(house->owner_guid == guid)
+			return house;
+	}
+
+	QueryResult ph = CharacterDatabase.PQuery("SELECT `id` FROM character_guildhouses WHERE guid = %u", guid);
+	if (ph)
+	{
+		do
+		{
+			Field *fields = ph->Fetch();
+			int id = fields[0].GetInt32();
+
+			HouseLocation *location;
+			HouseLocationList::iterator j;
+			for (j = houseLocationList.begin(); j != houseLocationList.end(); ++j)
+			{
+				HouseLocation *houseLocation = *j;
+				if(houseLocation->id == id)
+					location = houseLocation;
+			}
+
+			House *result = new House(guid, location);
+
+			QueryResult guests = CharacterDatabase.PQuery("SELECT `guest` FROM character_guildhouses WHERE owner = %u", guid);
+			if (guests)
+			{
+				do
+				{
+					fields = guests->Fetch();
+					result->allowedGuests.push_back(fields[0].GetUInt32());
+				}
+				while (guests->NextRow());
+			}
+
+			QueryResult items = CharacterDatabase.PQuery("SELECT `entry`, `type`, `guid`, `spawned` FROM character_guildhouses_items WHERE owner = %u", guid);
+			if (items)
+			{
+				do
+				{
+					fields = items->Fetch();
+					bool spawned = false;
+					if(fields[3].GetInt32() == 1)
+						spawned = true;
+
+					result->houseItemList.push_back(new HouseItem(fields[0].GetInt32(), fields[1].GetInt32(), fields[2].GetUInt32(), spawned));
+				}
+				while (items->NextRow());
+			}
+
+			houseList.push_back(result);
+			return result;
+		}
+		while (ph->NextRow());
+	}
+
+	return NULL;
+}

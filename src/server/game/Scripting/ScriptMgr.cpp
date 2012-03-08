@@ -270,7 +270,7 @@ void ScriptMgr::Initialize()
 	sLog->outString();
 
 	oldMSTime = getMSTime();
-	sLog->outString("Loading player hosing");
+	sLog->outString("Loading player housing");
 	sLog->outString(">> Loaded %u player housing templates in %u ms", PlayerHousingMgr.LoadHouses(), GetMSTimeDiffToNow(oldMSTime));
 	sLog->outString();
 }

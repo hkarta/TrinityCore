@@ -3,7 +3,7 @@
 extern WorldDatabaseWorkerPool WorldDatabase;
 extern CharacterDatabaseWorkerPool CharacterDatabase;
 
-class HouseBaseItem
+class HouseBaseItem // DONE
 {
 public:
 	int item;
@@ -22,13 +22,32 @@ public:
 
 typedef std::list<HouseBaseItem *> HouseBaseItemList;
 
-class HouseLocation
+class HouseItem // NOT LOADED YET
+{
+public:
+	int entry, type;
+	uint32 guid;
+	bool spawned, permanent;
+	HouseItem(int entry, int type, uint32 guid, bool spawned)
+	{
+		this->entry = entry;
+		this->guid = guid;
+		this->type = type;
+		this->spawned = spawned;
+	}
+	std::string GetName(void);
+	void MoveToPosition(void);
+	void Despawn(void);
+};
+
+class HouseLocation // DONE
 {
 public:
 	int id, faction, map, house_pack;
 	float x, y, z, o;
 	std::string desc;
 	HouseBaseItemList baseItems;
+	bool IsItemFixed(HouseItem*);
 
 	HouseLocation(int id, int faction, int map, float x, float y, float z, float o, int house_pack, std::string desc)
 	{
@@ -43,49 +62,40 @@ public:
 	}
 };
 
+typedef std::list<HouseItem *> HouseItemList;
+typedef std::list<uint32> AllowedGuests;
+
+class House
+{
+public:
+	uint32 owner_guid;
+	HouseItemList houseItemList;
+	HouseLocation * houseTemplate;
+	AllowedGuests allowedGuests;
+
+	House(uint32 owner_guid, HouseLocation * houseTemplate)
+	{
+		this->owner_guid = owner_guid;
+		this->houseTemplate = houseTemplate;
+	}
+	bool TeleportToHouse(void);
+};
+
 typedef std::list<HouseLocation *> HouseLocationList;
+typedef std::list<House *> HouseList;
 
 class PlayerHousing
 {
 public:
 	HouseLocationList houseLocationList;
+	HouseList houseList;
 	PlayerHousing(void);
 	int LoadHouses(void);
-	HouseLocation GetHouseLocation(Player *player);
-	void LoadPlayerHouse(Player *player);
+	House* GetPlayerHouse(uint32 guid);
+	House* CreateHouse(Player *p, int id);
+	// House DestroyHouse(Player *p);
 
 	bool PurchaseHouse(int id);
-};
-
-class HouseItem
-{
-public:
-	Player *parent;
-	int id, type;
-	uint32 guid;
-	bool spawned, permanent;
-	HouseItem(int id, int type, uint32 guid, bool spawned, Player *parent)
-	{
-		this->id = id;
-		this->guid = guid;
-		this->type = type;
-		this->spawned = spawned;
-		this->parent = parent;
-	}
-	std::string GetName(void);
-	void MoveToPosition(void);
-	void Despawn(void);
-};
-
-typedef std::list<HouseItem *> HouseItemList;
-
-class House
-{
-public:
-	Player * owner;
-	int currentAction;
-	HouseItemList houseItemList;
-	void TeleportToHouse(void);
 };
 
 class GuildhouseWorker
