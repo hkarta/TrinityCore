@@ -22,7 +22,7 @@ public:
 
 typedef std::list<HouseBaseItem *> HouseBaseItemList;
 
-class HouseItem // NOT LOADED YET
+class HouseItem // partial
 {
 public:
 	int entry, type;
@@ -35,9 +35,10 @@ public:
 		this->type = type;
 		this->spawned = spawned;
 	}
-	std::string GetName(void);
-	void MoveToPosition(void);
-	void Despawn(void);
+	std::string GetName(void); // todo
+	void MoveToPosition(void); // todo
+	void Despawn(void); // todo
+	// todo - something like get unit pointer
 };
 
 class HouseLocation // DONE
@@ -47,7 +48,7 @@ public:
 	float x, y, z, o;
 	std::string desc;
 	HouseBaseItemList baseItems;
-	bool IsItemFixed(HouseItem*);
+	bool IsItemFixed(HouseItem*); // todo
 
 	HouseLocation(int id, int faction, int map, float x, float y, float z, float o, int house_pack, std::string desc)
 	{
@@ -65,7 +66,7 @@ public:
 typedef std::list<HouseItem *> HouseItemList;
 typedef std::list<uint32> AllowedGuests;
 
-class House
+class House // partial
 {
 public:
 	uint32 owner_guid;
@@ -79,8 +80,8 @@ public:
 		this->houseTemplate = houseTemplate;
 	}
 	
-	void SaveHouse(Player*, bool);
-	bool TeleportToHouse(void);
+	void SaveHouse(Player*, bool); // done
+	bool TeleportToHouse(void); // todo
 };
 
 typedef std::list<HouseLocation *> HouseLocationList;
@@ -90,17 +91,17 @@ class PlayerHousing
 {
 public:
 	HouseLocationList houseLocationList;
-	bool CanEnterGuildHouse(Player *player, uint32 guid);
-	void EnterGuildHouse(Player *player, uint32 guid);
-	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true);
-	HouseItem* GetUnusedItem(House * house, int entry);
-	Unit *SpawnUnit(Player *player, int entry);
+	bool CanEnterGuildHouse(Player *player, uint32 guid); //todo
+	void EnterGuildHouse(Player *player, uint32 guid); // todo
+	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true); // done
+	HouseItem* GetUnusedItem(House * house, int entry); // done
+	Unit *SpawnUnit(Player *player, int entry); // done
 
 	HouseList houseList;
-	PlayerHousing(void);
-	int LoadHouses(void);
-	House* GetPlayerHouse(uint32 guid);
-	House* CreateHouse(Player *p, int id);
+	PlayerHousing(void); // done
+	int LoadHouses(void); // done
+	House* GetPlayerHouse(uint32 guid); // done
+	House* CreateHouse(Player *p, int id); // done
 	// House DestroyHouse(Player *p);
 };
 

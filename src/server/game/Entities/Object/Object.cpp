@@ -1664,7 +1664,7 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (obj->IsNeverVisible() || CanNeverSee(obj))
         return false;
 
-	if(obj->GetPhaseMask() != this->GetPhaseMask())
+	if(obj->GetPhaseMask() != this->GetPhaseMask() && this->GetPhaseMask() > 200)
 		return false;
 
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
