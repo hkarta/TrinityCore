@@ -11,12 +11,12 @@ enum eEnums
 };
 
 
-class object_house_gobject : public CreatureScript
+class npc_level_vendor : public CreatureScript
 {
     public:
 
-        object_house_gobject()
-            : CreatureScript("object_house_gobject")
+        npc_level_vendor()
+            : CreatureScript("npc_level_vendor")
         {
         }
 
@@ -145,7 +145,7 @@ class object_house_gobject : public CreatureScript
 		}
 };
 
-void AddSC_object_house_gobject()
+void AddSC_npc_level_vendor()
 {
-    new object_house_gobject();
+    new npc_level_vendor();
 }

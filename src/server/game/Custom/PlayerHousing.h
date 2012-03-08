@@ -88,6 +88,9 @@ class PlayerHousing
 {
 public:
 	HouseLocationList houseLocationList;
+	bool CanEnterGuildHouse(Player *player, uint32 guid);
+	void EnterGuildHouse(Player *player, uint32 guid);
+
 	HouseList houseList;
 	PlayerHousing(void);
 	int LoadHouses(void);

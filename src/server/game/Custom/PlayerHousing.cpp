@@ -113,3 +113,7 @@ House* PlayerHousing::GetPlayerHouse(uint32 guid)
 
 	return NULL;
 }
+
+void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
+{
+}

@@ -38,6 +38,7 @@
 #include "WorldSession.h"
 #include "../Custom/AllowedAreas.h"
 #include "../Custom/ItemLoader.h"
+#include "../Custom/PlayerHousing.h"
 
 // for template
 #include "SpellMgr.h"
@@ -1066,6 +1067,8 @@ class Player : public Unit, public GridObject<Player>
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
         explicit Player (WorldSession* session);
+		House *house;
+		uint32 lasthouse;
 		LastPosition lastPosition;
 		ItemLoader *itemLoader;
 		int currentVendorEntry;
