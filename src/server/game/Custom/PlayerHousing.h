@@ -78,6 +78,8 @@ public:
 		this->owner_guid = owner_guid;
 		this->houseTemplate = houseTemplate;
 	}
+	
+	void SaveHouse(Player*, bool);
 	bool TeleportToHouse(void);
 };
 
@@ -90,6 +92,7 @@ public:
 	HouseLocationList houseLocationList;
 	bool CanEnterGuildHouse(Player *player, uint32 guid);
 	void EnterGuildHouse(Player *player, uint32 guid);
+	Unit *SpawnUnit(Player *p);
 
 	HouseList houseList;
 	PlayerHousing(void);
@@ -97,8 +100,6 @@ public:
 	House* GetPlayerHouse(uint32 guid);
 	House* CreateHouse(Player *p, int id);
 	// House DestroyHouse(Player *p);
-
-	bool PurchaseHouse(int id);
 };
 
 class GuildhouseWorker
