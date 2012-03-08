@@ -72,7 +72,7 @@ class GOHello_example_go_teleporter : public GameObjectScript
         {
         }
 
-        bool OnGossipHello(Player* player, GameObject* /*go*/)
+        bool OnGossipHello(Player* player, GameObject* go)
         {
             player->TeleportTo(0, 1807.07f, 336.105f, 70.3975f, 0.0f);
             return false;

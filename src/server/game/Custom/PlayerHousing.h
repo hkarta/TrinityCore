@@ -3,17 +3,42 @@
 extern WorldDatabaseWorkerPool WorldDatabase;
 extern CharacterDatabaseWorkerPool CharacterDatabase;
 
+class HouseBaseItem
+{
+public:
+	int item;
+	bool removable;
+	float x, y, z, o;
+	HouseBaseItem(int item, bool removable, float x, float y, float z, float o)
+	{
+		this->item = item;
+		this->removable = removable;
+		this->x = y;
+		this->z = z;
+		this->o = o;
+		this->y = y;
+	}
+};
+
+typedef std::list<HouseBaseItem *> HouseBaseItemList;
+
 class HouseLocation
 {
 public:
-	int id, vendor, group, next;
+	int id, faction, map, house_pack;
+	float x, y, z, o;
 	std::string desc;
-	HouseLocation(int id, int vendor, int group, int next, std::string desc)
+	HouseBaseItemList baseItems;
+
+	HouseLocation(int id, int faction, int map, float x, float y, float z, float o, int house_pack, std::string desc)
 	{
 		this->id = id;
-		this->vendor = vendor;
-		this->group = group;
-		this->next = next;
+		this->faction = faction;
+		this->map = map;
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		this->o = o;
 		this->desc = desc;
 	}
 };
@@ -35,11 +60,11 @@ public:
 class HouseItem
 {
 public:
-	House *parent;
+	Player *parent;
 	int id, type;
 	uint32 guid;
 	bool spawned, permanent;
-	HouseItem(int id, int type, uint32 guid, bool spawned, House *parent)
+	HouseItem(int id, int type, uint32 guid, bool spawned, Player *parent)
 	{
 		this->id = id;
 		this->guid = guid;
@@ -77,6 +102,6 @@ class GuildhouseWorker
 	}
 };
 
-extern PlayerHousing playerHousingMgr;
+extern PlayerHousing PlayerHousingMgr;
 
 #endif

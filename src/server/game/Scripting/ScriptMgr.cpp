@@ -29,6 +29,7 @@
 #include "Vehicle.h"
 #include "../Custom/AllowedAreas.h"
 #include "../Custom/CustomVendor.h"
+#include "../Custom/PlayerHousing.h"
 
 // This is the global static registry of scripts.
 template<class TScript>
@@ -266,6 +267,11 @@ void ScriptMgr::Initialize()
 	oldMSTime = getMSTime();
 	sLog->outString("Loading custom vendors");
 	sLog->outString(">> Loaded %u custom vendor catageory entries in %u ms", CustomVendorMgr.LoadVendors(), GetMSTimeDiffToNow(oldMSTime));
+	sLog->outString();
+
+	oldMSTime = getMSTime();
+	sLog->outString("Loading player hosing");
+	sLog->outString(">> Loaded %u player housing templates in %u ms", PlayerHousingMgr.LoadHouses(), GetMSTimeDiffToNow(oldMSTime));
 	sLog->outString();
 }
 
