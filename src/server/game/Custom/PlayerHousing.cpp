@@ -122,7 +122,7 @@ Unit * PlayerHousing::SpawnUnit(Player *player, int entry)
 			sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
 		}
 		GetUnusedItem(house, entry)->spawned = true;
-		house->SaveHouse();
+		house->SaveHouse(player);
 	}
 
 	return result;
