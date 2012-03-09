@@ -13,7 +13,7 @@ public:
 	{
 		this->item = item;
 		this->removable = removable;
-		this->x = y;
+		this->x = x;
 		this->z = z;
 		this->o = o;
 		this->y = y;

@@ -338,7 +338,6 @@ void House::SaveHouse(Player *player, bool fresh)
 				 
 			if(creature)
 			{				
-				sLog->outString(">> Spawning creature: %d", baseItem->item * (-1));
 				Creature* creature = new Creature;
 				creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, this->owner_guid + PHASE_OFFSET, baseItem->item * (-1), 0, 0,
 					baseItem->x, baseItem->y, baseItem->z, baseItem->o);
@@ -348,7 +347,6 @@ void House::SaveHouse(Player *player, bool fresh)
 			}
 			else
 			{
-				sLog->outString(">> Spawning gameobject: %d", baseItem->item);
 				GameObject* object = new GameObject;
 				uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 				object->Create(guidLow, baseItem->item, map, this->owner_guid + PHASE_OFFSET, baseItem->x, baseItem->y, baseItem->z, baseItem->o, 
