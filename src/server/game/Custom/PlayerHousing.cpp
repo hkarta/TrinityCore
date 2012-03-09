@@ -39,7 +39,7 @@ int PlayerHousing::LoadHouses(void)
 {
 	int i = 0;
 	//												      i     i          i    f    f    f    f    i             s
-	QueryResult locations = WorldDatabase.PQuery("SELECT `id`, `faction`, `map` `x`, `y`, `z`, `o`, `house_pack`, `desc` FROM guildhouses_base");
+	QueryResult locations = WorldDatabase.PQuery("SELECT `id`, `faction`, `map`, `x`, `y`, `z`, `o`, `house_pack`, `desc` FROM guildhouses_base");
 	//													  0		1          2    3    4    5    6    7             8
 	if (locations)
 	{
@@ -48,7 +48,7 @@ int PlayerHousing::LoadHouses(void)
 			Field *fields = locations->Fetch();
 			HouseLocation * houseLoc = new HouseLocation(fields[0].GetInt32(), fields[1].GetInt32(), fields[2].GetInt32(),
 				fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetInt32(),
-				fields[3].GetString());
+				fields[8].GetString());
 
 			//												  i     i      f    f    f    f    i           
 			QueryResult items = WorldDatabase.PQuery("SELECT `id`, `item`, `x`, `y`, `z`, `o`, `removable` FROM guildhouses_baseitems WHERE `id` = %d", fields[0].GetInt32());
@@ -57,12 +57,12 @@ int PlayerHousing::LoadHouses(void)
 			{
 				do
 				{
-					fields = items->Fetch();
+					Field *fields2 = items->Fetch();
 					bool removable = true;
-					if(fields[6].GetInt32() == 1)
+					if(fields2[6].GetInt32() == 1)
 						removable = false;
 
-					houseLoc->baseItems.push_back(new HouseBaseItem(fields[1].GetInt32(), removable, fields[2].GetFloat(), fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat()));
+					houseLoc->baseItems.push_back(new HouseBaseItem(fields2[1].GetInt32(), removable, fields2[2].GetFloat(), fields2[3].GetFloat(), fields2[4].GetFloat(), fields2[5].GetFloat()));
 				}
     			while (items->NextRow());
 			}
@@ -201,7 +201,7 @@ House* PlayerHousing::GetPlayerHouse(uint32 guid)
 
 			House *result = new House(guid, location);
 
-			QueryResult guests = CharacterDatabase.PQuery("SELECT `guest` FROM character_guildhouses WHERE owner = %u", guid);
+			QueryResult guests = CharacterDatabase.PQuery("SELECT `guest` FROM character_guildhouses_guests WHERE owner = %u", guid);
 			if (guests)
 			{
 				do
@@ -252,6 +252,7 @@ House* PlayerHousing::CreateHouse(Player *player, int id)
 
 		house = new House(player->GetGUIDLow(), location);
 		house->SaveHouse(player, true);
+		player->house = house;
 	}
 
 	return house;
@@ -263,6 +264,7 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 	if(CanEnterGuildHouse(player, house))
 	{
 		house->TeleportToHouse(player);
+		player->lasthouse = guid;
 	}
 	else
 	{
@@ -278,12 +280,12 @@ HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 	for (i = houseLocationList.begin(); i != houseLocationList.end(); ++i)
 	{
 		HouseLocation *houseLoc = *i;
-		float *dist = houseLoc->GetDistance(player);
-		if(dist)
+		float dist = houseLoc->GetDistance(player);
+		if(dist != -1)
 		{
-			if(*dist < lastDist)
+			if(dist < lastDist)
 			{
-				lastDist = *dist;
+				lastDist = dist;
 				result = houseLoc;
 			}
 		}
@@ -292,9 +294,9 @@ HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 	return result;
 }
 
-float* HouseLocation::GetDistance(Player *player)
+float HouseLocation::GetDistance(Player *player)
 {
-	float *result = NULL;
+	float result = -1;
 
 	if(player->GetMapId() == map)
 	{
@@ -306,7 +308,7 @@ float* HouseLocation::GetDistance(Player *player)
 
 		if(distance < RANGE_LIMIT)
 		{
-		   *result = distance;
+		   result = distance;
 		}
 	}
 
@@ -316,10 +318,10 @@ float* HouseLocation::GetDistance(Player *player)
 void House::TeleportToHouse(Player *player)
 {
 	player->TeleportTo(this->houseTemplate->map, this->houseTemplate->x, this->houseTemplate->y, this->houseTemplate->z, this->houseTemplate->o);
-	player->SetPhaseMask(this->owner_guid + PHASE_OFFSET);
+	player->SetPhaseMask(this->owner_guid + PHASE_OFFSET, true);
 }
 
-void House::SaveHouse(Player *player, bool fresh = false)
+void House::SaveHouse(Player *player, bool fresh)
 {
 	if(fresh)
 	{
@@ -336,6 +338,7 @@ void House::SaveHouse(Player *player, bool fresh = false)
 				 
 			if(creature)
 			{				
+				sLog->outString(">> Spawning creature: %d", baseItem->item * (-1));
 				Creature* creature = new Creature;
 				creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, this->owner_guid + PHASE_OFFSET, baseItem->item * (-1), 0, 0,
 					baseItem->x, baseItem->y, baseItem->z, baseItem->o);
@@ -345,6 +348,7 @@ void House::SaveHouse(Player *player, bool fresh = false)
 			}
 			else
 			{
+				sLog->outString(">> Spawning gameobject: %d", baseItem->item);
 				GameObject* object = new GameObject;
 				uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 				object->Create(guidLow, baseItem->item, map, this->owner_guid + PHASE_OFFSET, baseItem->x, baseItem->y, baseItem->z, baseItem->o, 
@@ -354,14 +358,14 @@ void House::SaveHouse(Player *player, bool fresh = false)
 				sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
 			}
 		}
+	}
 
-		CharacterDatabase.PExecute("DELETE FROM character_guildhouses_items WHERE `owner` = %u", this->owner_guid);
-		HouseItemList::iterator i;
-		for (i = this->houseItemList.begin(); i != this->houseItemList.end(); ++i)
-		{
-			HouseItem *houseItem = *i;
-			CharacterDatabase.PExecute("INSERT INTO character_guildhouses_items (`owner`, `guid`, `object_id`, `spawned`) VALUES (%u, %u, %d, %d)", this->owner_guid,
-				houseItem->guid, houseItem->entry, houseItem->spawned);
-		}
+	CharacterDatabase.PExecute("DELETE FROM character_guildhouses_items WHERE `owner` = %u", this->owner_guid);
+	HouseItemList::iterator i;
+	for (i = this->houseItemList.begin(); i != this->houseItemList.end(); ++i)
+	{
+		HouseItem *houseItem = *i;
+		CharacterDatabase.PExecute("INSERT INTO character_guildhouses_items (`owner`, `guid`, `object_id`, `spawned`) VALUES (%u, %u, %d, %d)", this->owner_guid,
+			houseItem->guid, houseItem->entry, houseItem->spawned);
 	}
 }

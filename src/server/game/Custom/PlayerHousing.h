@@ -61,7 +61,7 @@ public:
 		this->desc = desc;
 	}
 
-	float* GetDistance(Player *player); // done
+	float GetDistance(Player *player); // done
 };
 
 typedef std::list<HouseItem *> HouseItemList;
@@ -83,6 +83,8 @@ public:
 	
 	void SaveHouse(Player* player, bool fresh); // done
 	void TeleportToHouse(Player *player); // done
+	void AddGuest(uint32 guid); // todo
+	void RemoveGuest(uint32 guid); // todo
 };
 
 typedef std::list<HouseLocation *> HouseLocationList;
