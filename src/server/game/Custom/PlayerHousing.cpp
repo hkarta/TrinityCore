@@ -6,10 +6,34 @@
 #include <math.h>
 
 #define PHASE_OFFSET	200
+#define LIMIT			20
+#define RANGE_LIMIT		100
 
 PlayerHousing PlayerHousingMgr;
 
 PlayerHousing::PlayerHousing(void){}
+
+Creature* PlayerHousing::GetCreatureByLowGuid(Player *player, uint32 guid, int entry)
+{
+	return player->GetMap()->GetCreature(MAKE_NEW_GUID(guid, entry, HIGHGUID_UNIT));
+}
+
+GameObject* PlayerHousing::GetGoByLowGuid(Player *player, uint32 guid, int entry)
+{
+	return player->GetMap()->GetGameObject(MAKE_NEW_GUID(guid, entry, HIGHGUID_UNIT));
+}
+
+bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
+{
+	AllowedGuests::iterator i;
+	for (i = house->allowedGuests.begin(); i != house->allowedGuests.end(); ++i)
+	{
+		uint32 guest = *i;
+		if(guest == player->GetGUIDLow())
+			return true;
+	}
+	return true;
+}
 
 int PlayerHousing::LoadHouses(void)
 {
@@ -52,7 +76,7 @@ int PlayerHousing::LoadHouses(void)
 	return i;
 }
 
-int PlayerHousing::GetItemCount(Player *player, int entry, bool onlyAvaiable = true)
+int PlayerHousing::GetItemCount(Player *player, int entry, bool onlyAvaiable)
 {
 	House *house = GetPlayerHouse(player->GetGUIDLow());
 	if(house)
@@ -91,9 +115,9 @@ HouseItem* PlayerHousing::GetUnusedItem(House * house, int entry)
 	return NULL;
 }
 
-Unit * PlayerHousing::SpawnUnit(Player *player, int entry)
+Creature * PlayerHousing::SpawnCreature(Player *player, int entry)
 {
-	Unit *result = NULL;
+	Creature *result = NULL;
 	if(GetItemCount(player, entry) > 0)
 	{
 		House *house = GetPlayerHouse(player->GetGUIDLow());
@@ -110,9 +134,28 @@ Unit * PlayerHousing::SpawnUnit(Player *player, int entry)
 			creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->owner_guid + PHASE_OFFSET);
 			uint32 db_guid = creature->GetDBTableGUIDLow();
 			sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
+			result = creature;
 		}
-		else
-		{
+		GetUnusedItem(house, entry)->spawned = true;
+		house->SaveHouse(player, false);
+	}
+
+	return result;
+}
+
+GameObject * PlayerHousing::SpawnGameObject(Player *player, int entry)
+{
+	GameObject *result = NULL;
+	if(GetItemCount(player, entry) > 0)
+	{
+		House *house = GetPlayerHouse(player->GetGUIDLow());
+		bool creature = false;
+		if(entry < 0)
+			creature = true;
+		Map* map = player->GetMap();
+
+		if(!creature)
+		{				
 			GameObject* object = new GameObject;
 			uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 			object->Create(guidLow, entry, map, house->owner_guid + PHASE_OFFSET, house->houseTemplate->x, 
@@ -120,9 +163,10 @@ Unit * PlayerHousing::SpawnUnit(Player *player, int entry)
 			object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->owner_guid + PHASE_OFFSET);
 			object->LoadGameObjectFromDB(guidLow, map);
 			sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
+			result = object;
 		}
 		GetUnusedItem(house, entry)->spawned = true;
-		house->SaveHouse(player);
+		house->SaveHouse(player, false);
 	}
 
 	return result;
@@ -215,6 +259,64 @@ House* PlayerHousing::CreateHouse(Player *player, int id)
 
 void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 {
+	House *house = GetPlayerHouse(player->GetGUIDLow());
+	if(CanEnterGuildHouse(player, house))
+	{
+		house->TeleportToHouse(player);
+	}
+	else
+	{
+		// todo remove item // PHASE_OFFSET
+	}
+}
+
+HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
+{
+	float lastDist = (float)RANGE_LIMIT + 1;
+	HouseLocation *result = NULL;
+	HouseLocationList::iterator i;
+	for (i = houseLocationList.begin(); i != houseLocationList.end(); ++i)
+	{
+		HouseLocation *houseLoc = *i;
+		float *dist = houseLoc->GetDistance(player);
+		if(dist)
+		{
+			if(*dist < lastDist)
+			{
+				lastDist = *dist;
+				result = houseLoc;
+			}
+		}
+	}
+
+	return result;
+}
+
+float* HouseLocation::GetDistance(Player *player)
+{
+	float *result = NULL;
+
+	if(player->GetMapId() == map)
+	{
+		float px = player->GetPositionX();
+		float py = player->GetPositionY();
+		float cx = x;
+		float cy = y;
+		float distance = sqrt((cx-px)*(cx-px)+(cy-py)*(cy-py));
+
+		if(distance < RANGE_LIMIT)
+		{
+		   *result = distance;
+		}
+	}
+
+	return result;
+}
+
+void House::TeleportToHouse(Player *player)
+{
+	player->TeleportTo(this->houseTemplate->map, this->houseTemplate->x, this->houseTemplate->y, this->houseTemplate->z, this->houseTemplate->o);
+	player->SetPhaseMask(this->owner_guid + PHASE_OFFSET);
 }
 
 void House::SaveHouse(Player *player, bool fresh = false)

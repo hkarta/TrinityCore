@@ -48,7 +48,6 @@ public:
 	float x, y, z, o;
 	std::string desc;
 	HouseBaseItemList baseItems;
-	bool IsItemFixed(HouseItem*); // todo
 
 	HouseLocation(int id, int faction, int map, float x, float y, float z, float o, int house_pack, std::string desc)
 	{
@@ -61,6 +60,8 @@ public:
 		this->o = o;
 		this->desc = desc;
 	}
+
+	float* GetDistance(Player *player); // done
 };
 
 typedef std::list<HouseItem *> HouseItemList;
@@ -80,8 +81,8 @@ public:
 		this->houseTemplate = houseTemplate;
 	}
 	
-	void SaveHouse(Player*, bool); // done
-	bool TeleportToHouse(void); // todo
+	void SaveHouse(Player* player, bool fresh); // done
+	void TeleportToHouse(Player *player); // done
 };
 
 typedef std::list<HouseLocation *> HouseLocationList;
@@ -91,11 +92,15 @@ class PlayerHousing
 {
 public:
 	HouseLocationList houseLocationList;
-	bool CanEnterGuildHouse(Player *player, uint32 guid); //todo
-	void EnterGuildHouse(Player *player, uint32 guid); // todo
+	bool CanEnterGuildHouse(Player *player, House *house); //done
+	void EnterGuildHouse(Player *player, uint32 guid); // done
 	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true); // done
 	HouseItem* GetUnusedItem(House * house, int entry); // done
-	Unit *SpawnUnit(Player *player, int entry); // done
+	Creature *SpawnCreature(Player *player, int entry); // done
+	GameObject *SpawnGameObject(Player *player, int entry); // done
+	Creature *GetCreatureByLowGuid(Player *player, uint32 guid, int entry); // done
+	GameObject* GetGoByLowGuid(Player *player, uint32 guid, int entry); // done
+	HouseLocation* GetCurrentHouseArea(Player *player); // done
 
 	HouseList houseList;
 	PlayerHousing(void); // done
@@ -108,14 +113,14 @@ public:
 class GuildhouseWorker
 {
 	Creature *spawner;
-	Unit *item;
-	//Gameobject *shield;
+	Creature *citem;
+	GameObject *gitem;
 
-	GuildhouseWorker(Creature *spawner, Unit *item/*, Gameobject *shield*/)
+	GuildhouseWorker(Creature *spawner, Creature *citem, GameObject *gitem)
 	{
 		this->spawner = spawner;
-		this->item = item;
-		//this->shield = shield;
+		this->citem =citem;
+		this->gitem = gitem;
 	}
 };
 

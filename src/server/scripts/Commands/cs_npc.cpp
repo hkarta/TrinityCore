@@ -790,7 +790,8 @@ public:
 
             /* impossible without entry
             if (lowguid)
-                creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), MAKE_GUID(lowguid, HIGHGUID_UNIT));
+                creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), 
+				(lowguid, HIGHGUID_UNIT));
             */
 
             // attempt check creature existence by DB data
