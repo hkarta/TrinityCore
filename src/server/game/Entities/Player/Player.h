@@ -1070,6 +1070,7 @@ class Player : public Unit, public GridObject<Player>
 		House *house;
 		uint32 lasthouse;
 		LastPosition lastPosition;
+		TempSummon *summon;
 		ItemLoader *itemLoader;
 		int currentVendorEntry;
         ~Player ();

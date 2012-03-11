@@ -104,7 +104,7 @@ public:
 	Creature *SpawnCreature(Player *player, int entry); // done
 	GameObject *SpawnGameObject(Player *player, int entry); // done
 	Creature *GetCreatureByLowGuid(Player *player, uint32 guid, int entry); // done
-	Creature *GetNearestCreature(int id, Player *player);
+	//Creature *GetNearestCreature(int id, Player *player);
 	GameObject* GetGoByLowGuid(Player *player, uint32 guid, int entry); // done
 	HouseLocation* GetCurrentHouseArea(Player *player); // done
 

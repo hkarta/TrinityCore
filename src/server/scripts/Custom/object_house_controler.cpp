@@ -3,7 +3,7 @@
 
 enum eEnums
 {
-	OFFSET_GENERAL			= 1,
+	OFFSET_GENERAL			= 0,
 	OFFSET_REVERT			= 10,
 	OFFSET_LIST				= 50,
 	OFFSET_DISPLAY			= 200,

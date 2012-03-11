@@ -2,11 +2,11 @@
 #include "ScriptMgr.h"
 #include "../../game/Custom/PlayerHousing.h"
 
-class ItemUse_item_ask_controller : public ItemScript
+class item_ask_controller : public ItemScript
 {
     public:
 
-        ItemUse_item_ask_controller()
+        item_ask_controller()
             : ItemScript("item_ask_controller")
         {
         }
@@ -18,7 +18,13 @@ class ItemUse_item_ask_controller : public ItemScript
 				HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(player);
 				if(location)
 				{
-				//	Creature *c = player->GetNearCre
+					if(!player->summon)
+						player->summon = player->SummonCreature(218, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
+
+					player->PrepareGossipMenu(player->summon);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "click", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "click2", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+					player->SendPreparedGossip(player->summon);
 				}
 				else if(player->house)
 				{
@@ -30,7 +36,7 @@ class ItemUse_item_ask_controller : public ItemScript
         }
 };
 
-void AddSC_example_misc()
+void AddSC_item_ask_controller()
 {
-    new ItemUse_item_ask_controller();
+    new item_ask_controller();
 }

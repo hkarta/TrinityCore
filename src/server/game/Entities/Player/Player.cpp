@@ -2062,6 +2062,12 @@ void Player::SendTeleportAckPacket()
 
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
 {
+	if(summon)
+	{
+		summon->DespawnOrUnsummon(0);
+		summon = NULL;
+	}
+
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
     {
         sLog->outError("TeleportTo: invalid map (%d) or invalid coordinates (X: %f, Y: %f, Z: %f, O: %f) given when teleporting player (GUID: %u, name: %s, map: %d, X: %f, Y: %f, Z: %f, O: %f).",
@@ -6718,6 +6724,12 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
     CheckAreaExploreAndOutdoor();
 
+	if(summon)
+	{
+		summon->DespawnOrUnsummon(0);
+		summon = NULL;
+	}
+
 	if(!isGameMaster() && !InArena())
 	{
 		if(AllowedAreasMgr.HasAccessToArea(this))
@@ -7377,6 +7389,11 @@ uint32 Player::GetLevelFromDB(uint64 guid)
 
 void Player::UpdateArea(uint32 newArea)
 {
+	if(summon)
+	{
+		summon->DespawnOrUnsummon(0);
+		summon = NULL;
+	}
     // FFA_PVP flags are area and not zone id dependent
     // so apply them accordingly
     m_areaUpdateId    = newArea;
@@ -17246,7 +17263,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 	house = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
 	if(lasthouse != 0)
 		PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
-
+	summon = NULL;
 	//this->SetPhaseMask(
 
     return true;
