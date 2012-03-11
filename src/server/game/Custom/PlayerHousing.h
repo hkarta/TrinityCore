@@ -26,14 +26,16 @@ class HouseItem // partial
 {
 public:
 	int entry, type;
-	uint32 guid;
+	uint32 guid, id;
 	bool spawned, permanent;
-	HouseItem(int entry, int type, uint32 guid, bool spawned)
+
+	HouseItem(int entry, int type, uint32 guid, bool spawned, uint32 id)
 	{
 		this->entry = entry;
 		this->guid = guid;
 		this->type = type;
 		this->spawned = spawned;
+		this->id = id;
 	}
 	std::string GetName(void); // todo
 	void MoveToPosition(void); // todo
@@ -85,6 +87,7 @@ public:
 	void TeleportToHouse(Player *player); // done
 	void AddGuest(uint32 guid); // todo
 	void RemoveGuest(uint32 guid); // todo
+	int GetPhase(void);
 };
 
 typedef std::list<HouseLocation *> HouseLocationList;
@@ -101,6 +104,7 @@ public:
 	Creature *SpawnCreature(Player *player, int entry); // done
 	GameObject *SpawnGameObject(Player *player, int entry); // done
 	Creature *GetCreatureByLowGuid(Player *player, uint32 guid, int entry); // done
+	Creature *GetNearestCreature(int id, Player *player);
 	GameObject* GetGoByLowGuid(Player *player, uint32 guid, int entry); // done
 	HouseLocation* GetCurrentHouseArea(Player *player); // done
 

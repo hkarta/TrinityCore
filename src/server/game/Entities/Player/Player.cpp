@@ -14121,7 +14121,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
     }
 
     if (source->GetTypeId() == TYPEID_GAMEOBJECT)
-        if (source->ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
+        if (source->ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER && showQuests)
             PrepareQuestMenu(source->GetGUID());
 
     for (GossipMenuItemsContainer::const_iterator itr = menuItemBounds.first; itr != menuItemBounds.second; ++itr)

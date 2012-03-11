@@ -1,5 +1,6 @@
 #include "gamePCH.h"
 #include "PlayerHousing.h"
+#include <Player.h>
 #include <stdio.h>
 #include <time.h>
 #include <list>
@@ -8,10 +9,33 @@
 #define PHASE_OFFSET	200
 #define LIMIT			20
 #define RANGE_LIMIT		100
+#define CONTROLLER_ID	218
 
 PlayerHousing PlayerHousingMgr;
 
 PlayerHousing::PlayerHousing(void){}
+
+int House::GetPhase(void)
+{
+	return PHASE_OFFSET + owner_guid;
+}
+Creature* PlayerHousing::GetNearestCreature(int id, Player *player)
+{
+	Creature *result = NULL;
+	House *house = GetPlayerHouse(player->lasthouse);
+	id = id * (-1);
+	/*HouseBaseItemList::iterator j;
+	for (j = house->houseTemplate->baseItems.begin(); j != house->houseTemplate->baseItems.end(); ++j)
+	{
+		HouseBaseItem *baseItem = *j;
+		if(id == baseItem->item)
+			return 
+	}*/
+
+
+	return result;
+}
+
 
 Creature* PlayerHousing::GetCreatureByLowGuid(Player *player, uint32 guid, int entry)
 {
@@ -135,8 +159,15 @@ Creature * PlayerHousing::SpawnCreature(Player *player, int entry)
 			uint32 db_guid = creature->GetDBTableGUIDLow();
 			sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
 			result = creature;
+
+			HouseItem *spawning = GetUnusedItem(house, entry);
+			spawning->spawned = true;
+			spawning->guid = db_guid;
+
+			CharacterDatabase.PExecute("UPDATE character_guildhouses_items SET `spawned` = 1, `guid` = %u WHERE `owner` = %u AND `id` = %u", 
+				spawning->guid, player->GetGUIDLow(), spawning->id);
 		}
-		GetUnusedItem(house, entry)->spawned = true;
+
 		house->SaveHouse(player, false);
 	}
 
@@ -164,8 +195,15 @@ GameObject * PlayerHousing::SpawnGameObject(Player *player, int entry)
 			object->LoadGameObjectFromDB(guidLow, map);
 			sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
 			result = object;
+
+			HouseItem *spawning = GetUnusedItem(house, entry);
+			spawning->spawned = true;
+			spawning->guid = guidLow;
+
+			CharacterDatabase.PExecute("UPDATE character_guildhouses_items SET `spawned` = 1, `guid` = %u WHERE `owner` = %u AND `id` = %u", 
+				spawning->guid, player->GetGUIDLow(), spawning->id);
 		}
-		GetUnusedItem(house, entry)->spawned = true;
+
 		house->SaveHouse(player, false);
 	}
 
@@ -212,7 +250,7 @@ House* PlayerHousing::GetPlayerHouse(uint32 guid)
 				while (guests->NextRow());
 			}
 
-			QueryResult items = CharacterDatabase.PQuery("SELECT `entry`, `type`, `guid`, `spawned` FROM character_guildhouses_items WHERE owner = %u", guid);
+			QueryResult items = CharacterDatabase.PQuery("SELECT `entry`, `type`, `guid`, `spawned`, `id` FROM character_guildhouses_items WHERE owner = %u", guid);
 			if (items)
 			{
 				do
@@ -222,7 +260,7 @@ House* PlayerHousing::GetPlayerHouse(uint32 guid)
 					if(fields[3].GetInt32() == 1)
 						spawned = true;
 
-					result->houseItemList.push_back(new HouseItem(fields[0].GetInt32(), fields[1].GetInt32(), fields[2].GetUInt32(), spawned));
+					result->houseItemList.push_back(new HouseItem(fields[0].GetInt32(), fields[1].GetInt32(), fields[2].GetUInt32(), spawned, fields[4].GetUInt32()));
 				}
 				while (items->NextRow());
 			}
@@ -239,6 +277,7 @@ House* PlayerHousing::GetPlayerHouse(uint32 guid)
 House* PlayerHousing::CreateHouse(Player *player, int id)
 {
 	House *house = GetPlayerHouse(player->GetGUIDLow());
+	
 	if(!house)
 	{
 		HouseLocation *location;
@@ -265,6 +304,7 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 	{
 		house->TeleportToHouse(player);
 		player->lasthouse = guid;
+		player->SetPhaseMask(PHASE_OFFSET + guid, true);
 	}
 	else
 	{
@@ -275,6 +315,7 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 {
 	float lastDist = (float)RANGE_LIMIT + 1;
+
 	HouseLocation *result = NULL;
 	HouseLocationList::iterator i;
 	for (i = houseLocationList.begin(); i != houseLocationList.end(); ++i)
@@ -326,6 +367,8 @@ void House::SaveHouse(Player *player, bool fresh)
 	if(fresh)
 	{
 		CharacterDatabase.PExecute("REPLACE INTO character_guildhouses VALUES (%u, %d)", this->owner_guid, this->houseTemplate->id);
+		CharacterDatabase.PExecute("DELETE FROM character_guildhouses_items WHERE `owner` = %u AND `type` = 1;", this->owner_guid);
+
 		HouseBaseItemList::iterator j;
 		for (j = this->houseTemplate->baseItems.begin(); j != this->houseTemplate->baseItems.end(); ++j)
 		{
@@ -335,7 +378,9 @@ void House::SaveHouse(Player *player, bool fresh)
 			if(baseItem->item < 0)
 				creature = true;
 			Map* map = player->GetMap();
-				 
+			int id = 0;	 
+			uint32 guid = 0;
+
 			if(creature)
 			{				
 				Creature* creature = new Creature;
@@ -343,27 +388,42 @@ void House::SaveHouse(Player *player, bool fresh)
 					baseItem->x, baseItem->y, baseItem->z, baseItem->o);
 				creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), this->owner_guid + PHASE_OFFSET);
 				uint32 db_guid = creature->GetDBTableGUIDLow();
+				id = baseItem->item * (-1);
+				guid = db_guid;
 				sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
 			}
 			else
 			{
 				GameObject* object = new GameObject;
 				uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+				id = baseItem->item;
+				guid = guidLow;
 				object->Create(guidLow, baseItem->item, map, this->owner_guid + PHASE_OFFSET, baseItem->x, baseItem->y, baseItem->z, baseItem->o, 
 					0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY);
 				object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), this->owner_guid + PHASE_OFFSET);
 				object->LoadGameObjectFromDB(guidLow, map);
 				sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
 			}
+
+			CharacterDatabase.PExecute("INSERT INTO character_guildhouses_items (`owner`, `guid`, `object_id`, `spawned`, `type`) VALUES (%u, %u, %d, 1, 1)", this->owner_guid,
+				guid, id);
+		}
+
+		HouseItemList::iterator i;
+		for (i = this->houseItemList.begin(); i != this->houseItemList.end(); ++i)
+		{
+			HouseItem *houseItem = *i;
+			CharacterDatabase.PExecute("INSERT INTO character_guildhouses_items (`owner`, `guid`, `object_id`, `spawned`) VALUES (%u, %u, %d, %d)", this->owner_guid,
+				houseItem->guid, houseItem->entry, houseItem->spawned);
 		}
 	}
 
-	CharacterDatabase.PExecute("DELETE FROM character_guildhouses_items WHERE `owner` = %u", this->owner_guid);
+/*	CharacterDatabase.PExecute("DELETE FROM character_guildhouses_items WHERE `owner` = %u", this->owner_guid);
 	HouseItemList::iterator i;
 	for (i = this->houseItemList.begin(); i != this->houseItemList.end(); ++i)
 	{
 		HouseItem *houseItem = *i;
 		CharacterDatabase.PExecute("INSERT INTO character_guildhouses_items (`owner`, `guid`, `object_id`, `spawned`) VALUES (%u, %u, %d, %d)", this->owner_guid,
 			houseItem->guid, houseItem->entry, houseItem->spawned);
-	}
+	}*/
 }

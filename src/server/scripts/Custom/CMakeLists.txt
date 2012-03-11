@@ -18,6 +18,7 @@ set(scripts_STAT_SRCS
   Custom/object_house_controler.cpp
   Custom/object_house_gobject.cpp
   Custom/object_house_npc.cpp
+  Custom/item_ask_controller.cpp
 )
 
 message("  -> Prepared: Custom")
