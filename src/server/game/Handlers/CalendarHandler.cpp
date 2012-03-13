@@ -207,7 +207,7 @@ void WorldSession::HandleCalendarGuildFilter(WorldPacket& recvData)
 void WorldSession::HandleCalendarArenaTeam(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_CALENDAR_ARENA_TEAM [" UI64FMTD "]", _player->GetGUID());
-    
+
     int32 unk1;
     recvData >> unk1;
 
@@ -590,11 +590,10 @@ void WorldSession::HandleCalendarGetNumPending(WorldPacket& /*recvData*/)
 
 void WorldSession::SendCalendarEvent(CalendarEvent const& calendarEvent, CalendarSendEventType sendEventType)
 {
-    uint64 guid = _player->GetGUID();
     uint64 eventId = calendarEvent.GetEventId();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_SEND_EVENT [" UI64FMTD "] EventId ["
-        UI64FMTD "] SendType %u", guid, eventId, sendEventType);
+        UI64FMTD "] SendType %u", _player->GetGUID(), eventId, sendEventType);
 
     WorldPacket data(SMSG_CALENDAR_SEND_EVENT);
     data << uint8(sendEventType);
@@ -632,7 +631,7 @@ void WorldSession::SendCalendarEvent(CalendarEvent const& calendarEvent, Calenda
         }
         else
         {
-            data.appendPackGUID(guid);
+            data.appendPackGUID(_player->GetGUID());
             data << uint8(0) << uint8(0) << uint8(0) << uint8(0)
                 << uint64(0) << uint32(0) << uint8(0);
 
