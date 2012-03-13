@@ -13,10 +13,10 @@ class item_ask_controller : public ItemScript
 
         bool OnUse(Player *player, Item *item, SpellCastTargets const& /*targets*/)
         {
-			if(!player->isInCombat() && !player->InArena())
+			if(!player->isInCombat() && !player->InArena() && player->house)
 			{
 				HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(player);
-				if(location)
+				if(location && player->GetPhaseMask() == player->house->GetPhase())
 				{
 					if(!player->summon)
 						player->summon = player->SummonCreature(218, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
@@ -28,7 +28,7 @@ class item_ask_controller : public ItemScript
 				}
 				else if(player->house)
 				{
-					player->house->TeleportToHouse(player);
+					PlayerHousingMgr.EnterGuildHouse(player, player->house->owner_guid);
 				}
 			}
 

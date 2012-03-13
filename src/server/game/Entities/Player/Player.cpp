@@ -2806,7 +2806,8 @@ void Player::SetGameMaster(bool on)
         getHostileRefManager().setOnlineOfflineState(false);
         CombatStopWithPets();
 
-        SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
+		if(this->GetPhaseMask() < 200)
+			SetPhaseMask(uint32(200), false);    // see and visible in all phases
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
     }
     else
@@ -2821,7 +2822,8 @@ void Player::SetGameMaster(bool on)
         if (!newPhase)
             newPhase = PHASEMASK_NORMAL;
 
-        SetPhaseMask(newPhase, false);
+		if(this->GetPhaseMask() < 200)
+			SetPhaseMask(newPhase, false);
 
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
@@ -6726,8 +6728,11 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
 	if(summon)
 	{
-		summon->DespawnOrUnsummon(0);
-		summon = NULL;
+		if(this->GetDistance2d(summon) > 0)
+		{
+			summon->DespawnOrUnsummon(0);
+			summon = NULL;
+		}
 	}
 
 	if(!isGameMaster() && !InArena())
@@ -17262,7 +17267,38 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 	sLog->outString(">> player lasthouse: %u", lasthouse);
 	house = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
 	if(lasthouse != 0)
-		PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
+	{
+		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(lasthouse);
+		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
+		if(location)
+		{
+			if(location->id == tempHouse->houseTemplate->id)
+			{
+				if(PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
+				{
+					PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
+				}
+				else
+				{
+					this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
+					lasthouse = 0;
+					this->SaveToDB();
+				}
+			}
+			else
+			{
+				this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
+				lasthouse = 0;
+				this->SaveToDB();
+			}
+		}
+		else
+		{
+			this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
+			lasthouse = 0;
+			this->SaveToDB();
+		}
+	}
 	summon = NULL;
 	//this->SetPhaseMask(
 
@@ -18768,8 +18804,8 @@ void Player::SaveToDB(bool create /*=false*/)
     if (m_mailsUpdated)                                     //save mails only when needed
         _SaveMail(trans);
 
-	trans->PAppend("UPDATE characters SET lasthouse = '%u' WHERE guid = '%u'", lasthouse, GetGUIDLow());
     _SaveBGData(trans);
+	trans->PAppend("UPDATE characters SET lasthouse = %u WHERE guid = %u", lasthouse, this->GetGUIDLow());
     _SaveInventory(trans);
     _SaveQuestStatus(trans);
     _SaveDailyQuestStatus(trans);
@@ -18786,7 +18822,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveEquipmentSets(trans);
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
     _SaveGlyphs(trans);
-    _SaveInstanceTimeRestrictions(trans);
+    _SaveInstanceTimeRestrictions(trans); 
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
