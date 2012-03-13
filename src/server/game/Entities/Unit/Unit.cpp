@@ -12088,6 +12088,9 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell) co
 {
     ASSERT(target);
 
+	if((target->GetPhaseMask() > 199 || this->GetPhaseMask() > 199) && this->GetPhaseMask() != target->GetPhaseMask())
+		return false;
+
     // can't attack self
     if (this == target)
         return false;

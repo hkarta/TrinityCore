@@ -2398,6 +2398,41 @@ void Player::AddToWorld()
     for (uint8 i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; ++i)
         if (m_items[i])
             m_items[i]->AddToWorld();
+
+	if(lasthouse != 0)
+	{
+		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(lasthouse);
+		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
+		if(location)
+		{
+			if(location->id == tempHouse->houseTemplate->id)
+			{
+				if(PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
+				{
+					//PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
+					this->SetPhaseMask(tempHouse->GetPhase(), true);
+				}
+				else
+				{
+					this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
+					lasthouse = 0;
+					this->SetPhaseMask(1, true);
+				}
+			}
+			else
+			{
+				this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
+				lasthouse = 0;
+				this->SetPhaseMask(1, true);
+			}
+		}
+		else
+		{
+			this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
+			lasthouse = 0;
+			this->SetPhaseMask(1, true);
+		}
+	}
 }
 
 void Player::RemoveFromWorld()
@@ -2406,6 +2441,8 @@ void Player::RemoveFromWorld()
     if (IsInWorld())
     {
         ///- Release charmed creatures, unsummon totems and remove pets/guardians
+		if(summon)
+			summon->DespawnOrUnsummon(0);
         StopCastingCharm();
         StopCastingBindSight();
         UnsummonPetTemporaryIfAny();
@@ -2806,8 +2843,8 @@ void Player::SetGameMaster(bool on)
         getHostileRefManager().setOnlineOfflineState(false);
         CombatStopWithPets();
 
-		if(this->GetPhaseMask() < 200)
-			SetPhaseMask(uint32(200), false);    // see and visible in all phases
+		/*if(this->GetPhaseMask() < 200)
+			SetPhaseMask(uint32(200), false);    // see and visible in all phases*/
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
     }
     else
@@ -2822,8 +2859,8 @@ void Player::SetGameMaster(bool on)
         if (!newPhase)
             newPhase = PHASEMASK_NORMAL;
 
-		if(this->GetPhaseMask() < 200)
-			SetPhaseMask(newPhase, false);
+		/*if(this->GetPhaseMask() < 200)
+			SetPhaseMask(1, false);*/
 
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
@@ -6728,11 +6765,8 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
 	if(summon)
 	{
-		if(this->GetDistance2d(summon) > 0)
-		{
-			summon->DespawnOrUnsummon(0);
-			summon = NULL;
-		}
+		summon->DespawnOrUnsummon(0);
+		summon = NULL;
 	}
 
 	if(!isGameMaster() && !InArena())
@@ -17266,39 +17300,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 	lasthouse = fields[67].GetUInt32();
 	sLog->outString(">> player lasthouse: %u", lasthouse);
 	house = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
-	if(lasthouse != 0)
-	{
-		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(lasthouse);
-		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
-		if(location)
-		{
-			if(location->id == tempHouse->houseTemplate->id)
-			{
-				if(PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
-				{
-					PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
-				}
-				else
-				{
-					this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
-					lasthouse = 0;
-					this->SaveToDB();
-				}
-			}
-			else
-			{
-				this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
-				lasthouse = 0;
-				this->SaveToDB();
-			}
-		}
-		else
-		{
-			this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
-			lasthouse = 0;
-			this->SaveToDB();
-		}
-	}
 	summon = NULL;
 	//this->SetPhaseMask(
 
