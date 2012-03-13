@@ -694,6 +694,29 @@ namespace Trinity
             NearestGameObjectEntryInObjectRangeCheck(NearestGameObjectEntryInObjectRangeCheck const&);
     };
 
+	class NearestGameObjectEntryInObjectRangeCheckInPhase
+    {
+        public:
+            NearestGameObjectEntryInObjectRangeCheckInPhase(WorldObject const& obj, uint32 entry, float range) : i_obj(obj), i_entry(entry), i_range(range) {}
+            bool operator()(GameObject* go)
+            {
+				if (go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range) && go->GetPhaseMask() == i_obj.GetPhaseMask())
+                {
+                    i_range = i_obj.GetDistance(go);        // use found GO range as new range limit for next check
+                    return true;
+                }
+                return false;
+            }
+            float GetLastRange() const { return i_range; }
+        private:
+            WorldObject const& i_obj;
+            uint32 i_entry;
+            float  i_range;
+
+            // prevent clone this object
+            NearestGameObjectEntryInObjectRangeCheckInPhase(NearestGameObjectEntryInObjectRangeCheckInPhase const&);
+    };
+
     class GameObjectWithDbGUIDCheck
     {
         public:

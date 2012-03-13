@@ -87,6 +87,7 @@ public:
 	void TeleportToHouse(Player *player); // done
 	void AddGuest(uint32 guid); // todo
 	void RemoveGuest(uint32 guid); // todo
+	GameObject* GetNearestObject(Player *player);
 	int GetPhase(void);
 };
 

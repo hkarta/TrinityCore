@@ -12541,6 +12541,8 @@ void Player::MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool 
 void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
 {
     Item* pItem = GetItemByPos(bag, slot);
+	if(pItem->GetTemplate()->Class == 14)
+		pItem = NULL;
     if (pItem)
     {
         sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE:  DestroyItem bag = %u, slot = %u, item = %u", bag, slot, pItem->GetEntry());

@@ -2433,6 +2433,16 @@ Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive
     return creature;
 }
 
+//NearestGameObjectEntryInObjectRangeCheckInPhase
+GameObject* WorldObject::FindNearestGameObjectInPhase(uint32 entry, float range) const
+{
+    GameObject* go = NULL;
+    Trinity::NearestGameObjectEntryInObjectRangeCheckInPhase checker(*this, entry, range);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheckInPhase> searcher(this, go, checker);
+    VisitNearbyGridObject(range, searcher);
+    return go;
+}
+
 GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
 {
     GameObject* go = NULL;

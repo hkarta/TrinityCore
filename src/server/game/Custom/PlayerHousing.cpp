@@ -20,6 +20,38 @@ int House::GetPhase(void)
 	return PHASE_OFFSET + owner_guid;
 }
 
+GameObject* House::GetNearestObject(Player *player)
+{
+	GameObject *result = NULL;
+	float distance = 10;
+	if(player->GetGUIDLow() == this->owner_guid)
+	{
+		sLog->outString(" GO >> This should be always true");
+		HouseItemList::iterator i;
+		for (i = player->house->houseItemList.begin(); i != player->house->houseItemList.end(); ++i)
+		{
+			sLog->outString(" GO   >> Item");
+			HouseItem *item = *i;
+			if(item->entry > 0 && item->spawned /*&& item->permanent*/)
+			{
+				sLog->outString(" GO     >> It is spawned");
+				GameObject *go = player->FindNearestGameObjectInPhase(item->entry, 5);
+				if(go)
+				{
+					sLog->outString(" GO     >> guid %u, id %d, phase %u", go->GetGUIDLow(), go->GetEntry(), go->GetPhaseMask());
+					if(player->GetDistance(go) < distance)
+					{
+						result = go;
+						distance = player->GetDistance(go);
+					}
+				}
+			}
+		}
+	}
+	return result;
+}
+
+
 /*
 Creature* PlayerHousing::GetNearestCreature(int id, Player *player)
 {
