@@ -1130,7 +1130,7 @@ namespace Trinity
 
             bool operator()(Creature* u)
             {
-                if (u->GetEntry() == i_entry && u->isAlive() == i_alive && i_obj.IsWithinDistInMap(u, i_range))
+				if (u->GetEntry() == i_entry && u->isAlive() == i_alive && i_obj.IsWithinDistInMap(u, i_range))
                 {
                     i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
@@ -1146,6 +1146,32 @@ namespace Trinity
 
             // prevent clone this object
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&);
+    };
+
+	class NearestCreatureEntryWithLiveStateInObjectRangeCheckInPhase
+    {
+        public:
+            NearestCreatureEntryWithLiveStateInObjectRangeCheckInPhase(WorldObject const& obj, uint32 entry, bool alive, float range)
+                : i_obj(obj), i_entry(entry), i_alive(alive), i_range(range) {}
+
+            bool operator()(Creature* u)
+            {
+				if (u->GetEntry() == i_entry && u->isAlive() == i_alive && i_obj.IsWithinDistInMap(u, i_range) && u->GetPhaseMask() == i_obj.GetPhaseMask())
+                {
+                    i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
+                    return true;
+                }
+                return false;
+            }
+            float GetLastRange() const { return i_range; }
+        private:
+            WorldObject const& i_obj;
+            uint32 i_entry;
+            bool   i_alive;
+            float  i_range;
+
+            // prevent clone this object
+            NearestCreatureEntryWithLiveStateInObjectRangeCheckInPhase(NearestCreatureEntryWithLiveStateInObjectRangeCheckInPhase const&);
     };
 
     class AnyPlayerInObjectRangeCheck

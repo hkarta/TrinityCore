@@ -783,6 +783,7 @@ class WorldObject : public Object, public WorldLocation
         Creature*   SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
+		Creature*   FindNearestCreatureInPhase(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
 		GameObject* FindNearestGameObjectInPhase(uint32 entry, float range) const;
 

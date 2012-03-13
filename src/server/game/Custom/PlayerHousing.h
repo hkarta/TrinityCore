@@ -88,6 +88,7 @@ public:
 	void AddGuest(uint32 guid); // todo
 	void RemoveGuest(uint32 guid); // todo
 	GameObject* GetNearestObject(Player *player);
+	Creature* GetNearestCreature(Player *player);
 	int GetPhase(void);
 };
 
