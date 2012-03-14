@@ -30,7 +30,7 @@ class object_house_controler : public CreatureScript
 				for (j = player->house->houseItemList.begin(); j != player->house->houseItemList.end(); ++j)
 				{
 					HouseItem *item = *j;
-					if(!item->spawned && !item->permanent)
+					if(!item->spawned && item->type == 0)
 					{
 						if(i >= player->pagehelper * perpage && i < (player->pagehelper + 1) * perpage)
 						{
@@ -47,7 +47,7 @@ class object_house_controler : public CreatureScript
 						}
 						i++;
 					}
-					else if (item->spawned && !item->permanent)
+					else if (item->spawned && item->type == 0)
 						x++;
 				}
 
@@ -89,7 +89,7 @@ class object_house_controler : public CreatureScript
 						GameObject *object = player->house->GetNearestObject(player, creature);
 						if(object)
 						{
-							std::string name = "Smazat objekt: " + PlayerHousingMgr.GetVendorItem(object->GetGOData()->id * (-1), false)->desc;
+							std::string name = "Smazat objekt: " + PlayerHousingMgr.GetVendorItem((int)object->GetGOData()->id, false)->desc;
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5); // REMOVE OBJECT
 						}
 						else
@@ -98,12 +98,13 @@ class object_house_controler : public CreatureScript
 						Creature *creature2 = player->house->GetNearestCreature(player, creature);
 						if(creature2)
 						{
-							std::string name = "Smazat npc: " + PlayerHousingMgr.GetVendorItem(creature2->GetCreatureData()->id, false)->desc;
+							std::string name = "Smazat npc: " + PlayerHousingMgr.GetVendorItem((int)creature2->GetCreatureData()->id * (-1), false)->desc;
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6); // REMOVE NPC
 						}
 						else
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Zadne npc ve tve blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+						player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 2)
 					{
@@ -157,7 +158,7 @@ class object_house_controler : public CreatureScript
 								if(x < SOFT_LIMIT)
 								{
 									if(result->entry < 0)
-											PlayerHousingMgr.SpawnCreature(player, result->entry);
+										PlayerHousingMgr.SpawnCreature(player, result->entry);
 									else
 										PlayerHousingMgr.SpawnGameObject(player, result->entry);
 									player->pagehelper = 0;

@@ -30,9 +30,9 @@ Creature* House::GetNearestCreature(Player *player, Unit *controller)
 		for (i = player->house->houseItemList.begin(); i != player->house->houseItemList.end(); ++i)
 		{
 			HouseItem *item = *i;
-			if(item->entry > 0 && item->spawned && !item->permanent)
+			if(item->entry < 0 && item->spawned && item->type == 0)
 			{
-				Creature *cr = controller->FindNearestCreatureInPhase(item->entry, 5);
+				Creature *cr = controller->FindNearestCreatureInPhase(item->entry * (-1), 5);
 				if(cr)
 				{
 					if(controller->GetDistance(cr) < distance)
@@ -59,7 +59,7 @@ GameObject* House::GetNearestObject(Player *player, Unit *controller)
 		{
 			//sLog->outString(" GO   >> Item");
 			HouseItem *item = *i;
-			if(item->entry > 0 && item->spawned && !item->permanent)
+			if(item->entry > 0 && item->spawned && item->type == 0)
 			{
 				//sLog->outString(" GO     >> It is spawned");
 				GameObject *go = controller->FindNearestGameObjectInPhase(item->entry, 5);
@@ -277,20 +277,20 @@ Creature * PlayerHousing::SpawnCreature(Player *player, int entry)
 	if(GetItemCount(player, entry) > 0)
 	{
 		House *house = GetPlayerHouse(player->GetGUIDLow());
-		bool creature = false;
+		bool isCreature = false;
 		if(entry < 0)
-			creature = true;
+			isCreature = true;
 		Map* map = player->GetMap();
 
-		if(creature)
+		if(isCreature)
 		{				
 			Creature* creature = new Creature;
-			creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, house->owner_guid + PHASE_OFFSET, entry * (-1), 0, 0,
-				house->houseTemplate->x, house->houseTemplate->y, house->houseTemplate->z, house->houseTemplate->o);
-			creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->owner_guid + PHASE_OFFSET);
+			creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, house->GetPhase(), entry * (-1), 0, 0, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+			creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->GetPhase());
 			uint32 db_guid = creature->GetDBTableGUIDLow();
+			creature->LoadCreatureFromDB(db_guid, map);
 			sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
-			result = creature;
+
 
 			HouseItem *spawning = GetUnusedItem(house, entry);
 			spawning->spawned = true;
@@ -369,8 +369,8 @@ GameObject * PlayerHousing::SpawnGameObject(Player *player, int entry)
 		{				
 			GameObject* object = new GameObject;
 			uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
-			object->Create(guidLow, entry, map, house->owner_guid + PHASE_OFFSET, house->houseTemplate->x, 
-				house->houseTemplate->y, house->houseTemplate->z, house->houseTemplate->o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY);
+			object->Create(guidLow, entry, map, house->owner_guid + PHASE_OFFSET, player->GetPositionX(), 
+				player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY);
 			object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->owner_guid + PHASE_OFFSET);
 			object->LoadGameObjectFromDB(guidLow, map);
 			sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
@@ -569,7 +569,6 @@ void House::SaveHouse(Player *player, bool fresh)
 					baseItem->x, baseItem->y, baseItem->z, baseItem->o);
 				creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), this->owner_guid + PHASE_OFFSET);
 				uint32 db_guid = creature->GetDBTableGUIDLow();
-				id = baseItem->item * (-1);
 				guid = db_guid;
 				sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
 			}
