@@ -1069,6 +1069,7 @@ class Player : public Unit, public GridObject<Player>
         explicit Player (WorldSession* session);
 		House *house;
 		uint32 lasthouse;
+		int pagehelper, categoryhelper;
 		LastPosition lastPosition;
 		TempSummon *summon;
 		ItemLoader *itemLoader;

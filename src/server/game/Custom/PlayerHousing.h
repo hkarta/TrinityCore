@@ -85,14 +85,30 @@ public:
 	
 	void SaveHouse(Player* player, bool fresh); // done
 	void TeleportToHouse(Player *player); // done
+	void AddItem(Player *player, int id);
 	void AddGuest(uint32 guid); // todo
 	void RemoveGuest(uint32 guid); // todo
-	GameObject* GetNearestObject(Player *player);
-	Creature* GetNearestCreature(Player *player);
+	GameObject* GetNearestObject(Player *player, Unit *controller);
+	Creature* GetNearestCreature(Player *player, Unit *controller);
 	int GetPhase(void);
 };
 
+class VendorHouseItem
+{
+public:
+	int purchaseable, icon, entry;
+	std::string desc;
+	VendorHouseItem(int purchaseable, int icon, int entry, std::string desc)
+	{
+		this->purchaseable = purchaseable;
+		this->icon = icon;
+		this->entry = entry;
+		this->desc = desc;
+	}
+};
+
 typedef std::list<HouseLocation *> HouseLocationList;
+typedef std::list<VendorHouseItem *> VendorHouseItemList;
 typedef std::list<House *> HouseList;
 
 class PlayerHousing
@@ -105,14 +121,18 @@ public:
 	HouseItem* GetUnusedItem(House * house, int entry); // done
 	Creature *SpawnCreature(Player *player, int entry); // done
 	GameObject *SpawnGameObject(Player *player, int entry); // done
+	void RemoveCreature(Player *player, Creature *creature);
+	void RemoveGameObject(Player *player, GameObject *gameobject);
 	Creature *GetCreatureByLowGuid(Player *player, uint32 guid, int entry); // done
 	//Creature *GetNearestCreature(int id, Player *player);
 	GameObject* GetGoByLowGuid(Player *player, uint32 guid, int entry); // done
 	HouseLocation* GetCurrentHouseArea(Player *player); // done
-
 	HouseList houseList;
+	VendorHouseItem* GetVendorItem(int id, bool byPurchaseable);
+	VendorHouseItemList vendorItemList;
 	PlayerHousing(void); // done
 	int LoadHouses(void); // done
+	int LoadVendorItems(void); // done
 	House* GetPlayerHouse(uint32 guid); // done
 	House* CreateHouse(Player *p, int id); // done
 	// House DestroyHouse(Player *p);

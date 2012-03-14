@@ -273,6 +273,11 @@ void ScriptMgr::Initialize()
 	sLog->outString("Loading player housing");
 	sLog->outString(">> Loaded %u player housing templates in %u ms", PlayerHousingMgr.LoadHouses(), GetMSTimeDiffToNow(oldMSTime));
 	sLog->outString();
+
+	oldMSTime = getMSTime();
+	sLog->outString("Loading house vendor's items");
+	sLog->outString(">> Loaded %u house vendor's items in %u ms", PlayerHousingMgr.LoadVendorItems(), GetMSTimeDiffToNow(oldMSTime));
+	sLog->outString();
 }
 
 void ScriptMgr::Unload()

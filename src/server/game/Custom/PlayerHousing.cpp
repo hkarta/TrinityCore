@@ -20,7 +20,7 @@ int House::GetPhase(void)
 	return PHASE_OFFSET + owner_guid;
 }
 
-Creature* House::GetNearestCreature(Player *player)
+Creature* House::GetNearestCreature(Player *player, Unit *controller)
 {
 	Creature *result = NULL;
 	float distance = 10;
@@ -32,13 +32,13 @@ Creature* House::GetNearestCreature(Player *player)
 			HouseItem *item = *i;
 			if(item->entry > 0 && item->spawned && !item->permanent)
 			{
-				Creature *cr = player->FindNearestCreatureInPhase(item->entry, 5);
+				Creature *cr = controller->FindNearestCreatureInPhase(item->entry, 5);
 				if(cr)
 				{
-					if(player->GetDistance(cr) < distance)
+					if(controller->GetDistance(cr) < distance)
 					{
 						result = cr;
-						distance = player->GetDistance(cr);
+						distance = controller->GetDistance(cr);
 					}
 				}
 			}
@@ -47,7 +47,7 @@ Creature* House::GetNearestCreature(Player *player)
 	return result;
 }
 
-GameObject* House::GetNearestObject(Player *player)
+GameObject* House::GetNearestObject(Player *player, Unit *controller)
 {
 	GameObject *result = NULL;
 	float distance = 10;
@@ -62,14 +62,14 @@ GameObject* House::GetNearestObject(Player *player)
 			if(item->entry > 0 && item->spawned && !item->permanent)
 			{
 				//sLog->outString(" GO     >> It is spawned");
-				GameObject *go = player->FindNearestGameObjectInPhase(item->entry, 5);
+				GameObject *go = controller->FindNearestGameObjectInPhase(item->entry, 5);
 				if(go)
 				{
 					//sLog->outString(" GO     >> guid %u, id %d, phase %u", go->GetGUIDLow(), go->GetEntry(), go->GetPhaseMask());
-					if(player->GetDistance(go) < distance)
+					if(controller->GetDistance(go) < distance)
 					{
 						result = go;
-						distance = player->GetDistance(go);
+						distance = controller->GetDistance(go);
 					}
 				}
 			}
@@ -132,6 +132,63 @@ bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
 			return true;
 	}
 	return true;
+}
+
+int PlayerHousing::LoadVendorItems(void)
+{
+	int i = 0;
+	//int purchaseable, int icon, int entry, std::string desc
+	//												 i				 i       i        s
+	QueryResult items = WorldDatabase.PQuery("SELECT `purchaseable`, `icon`, `entry`, `desc` FROM guildhouses_purchaseables");
+	//												 0				 1       2		  3 
+	if (items)
+	{
+		do
+		{
+			Field *fields = items->Fetch();
+			this->vendorItemList.push_back(new VendorHouseItem(fields[0].GetInt32(), fields[1].GetInt32(), fields[2].GetInt32(), fields[3].GetString()));
+			i++;
+		}
+		while (items->NextRow());
+	}
+
+	return i;
+}
+
+void House::AddItem(Player *player, int id)
+{
+	CharacterDatabase.DirectPExecute("INSERT INTO character_guildhouses_items (`owner`, `guid`, `entry`, `spawned`, `type`) VALUES (%u, 0, %d, 0, 0)", this->owner_guid, id);
+	QueryResult items = CharacterDatabase.PQuery("SELECT LAST_INSERT_ID()");
+	if (items)
+	{
+		do
+		{
+			Field *fields = items->Fetch();
+			houseItemList.push_back(new HouseItem(id, 0, 0, false, fields[0].GetUInt32()));
+		}
+		while (items->NextRow());
+	}
+}
+
+VendorHouseItem* PlayerHousing::GetVendorItem(int id, bool byPurchaseable)
+{
+	VendorHouseItem *result = NULL;
+	VendorHouseItemList::iterator i;
+	for (i = vendorItemList.begin(); i != vendorItemList.end(); ++i)
+	{
+		VendorHouseItem *item = *i;
+		if(byPurchaseable)
+		{
+			if(item->purchaseable == id)
+				return item;
+		}
+		else
+		{
+			if(item->entry == id)
+				return item;
+		}
+	}
+	return result;
 }
 
 int PlayerHousing::LoadHouses(void)
@@ -247,6 +304,54 @@ Creature * PlayerHousing::SpawnCreature(Player *player, int entry)
 	}
 
 	return result;
+}
+
+void PlayerHousing::RemoveCreature(Player *player, Creature *creature)
+{
+	if(player->house && creature)
+	{
+		CharacterDatabase.PExecute("UPDATE character_guildhouses_items SET `spawned` = 0, `guid` = 0 WHERE `owner` = %u AND `guid` = %u", 
+			player->GetGUIDLow(), creature->GetGUIDLow());
+
+		HouseItemList::iterator j;
+		for (j = player->house->houseItemList.begin(); j != player->house->houseItemList.end(); ++j)
+		{
+			HouseItem *item = *j;
+			if(item->guid == creature->GetGUIDLow())
+			{
+				item->spawned = false;
+				item->guid = 0;
+			}
+		}
+
+		creature->CombatStop();
+		creature->DeleteFromDB();
+		creature->AddObjectToRemoveList();
+	}
+}
+
+void PlayerHousing::RemoveGameObject(Player *player, GameObject *gameobject)
+{
+	if(player->house && gameobject)
+	{
+		CharacterDatabase.PExecute("UPDATE character_guildhouses_items SET `spawned` = 0, `guid` = 0 WHERE `owner` = %u AND `guid` = %u", 
+			player->GetGUIDLow(), gameobject->GetGUIDLow());
+
+		HouseItemList::iterator j;
+		for (j = player->house->houseItemList.begin(); j != player->house->houseItemList.end(); ++j)
+		{
+			HouseItem *item = *j;
+			if(item->guid == gameobject->GetGUIDLow())
+			{
+				item->spawned = false;
+				item->guid = 0;
+			}
+		}
+
+		gameobject->SetRespawnTime(0);  
+		gameobject->Delete();
+		gameobject->DeleteFromDB();
+	}
 }
 
 GameObject * PlayerHousing::SpawnGameObject(Player *player, int entry)

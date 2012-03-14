@@ -24,6 +24,7 @@ void AddSC_vendor_general();
 void AddSC_object_house_browser();
 void AddSC_object_house_controler();
 void AddSC_item_ask_controller();
+void AddSC_item_purchase();
 //void AddSC_object_house_gobject();
 
 //examples
@@ -1248,6 +1249,7 @@ void AddCustomScripts()
 	AddSC_object_house_browser();
 	AddSC_object_house_controler();
 	AddSC_item_ask_controller();
+	AddSC_item_purchase();
 	//AddSC_object_house_gobject();
 #endif
 }
