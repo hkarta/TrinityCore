@@ -122,13 +122,125 @@ GameObject* PlayerHousing::GetGoByLowGuid(Player *player, uint32 guid, int entry
 	return player->GetMap()->GetGameObject(MAKE_NEW_GUID(guid, entry, HIGHGUID_UNIT));
 }
 
+uint32 PlayerHousing::GetPlayerGuidByName(std::string name)
+{
+	QueryResult guidRes = CharacterDatabase.PQuery("SELECT `guid` FROM characters WHERE `name` = '%s' LIMIT 1", name);
+	//												 0				 1       2		  3 
+	if (guidRes)
+	{
+		do
+		{
+			Field *fields = guidRes->Fetch();
+			return fields[0].GetUInt32();			
+		}
+		while (guidRes->NextRow());
+	}
+
+	return 0;
+}
+
+void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
+{
+	HouseName *current = NULL;
+	AllowedHousesNames::iterator i;
+	Player *guest;
+	guest = sObjectMgr->GetPlayerByLowGUID(guid);
+
+	if(guest)
+	{
+		if(!allow)
+		{
+			for (i = guest->allowedHouses.begin(); i != guest->allowedHouses.end(); ++i)
+			{
+				HouseName *houseName = *i;
+				if(houseName->guid == player->GetGUIDLow())
+				{
+					current = houseName;
+					break;
+				}
+			}
+		}
+
+		if(current)
+		{
+			guest->allowedHouses.remove(current);
+		}
+		else
+		{
+			guest->allowedHouses.push_back(new HouseName(player->GetName(), player->GetGUIDLow()));
+		}
+
+		if(PlayerHousingMgr.GetCurrentHouseArea(guest)->id == player->house->houseTemplate->id && guest->GetPhaseMask() == player->house->GetPhase() && !allow)
+		{
+			guest->TeleportTo(guest->GetStartPosition());
+		}
+	}
+
+	HouseGuests::iterator g;
+	if(!allow)
+	{
+		HouseGuest *currentDel = NULL;
+		for (g = player->house->houseGuests.begin(); g != player->house->houseGuests.end(); ++g)
+		{
+			HouseGuest *houseGuest = *g;
+			if(houseGuest->guid == guid)
+			{
+				currentDel = houseGuest;
+				break;
+			}
+		}
+		if(currentDel)
+		{
+			player->house->houseGuests.remove(currentDel);
+			CharacterDatabase.PExecute("DELETE FROM `character_guildhouses_guests` WHERE `owner` = %u AND `guest` = %u", player->GetGUIDLow(), guid);
+		}
+	}
+	else
+	{
+		bool passed = true;
+		for (g = player->house->houseGuests.begin(); g != player->house->houseGuests.end(); ++g)
+		{
+			HouseGuest *houseGuest = *g;
+			if(houseGuest->guid == guid)
+			{
+				passed = false;
+				break;
+			}
+		}
+
+		if(passed)
+		{
+			if(guest)
+			{
+				player->house->houseGuests.push_back(new HouseGuest(guest->GetName(), guid));
+				CharacterDatabase.PExecute("REPLACE INTO `character_guildhouses_guests` (`owner`, `guest`) VALUES (%u, %u)", player->GetGUIDLow(), guid);
+			}
+			else
+			{
+				QueryResult name = CharacterDatabase.PQuery("SELECT `name` FROM characters WHERE `guid` = %u LIMIT 1", guid);
+	//												 0				 1       2		  3 
+				if (name)
+				{
+					do
+					{
+						Field *fields = name->Fetch();
+						player->house->houseGuests.push_back(new HouseGuest(fields[0].GetString(), guid));
+						CharacterDatabase.PExecute("REPLACE INTO `character_guildhouses_guests` (`owner`, `guest`) VALUES (%u, %u)", player->GetGUIDLow(), guid);
+					}
+					while (name->NextRow());
+				}
+			}
+		}
+	}
+}
+
 bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
 {
-	AllowedGuests::iterator i;
-	for (i = house->allowedGuests.begin(); i != house->allowedGuests.end(); ++i)
+	HouseGuests::iterator i;
+	for (i = house->houseGuests.begin(); i != house->houseGuests.end(); ++i)
 	{
-		uint32 guest = *i;
-		if(guest == player->GetGUIDLow())
+		HouseGuest *guest = *i;
+		if(guest->guid == player->GetGUIDLow())
 			return true;
 	}
 	return true;
@@ -419,13 +531,13 @@ House* PlayerHousing::GetPlayerHouse(uint32 guid)
 
 			House *result = new House(guid, location);
 
-			QueryResult guests = CharacterDatabase.PQuery("SELECT `guest` FROM character_guildhouses_guests WHERE owner = %u", guid);
+			QueryResult guests = CharacterDatabase.PQuery("SELECT `guest`, `name` FROM character_guildhouses_guests LEFT JOIN characters ON `guest` = `guid` WHERE `owner` = %u", guid);
 			if (guests)
 			{
 				do
 				{
 					fields = guests->Fetch();
-					result->allowedGuests.push_back(fields[0].GetUInt32());
+					result->houseGuests.push_back(new HouseGuest(fields[1].GetString(), fields[0].GetUInt32()));
 				}
 				while (guests->NextRow());
 			}

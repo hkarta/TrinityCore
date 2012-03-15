@@ -25,12 +25,13 @@ class item_ask_controller : public ItemScript
 					player->PrepareGossipMenu(player->summon);
 					player->pagehelper = 0;
 					player->categoryhelper = 0;
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Smazat objekt/npc v me blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Pridat objekt/npc na mou pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Osoby opravnene ke vstupu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Nakoupit vybaveni", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Chtel bych jiny dum...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Smazat objekt/npc v me blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Pridat objekt/npc na mou pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Osoby opravnene ke vstupu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Nakoupit vybaveni", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Chtel bych jiny dum...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Jake vyhody ma VIP hrac ve svem dome?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Prenest na vychozi pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
 					player->SendPreparedGossip(player->summon);
 				}
 				else if(player->house)

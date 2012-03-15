@@ -67,7 +67,21 @@ public:
 };
 
 typedef std::list<HouseItem *> HouseItemList;
-typedef std::list<uint32> AllowedGuests;
+
+
+class HouseGuest
+{
+public:
+	std::string name;
+	uint32 guid;
+	HouseGuest(std::string name, uint32 guid)
+	{
+		this->name = name;
+		this->guid = guid;
+	}
+};
+
+typedef std::list<HouseGuest *> HouseGuests;
 
 class House // partial
 {
@@ -75,7 +89,7 @@ public:
 	uint32 owner_guid;
 	HouseItemList houseItemList;
 	HouseLocation * houseTemplate;
-	AllowedGuests allowedGuests;
+	HouseGuests houseGuests;
 
 	House(uint32 owner_guid, HouseLocation * houseTemplate)
 	{
@@ -107,6 +121,19 @@ public:
 	}
 };
 
+class HouseName
+{
+public:
+	std::string name;
+	uint32 guid;
+	HouseName(std::string name, uint32 guid)
+	{
+		this->name = name;
+		this->guid = guid;
+	}
+};
+
+typedef std::list<HouseName *> AllowedHousesNames;
 typedef std::list<HouseLocation *> HouseLocationList;
 typedef std::list<VendorHouseItem *> VendorHouseItemList;
 typedef std::list<House *> HouseList;
@@ -116,6 +143,7 @@ class PlayerHousing
 public:
 	HouseLocationList houseLocationList;
 	bool CanEnterGuildHouse(Player *player, House *house); //done
+	void GuestChange(Player *player, uint32 guid, bool allow);
 	void EnterGuildHouse(Player *player, uint32 guid); // done
 	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true); // done
 	HouseItem* GetUnusedItem(House * house, int entry); // done
@@ -135,6 +163,7 @@ public:
 	int LoadVendorItems(void); // done
 	House* GetPlayerHouse(uint32 guid); // done
 	House* CreateHouse(Player *p, int id); // done
+	uint32 GetPlayerGuidByName(std::string name);
 	// House DestroyHouse(Player *p);
 };
 

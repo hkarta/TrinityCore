@@ -74,6 +74,7 @@
 #include "InstanceScript.h"
 #include <cmath>
 #include "AccountMgr.h"
+#include <list>
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -2313,6 +2314,14 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         //else
         //    return false;
     }
+
+	if(!PlayerHousingMgr.GetCurrentHouseArea(this))
+	{
+		this->SetPhaseMask(1, true);
+		this->lasthouse = 0;
+		this->SaveToDB();
+	}
+
     return true;
 }
 
@@ -16663,6 +16672,9 @@ float Player::GetFloatValueFromArray(Tokens const& data, uint16 index)
 
 bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 {
+	//SELECT DISTINCT `owner` FROM character_guildhouses_guests WHERE `guest` = 1
+	
+
     ////                                                     0     1        2     3     4        5      6    7      8     9           10              11
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
      // 12          13          14          15   16           17        18        19         20         21          22           23                 24

@@ -1067,6 +1067,7 @@ class Player : public Unit, public GridObject<Player>
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
         explicit Player (WorldSession* session);
+		AllowedHousesNames allowedHouses;
 		House *house;
 		uint32 lasthouse;
 		int pagehelper, categoryhelper;
