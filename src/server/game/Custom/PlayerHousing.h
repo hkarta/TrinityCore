@@ -79,6 +79,11 @@ public:
 		this->name = name;
 		this->guid = guid;
 	}
+
+	bool operator < (HouseGuest* rhs)
+	{
+		return name.compare(rhs->name);
+	}
 };
 
 typedef std::list<HouseGuest *> HouseGuests;
@@ -131,6 +136,11 @@ public:
 		this->name = name;
 		this->guid = guid;
 	}
+
+	bool operator < (HouseName* rhs)
+	{
+		return name.compare(rhs->name);
+	}
 };
 
 typedef std::list<HouseName *> AllowedHousesNames;
@@ -161,9 +171,11 @@ public:
 	PlayerHousing(void); // done
 	int LoadHouses(void); // done
 	int LoadVendorItems(void); // done
+	void LoadAllowedHouses(Player *player); // done
 	House* GetPlayerHouse(uint32 guid); // done
 	House* CreateHouse(Player *p, int id); // done
 	uint32 GetPlayerGuidByName(std::string name);
+
 	// House DestroyHouse(Player *p);
 };
 
@@ -180,6 +192,8 @@ class GuildhouseWorker
 		this->gitem = gitem;
 	}
 };
+
+
 
 extern PlayerHousing PlayerHousingMgr;
 

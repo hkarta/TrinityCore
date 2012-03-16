@@ -74,6 +74,7 @@ class object_house_controler : public CreatureScript
 				perpage++;
 
 			int i = 0;
+			player->house->houseGuests.sort();
 			HouseGuests::iterator g;
 			for (g = player->house->houseGuests.begin(); g != player->house->houseGuests.end(); ++g)
 			{
@@ -217,7 +218,10 @@ class object_house_controler : public CreatureScript
 						}
 						else if(player->categoryhelper == 8)
 						{
-							PlayerHousingMgr.GuestChange(player, uiAction - GOSSIP_ACTION_INFO_DEF - OFFSET_ADD_SOMETHING, false);
+							if(uiAction - GOSSIP_ACTION_INFO_DEF - OFFSET_ADD_SOMETHING != player->GetGUIDLow())
+							{
+								PlayerHousingMgr.GuestChange(player, uiAction - GOSSIP_ACTION_INFO_DEF - OFFSET_ADD_SOMETHING, false);
+							}
 							player->pagehelper = 0;
 							Guests(player, creature);
 						}

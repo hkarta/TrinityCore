@@ -3,15 +3,7 @@
 
 enum eEnums
 {
-	OFFSET_GENERAL			= 1,
-	OFFSET_REVERT			= 10,
-	OFFSET_LIST				= 50,
-	OFFSET_DISPLAY			= 200,
-
-	DATABASE_SLOT_OFFSET	= 1001,
-
-    SPELL_POLYMORPH         = 12826,
-    SPELL_MARK_OF_THE_WILD  = 26990,
+	OFFSET_GENERAL			= 10,
 };
 
 
@@ -33,200 +25,73 @@ class object_house_npc : public CreatureScript
 
 		void InitialList(Player *player, Creature *creature)
 		{
-			player->itemLoader->LoadAvaiableDisplayIds();
-			player->itemLoader->page = 0;
-			player->itemLoader->invtype = -1;
+			player->pagehelper = 0;
+			player->categoryhelper = 0;
 
-			int x = 0;
-
-			for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
-			{
-				if(x % 5 == 0 && x != 0)
-					player->PlayerTalkClass->SendGossipMenu(1000, creature->GetGUID());
-
-				std::string a = "Navrat podobu ";
-				std::string buff = player->itemLoader->GetItemInSlotName(i);
-				if(player->itemLoader->ValidateItemInSlot(i, true) &&  buff != "")
-				{
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, a + player->itemLoader->GetItemInSlotName(i), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_REVERT+i);
-					x++;
-				}
-				else if(player->itemLoader->ValidateItemInSlot(i, false) &&  buff != "")
-				{
-					std::string a = "Uprav mi ";
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, a + player->itemLoader->GetItemInSlotName(i), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_LIST+i);
-					x++;
-				}
-			}
-
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "Dekuji, nemam zajem.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+1);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Vstup do domu sveho znameho", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Vstup do domu sve guildy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1); 
+			player->PlayerTalkClass->SendGossipMenu(999, creature->GetGUID());
 		}
 
-		void ShowCategory(Player *player, Creature *creature)
+		void ShowFriends(Player *player, Creature *creature)
 		{
-			
-			/* iterate  
-			OFFSET_GENERAL + 2
-			*/
-			//player->ADD_GOSSIP_ITEM
-				
-			AllowedItemList::iterator i;
-			int x = -1;
-			int first = -1;
-			int last = -1;
-			Item * item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, player->itemLoader->invtype);
-			if(!player->itemLoader->ValidateItemInSlot(player->itemLoader->invtype, true) && player->itemLoader->ValidateItemInSlot(player->itemLoader->invtype, false))
+			int perpage = 9;
+			int total = player->allowedHouses.size();
+			int i = 0;
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+			player->allowedHouses.sort();
+			AllowedHousesNames::iterator j;
+			for (j = player->allowedHouses.begin(); j != player->allowedHouses.end(); ++j)
 			{
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "^^ Zpet na seznam predmetu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+2);
-				for (i = player->itemLoader->allowedItemList.begin(); i != player->itemLoader->allowedItemList.end(); i++)
+				if(i >= player->pagehelper * perpage && i < (player->pagehelper + 1) * perpage)
 				{
-					AllowedItem *allowedItem = *i;
-					if(allowedItem->itemClass == item->GetTemplate()->Class &&
-						allowedItem->subClass == item->GetTemplate()->SubClass && allowedItem->inventoryType == item->GetTemplate()->InventoryType)
-					{
-						x++;
-						if(x >= player->itemLoader->page * player->itemLoader->perpage && x < (player->itemLoader->page + 1) * player->itemLoader->perpage)
-						{
-							if(first == -1)
-								first = x;
-
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "Zmenit na " + allowedItem->description, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_DISPLAY+allowedItem->displayId);
-
-							last = x;
-						}
-					}
+					HouseName *name = *j;
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Navstivit " + name->name, 
+						GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+name->guid);
 				}
-
-			if(first != 0 && first != -1)
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "<< Predchozi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+3);
-
-			if(last != x)
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, ">> Dalsi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+4);
-
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_DOT, "Dekuji, nemam zajem.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+1);
-            player->PlayerTalkClass->SendGossipMenu(DATABASE_SLOT_OFFSET + player->itemLoader->invtype, creature->GetGUID());
+				i++;
 			}
-			else
-			{
-				InitialList(player, creature);
-				player->PlayerTalkClass->SendGossipMenu(999, creature->GetGUID());
-			}
+
+			if(player->pagehelper != 0)
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "<< Predchozi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+			if(i - (player->pagehelper * perpage) > perpage)
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, ">> Dalsi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
         }
 
         bool OnGossipSelect(Player* player, Creature* creature, uint32, uint32 uiAction)
         {
             player->PlayerTalkClass->ClearMenus(); //DATABASE_SLOT_OFFSET
-
-			if(uiAction >= GOSSIP_ACTION_INFO_DEF+OFFSET_DISPLAY)
+			if(uiAction == GOSSIP_ACTION_INFO_DEF + 1)
 			{
-				if(!player->itemLoader->ValidateItemInSlot(player->itemLoader->invtype, true) && player->itemLoader->ValidateItemInSlot(player->itemLoader->invtype, false) 
-					&& player->itemLoader->GetItemInSlotName(player->itemLoader->invtype) != "")
-				{
-		
-					Item *i = player->GetItemByPos(INVENTORY_SLOT_BAG_0, player->itemLoader->invtype);	
-
-					if(!i)
-					{
-						//sLog->outString(" Skinner >> Cannot get item in slot (step 1): inventory slot = %d", player->itemLoader->invtype);
-						InitialList(player, creature);
-						player->PlayerTalkClass->SendGossipMenu(1000, creature->GetGUID()); // Zda se, ze na zvolene pozici se nenachazi zadny predmet. Predmet musi byt po celou dobu vymeny nasazen.
-					}
-					else
-					{
-						AllowedItem * allowedItem = player->itemLoader->GetAllowedItemFromItem(i, uiAction-GOSSIP_ACTION_INFO_DEF-OFFSET_DISPLAY); 
-						if(!allowedItem)
-						{
-							//sLog->outString(" Skinner >> Cannot get alloweditem (step 2): item entry = %d", i->GetTemplate()->ItemId);
-							InitialList(player, creature);
-							player->PlayerTalkClass->SendGossipMenu(1000, creature->GetGUID()); //Zda se, ze pro tento predmet nemas zadne povolene zmeny.
-						}
-						else
-						{
-							int newitem = player->itemLoader->GetEntryForAllowedItem(allowedItem, i);
-							if(newitem != -1)
-							{
-								//sLog->outString(" Skinner >> Item should be created");
-								player->DestroyItem(INVENTORY_SLOT_BAG_0, player->itemLoader->invtype, true);
-								Item *currentlyEquiped = player->EquipNewItem(player->itemLoader->invtype, newitem, true);
-								currentlyEquiped->SendUpdateToPlayer(player);
-
-
-								InitialList(player, creature);
-								player->PlayerTalkClass->SendGossipMenu(1000, creature->GetGUID()); // Predmet byl uspesne prekovan! Muzu ti pomoct jeste s necim?
-							}
-							else
-							{
-								//sLog->outString(" Skinner >> Cannot get entry for allowed item (step 3): item displayid = %d", allowedItem->displayId);
-								InitialList(player, creature);
-								player->PlayerTalkClass->SendGossipMenu(1000, creature->GetGUID()); //INTERNI CHYBA 1. Hlaste gamemasterovi.
-							}
-						}
-					}
-				}
-				else
-				{
-					InitialList(player, creature);
-					player->PlayerTalkClass->SendGossipMenu(999, creature->GetGUID()); // It appears you have changed item in shoulder slot.
-				}
+				InitialList(player, creature);
 			}
-            else if (uiAction >= GOSSIP_ACTION_INFO_DEF+OFFSET_LIST) // unswitched items
-            {
-				player->itemLoader->invtype = uiAction-GOSSIP_ACTION_INFO_DEF-OFFSET_LIST;
-				player->itemLoader->page = 0;
-				ShowCategory(player, creature);
-			}
-			else if(uiAction >= GOSSIP_ACTION_INFO_DEF+OFFSET_REVERT) // to be removed
+			else if(uiAction == GOSSIP_ACTION_INFO_DEF + 2)
 			{
-				player->itemLoader->invtype = uiAction-GOSSIP_ACTION_INFO_DEF-OFFSET_REVERT;
-				if(player->itemLoader->ValidateItemInSlot(player->itemLoader->invtype, true) && player->itemLoader->GetItemInSlotName(player->itemLoader->invtype) != "")
-				{
-					Item *i = player->GetItemByPos(INVENTORY_SLOT_BAG_0, player->itemLoader->invtype);
-					int original = player->itemLoader->GetOriginalId(i);
-
-					if(!i || original == -1)
-					{
-						InitialList(player, creature);
-						player->PlayerTalkClass->SendGossipMenu(998, creature->GetGUID());
-					}
-					else
-					{
-						player->DestroyItem(INVENTORY_SLOT_BAG_0, player->itemLoader->invtype, true);
-						Item *currentlyEquiped = player->EquipNewItem(player->itemLoader->invtype, original, true);
-						currentlyEquiped->SendUpdateToPlayer(player);
-
-						InitialList(player, creature);
-						player->PlayerTalkClass->SendGossipMenu(1000, creature->GetGUID());
-					}
-				}
-				else
-				{
-					InitialList(player, creature);
-					player->PlayerTalkClass->SendGossipMenu(998, creature->GetGUID()); //INTERNI CHYBA 1. Hlaste gamemasterovi.
-				}
+				player->pagehelper = 0;
+				player->categoryhelper = 2;
+				ShowFriends(player, creature);
 			}
-			else if (uiAction >= GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL) // general menu
+			else if(uiAction == GOSSIP_ACTION_INFO_DEF + 3)
 			{
-				switch (uiAction)
-                {
-					case GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+1:
-						player->CLOSE_GOSSIP_MENU();
-						break;
-					case GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+2:
-						InitialList(player, creature);
-						player->PlayerTalkClass->SendGossipMenu(1000, creature->GetGUID());
-						break;
-					case GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+3:
-						player->itemLoader->page--;
-						ShowCategory(player, creature);
-						break;
-					case GOSSIP_ACTION_INFO_DEF+OFFSET_GENERAL+4:
-						player->itemLoader->page++;
-						ShowCategory(player, creature);
-						break;
+				player->pagehelper++;
+				ShowFriends(player, creature);
+			}
+			else if(uiAction == GOSSIP_ACTION_INFO_DEF + 4)
+			{
+				player->pagehelper--;
+				ShowFriends(player, creature);
+			}
+			else if(uiAction > GOSSIP_ACTION_INFO_DEF + OFFSET_GENERAL)
+			{
+				House *house = PlayerHousingMgr.GetPlayerHouse(uiAction - GOSSIP_ACTION_INFO_DEF - OFFSET_GENERAL);
+				if(PlayerHousingMgr.CanEnterGuildHouse(player, house))
+				{
+					PlayerHousingMgr.EnterGuildHouse(player, uiAction - GOSSIP_ACTION_INFO_DEF - OFFSET_GENERAL);
 				}
 			}
+			player->PlayerTalkClass->SendGossipMenu(999, creature->GetGUID()); // It appears you have changed item in shoulder slot.
 
-            return true;
+			return true;
 		}
 };
 

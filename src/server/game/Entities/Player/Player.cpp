@@ -643,7 +643,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 #ifdef _MSC_VER
 #pragma warning(default:4355)
 #endif
-
     m_speakTime = 0;
     m_speakCount = 0;
 
@@ -2424,7 +2423,7 @@ void Player::AddToWorld()
 				}
 				else
 				{
-					this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
+					this->TeleportTo(this->GetStartPosition());
 					lasthouse = 0;
 					this->SetPhaseMask(1, true);
 				}
@@ -17319,7 +17318,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 	house = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
 	summon = NULL;
 	//this->SetPhaseMask(
-
+	PlayerHousingMgr.LoadAllowedHouses(this);
     return true;
 }
 
@@ -17368,6 +17367,44 @@ bool Player::isAllowedToLoot(const Creature* creature)
     }
 
     return false;
+}
+
+void Player::EditAllowedHouses(HouseName *name, bool allow)
+{
+	HouseName *current = NULL;
+	AllowedHousesNames::iterator i;
+	if(!allow)
+	{
+		for (i = this->allowedHouses.begin(); i != this->allowedHouses.end(); ++i)
+		{
+			HouseName *houseName = *i;
+			if(houseName->guid == name->guid)
+			{
+				current = houseName;
+				break;
+			}
+		}
+	}
+
+	if(current)
+	{
+		this->allowedHouses.remove(current);
+		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(lasthouse);
+		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
+		if(location)
+		{
+			if(location->id == tempHouse->houseTemplate->id && !PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
+			{
+				this->TeleportTo(this->GetStartPosition());
+				lasthouse = 0;
+				this->SetPhaseMask(1, true);
+			}
+		}
+	}
+	else
+	{
+		this->allowedHouses.push_back(name);
+	}
 }
 
 void Player::_LoadActions(PreparedQueryResult result)

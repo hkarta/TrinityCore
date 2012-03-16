@@ -1075,6 +1075,7 @@ class Player : public Unit, public GridObject<Player>
 		TempSummon *summon;
 		ItemLoader *itemLoader;
 		int currentVendorEntry;
+		void EditAllowedHouses(HouseName *name, bool allow);
         ~Player ();
 
         void CleanupsBeforeDelete(bool finalCleanup = true);

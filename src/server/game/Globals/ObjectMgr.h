@@ -613,6 +613,7 @@ class ObjectMgr
         typedef std::map<uint32, uint32> CharacterConversionMap;
 
         Player* GetPlayerByLowGUID(uint32 lowguid) const;
+		Player* GetPlayerByLowGUIDNonConst(uint32 lowguid);
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 entry);
         GameObjectTemplateContainer const* GetGameObjectTemplates() { return &_gameObjectTemplateStore; }
@@ -630,6 +631,7 @@ class ObjectMgr
         EquipmentInfo const* GetEquipmentInfo(uint32 entry);
         CreatureAddon const* GetCreatureAddon(uint32 lowguid);
         CreatureAddon const* GetCreatureTemplateAddon(uint32 entry);
+	
         ItemTemplate const* GetItemTemplate(uint32 entry);
         ItemTemplateContainer const* GetItemTemplateStore() { return &_itemTemplateStore; }
 

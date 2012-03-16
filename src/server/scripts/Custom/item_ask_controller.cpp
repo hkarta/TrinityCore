@@ -19,8 +19,9 @@ class item_ask_controller : public ItemScript
 				HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(player);
 				if(location && player->GetPhaseMask() == player->house->GetPhase())
 				{
-					if(!player->summon)
-						player->summon = player->SummonCreature(218, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
+					if(player->summon)
+						player->summon->DespawnOrUnsummon(0);
+					player->summon = player->SummonCreature(218, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
 
 					player->PrepareGossipMenu(player->summon);
 					player->pagehelper = 0;
@@ -47,6 +48,40 @@ class item_ask_controller : public ItemScript
 void AddSC_item_ask_controller()
 {
     new item_ask_controller();
+}
+
+class item_ask_allowehouses : public ItemScript
+{
+    public:
+
+        item_ask_allowehouses()
+            : ItemScript("item_ask_allowehouses")
+        {
+        }
+
+        bool OnUse(Player *player, Item *item, SpellCastTargets const& /*targets*/)
+        {
+			if(!player->isInCombat() && !player->InArena() && player->house)
+			{
+				if(player->summon)
+					player->summon->DespawnOrUnsummon(0);				
+				player->summon = player->SummonCreature(219, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
+
+				player->PrepareGossipMenu(player->summon);
+				player->pagehelper = 0;
+				player->categoryhelper = 0;
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Vstup do domu sveho znameho", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Vstup do domu sve guildy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1); 
+				player->SendPreparedGossip(player->summon);
+			}
+
+			return false;
+        }
+};
+
+void AddSC_item_ask_allowehouses()
+{
+    new item_ask_allowehouses();
 }
 
 class item_purchase : public ItemScript

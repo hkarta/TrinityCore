@@ -5,6 +5,7 @@
 #include <time.h>
 #include <list>
 #include <math.h>
+#include "ObjectMgr.h"
 
 #define PHASE_OFFSET	200
 #define LIMIT			20
@@ -141,39 +142,14 @@ uint32 PlayerHousing::GetPlayerGuidByName(std::string name)
 
 void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 {
-	HouseName *current = NULL;
+	HouseName *name = new HouseName(player->GetName(), player->GetGUIDLow());
 	AllowedHousesNames::iterator i;
-	Player *guest;
-	guest = sObjectMgr->GetPlayerByLowGUID(guid);
+	Player *guest = sObjectMgr->GetPlayerByLowGUID(guid);
+	HouseName *current = NULL;
 
 	if(guest)
 	{
-		if(!allow)
-		{
-			for (i = guest->allowedHouses.begin(); i != guest->allowedHouses.end(); ++i)
-			{
-				HouseName *houseName = *i;
-				if(houseName->guid == player->GetGUIDLow())
-				{
-					current = houseName;
-					break;
-				}
-			}
-		}
-
-		if(current)
-		{
-			guest->allowedHouses.remove(current);
-		}
-		else
-		{
-			guest->allowedHouses.push_back(new HouseName(player->GetName(), player->GetGUIDLow()));
-		}
-
-		if(PlayerHousingMgr.GetCurrentHouseArea(guest)->id == player->house->houseTemplate->id && guest->GetPhaseMask() == player->house->GetPhase() && !allow)
-		{
-			guest->TeleportTo(guest->GetStartPosition());
-		}
+		guest->EditAllowedHouses(name, allow);
 	}
 
 	HouseGuests::iterator g;
@@ -189,6 +165,7 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 				break;
 			}
 		}
+
 		if(currentDel)
 		{
 			player->house->houseGuests.remove(currentDel);
@@ -210,25 +187,16 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 
 		if(passed)
 		{
-			if(guest)
+			QueryResult name = CharacterDatabase.PQuery("SELECT `name` FROM characters WHERE `guid` = %u LIMIT 1", guid);
+			if (name)
 			{
-				player->house->houseGuests.push_back(new HouseGuest(guest->GetName(), guid));
-				CharacterDatabase.PExecute("REPLACE INTO `character_guildhouses_guests` (`owner`, `guest`) VALUES (%u, %u)", player->GetGUIDLow(), guid);
-			}
-			else
-			{
-				QueryResult name = CharacterDatabase.PQuery("SELECT `name` FROM characters WHERE `guid` = %u LIMIT 1", guid);
-	//												 0				 1       2		  3 
-				if (name)
+				do
 				{
-					do
-					{
-						Field *fields = name->Fetch();
-						player->house->houseGuests.push_back(new HouseGuest(fields[0].GetString(), guid));
-						CharacterDatabase.PExecute("REPLACE INTO `character_guildhouses_guests` (`owner`, `guest`) VALUES (%u, %u)", player->GetGUIDLow(), guid);
-					}
-					while (name->NextRow());
+					Field *fields = name->Fetch();
+					player->house->houseGuests.push_back(new HouseGuest(fields[0].GetString(), guid));
+					CharacterDatabase.PExecute("REPLACE INTO `character_guildhouses_guests` (`owner`, `guest`) VALUES (%u, %u)", player->GetGUIDLow(), guid);
 				}
+				while (name->NextRow());
 			}
 		}
 	}
@@ -236,6 +204,8 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 
 bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
 {
+	if(player->GetGUIDLow() == house->owner_guid)
+		return true;
 	HouseGuests::iterator i;
 	for (i = house->houseGuests.begin(); i != house->houseGuests.end(); ++i)
 	{
@@ -243,7 +213,7 @@ bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
 		if(guest->guid == player->GetGUIDLow())
 			return true;
 	}
-	return true;
+	return false;
 }
 
 int PlayerHousing::LoadVendorItems(void)
@@ -500,6 +470,21 @@ GameObject * PlayerHousing::SpawnGameObject(Player *player, int entry)
 	}
 
 	return result;
+}
+
+void PlayerHousing::LoadAllowedHouses(Player *player)
+{
+	player->allowedHouses.clear();
+	QueryResult allowedhouses = CharacterDatabase.PQuery("SELECT DISTINCT `owner`, `name` FROM `character_guildhouses_guests` LEFT JOIN `characters` ON `owner` = `guid` WHERE `guest` = %u", player->GetGUIDLow());
+	if (allowedhouses)
+	{
+		do
+		{
+			Field *fields = allowedhouses->Fetch();
+			player->allowedHouses.push_back(new HouseName(fields[1].GetString(), fields[0].GetUInt32()));
+		}
+		while (allowedhouses->NextRow());
+	}
 }
 
 House* PlayerHousing::GetPlayerHouse(uint32 guid)
