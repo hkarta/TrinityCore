@@ -1,5 +1,11 @@
 #ifndef PLAYERHOUSING_H
 #define PLAYERHOUSING_H
+
+#define PHASE_OFFSET	200
+#define LIMIT			20
+#define RANGE_LIMIT		100
+#define CONTROLLER_ID	218
+
 extern WorldDatabaseWorkerPool WorldDatabase;
 extern CharacterDatabaseWorkerPool CharacterDatabase;
 
@@ -165,6 +171,7 @@ public:
 	//Creature *GetNearestCreature(int id, Player *player);
 	GameObject* GetGoByLowGuid(Player *player, uint32 guid, int entry); // done
 	HouseLocation* GetCurrentHouseArea(Player *player); // done
+	HouseLocation* GetCurrentHouseArea(uint32 mapid, float x, float y, float z, float orientation);
 	HouseList houseList;
 	VendorHouseItem* GetVendorItem(int id, bool byPurchaseable);
 	VendorHouseItemList vendorItemList;

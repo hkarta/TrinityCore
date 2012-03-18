@@ -7,11 +7,6 @@
 #include <math.h>
 #include "ObjectMgr.h"
 
-#define PHASE_OFFSET	200
-#define LIMIT			20
-#define RANGE_LIMIT		100
-#define CONTROLLER_ID	218
-
 PlayerHousing PlayerHousingMgr;
 
 PlayerHousing::PlayerHousing(void){}
@@ -602,6 +597,29 @@ HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 		float dist = houseLoc->GetDistance(player);
 		if(dist != -1)
 		{
+			if(dist < lastDist)
+			{
+				lastDist = dist;
+				result = houseLoc;
+			}
+		}
+	}
+
+	return result;
+}
+
+HouseLocation* PlayerHousing::GetCurrentHouseArea(uint32 mapid, float x, float y, float z, float orientation)
+{
+	float lastDist = (float)RANGE_LIMIT + 1;
+
+	HouseLocation *result = NULL;
+	HouseLocationList::iterator i;
+	for (i = houseLocationList.begin(); i != houseLocationList.end(); ++i)
+	{
+		HouseLocation *houseLoc = *i;
+		if(int(mapid) == houseLoc->map)
+		{
+			float dist = sqrt(pow(x-houseLoc->x, 2)+pow(y-houseLoc->y, 2));
 			if(dist < lastDist)
 			{
 				lastDist = dist;

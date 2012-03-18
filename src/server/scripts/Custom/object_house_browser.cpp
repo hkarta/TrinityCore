@@ -6,8 +6,7 @@
 enum eEnums
 {
 	BASE_TEXT				= 40000, 
-	OFFSET_HOUSE_ID			= 20,
-	PHASE_OFFSET			= 200
+	OFFSET_HOUSE_ID			= 20
 };
 
 

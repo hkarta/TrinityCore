@@ -2069,6 +2069,16 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 		summon = NULL;
 	}
 
+	if(!PlayerHousingMgr.GetCurrentHouseArea(this) && this->GetPhaseMask() > PHASE_OFFSET)
+	{
+		if(!PlayerHousingMgr.GetCurrentHouseArea(mapid, x, y, z, orientation) && this->GetPhaseMask() > PHASE_OFFSET)
+		{
+			this->SetPhaseMask(1, true);
+			this->lasthouse = 0;
+			this->SaveToDB();
+		}
+	}
+
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
     {
         sLog->outError("TeleportTo: invalid map (%d) or invalid coordinates (X: %f, Y: %f, Z: %f, O: %f) given when teleporting player (GUID: %u, name: %s, map: %d, X: %f, Y: %f, Z: %f, O: %f).",
@@ -2313,13 +2323,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         //else
         //    return false;
     }
-
-	if(!PlayerHousingMgr.GetCurrentHouseArea(this))
-	{
-		this->SetPhaseMask(1, true);
-		this->lasthouse = 0;
-		this->SaveToDB();
-	}
 
     return true;
 }
