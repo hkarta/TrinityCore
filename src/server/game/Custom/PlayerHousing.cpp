@@ -620,7 +620,6 @@ float HouseLocation::GetDistance(Player *player)
 void House::TeleportToHouse(Player *player)
 {
 	player->TeleportTo(this->houseTemplate->map, this->houseTemplate->x, this->houseTemplate->y, this->houseTemplate->z, this->houseTemplate->o);
-	player->SetPhaseMask(this->owner_guid + PHASE_OFFSET, true);
 }
 
 void House::SaveHouse(Player *player, bool fresh)

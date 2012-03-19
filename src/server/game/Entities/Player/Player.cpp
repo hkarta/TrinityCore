@@ -17401,9 +17401,9 @@ void Player::EditAllowedHouses(HouseName *name, bool allow)
 		{
 			if(location->id == tempHouse->houseTemplate->id && !PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
 			{
-				this->TeleportTo(this->GetStartPosition());
 				house = 0;
-				this->SetPhaseMask(1, true);
+				this->TeleportTo(this->GetStartPosition());
+				SetPhaseMask(GetPhaseMask(), true);
 			}
 		}
 	}
