@@ -1089,6 +1089,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
     data.npcflag = npcflag;
     data.unit_flags = unit_flags;
     data.dynamicflags = dynamicflags;
+	data.house = house;
 
     // update in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -1116,7 +1117,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
         << GetDefaultMovementType() << ','                  //default movement generator type
         << npcflag << ','
         << unit_flags << ','
-        << dynamicflags << ')';
+        << dynamicflags << ','
+		<< house << ')';
 
     trans->Append(ss.str().c_str());
 
@@ -1332,6 +1334,9 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
+
+	SetHouse(data->house);
+
     return true;
 }
 

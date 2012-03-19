@@ -592,6 +592,7 @@ struct GameObjectData
     GOState go_state;
     uint8 spawnMask;
     uint8 artKit;
+	uint32 house;
     bool dbData;
 };
 

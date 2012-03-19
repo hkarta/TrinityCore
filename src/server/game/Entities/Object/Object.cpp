@@ -1686,17 +1686,8 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (obj->IsNeverVisible() || CanNeverSee(obj))
         return false;
 
-	if(obj->GetPhaseMask() != this->GetPhaseMask() && this->GetPhaseMask() > 200)
+	if(obj->house != this->house)
 		return false;
-
-	if(obj->GetPhaseMask() < 200 && this->GetPhaseMask() > 200)
-		return false;
-
-	if(obj->GetPhaseMask() > 200 && this->GetPhaseMask() < 200)
-		return false;
-
-	if(obj->GetPhaseMask() == this->GetPhaseMask() && this->GetPhaseMask() > 200)
-		return true;
 
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
         return true;
@@ -2251,6 +2242,8 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
 
     summon->SetHomePosition(pos);
+	if(summoner)
+		summon->house = summoner->house;
 
     summon->InitStats(duration);
     AddToMap(summon->ToCreature());

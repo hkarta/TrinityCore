@@ -125,7 +125,8 @@ class Object
         virtual ~Object ();
 
         bool IsInWorld() const { return m_inWorld; }
-
+		void SetHouse(uint32 h) { house = h; }
+		uint32 house;
         virtual void AddToWorld();
         virtual void RemoveFromWorld();
 

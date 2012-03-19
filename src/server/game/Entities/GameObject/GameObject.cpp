@@ -684,6 +684,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
     data.go_state = GetGoState();
     data.spawnMask = spawnMask;
     data.artKit = GetGoArtKit();
+	data.house = house;
 
     // update in DB
     std::ostringstream ss;
@@ -703,7 +704,8 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask)
         << GetFloatValue(GAMEOBJECT_PARENTROTATION+3) << ','
         << m_respawnDelayTime << ','
         << uint32(GetGoAnimProgress()) << ','
-        << uint32(GetGoState()) << ')';
+        << uint32(GetGoState()) << ','
+		<< house << ')';
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
@@ -778,6 +780,8 @@ bool GameObject::LoadGameObjectFromDB(uint32 guid, Map* map, bool addToMap)
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
+
+	SetHouse(data->house);
 
     return true;
 }

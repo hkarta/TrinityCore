@@ -2069,12 +2069,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 		summon = NULL;
 	}
 
-	if(!PlayerHousingMgr.GetCurrentHouseArea(this) && this->GetPhaseMask() > PHASE_OFFSET)
+	if(!PlayerHousingMgr.GetCurrentHouseArea(this) && this->house != 0)
 	{
-		if(!PlayerHousingMgr.GetCurrentHouseArea(mapid, x, y, z, orientation) && this->GetPhaseMask() > PHASE_OFFSET)
+		if(!PlayerHousingMgr.GetCurrentHouseArea(mapid, x, y, z, orientation) && this->house != 0)
 		{
-			this->SetPhaseMask(1, true);
-			this->lasthouse = 0;
+			this->house = 0;
 			this->SaveToDB();
 		}
 	}
@@ -2411,38 +2410,35 @@ void Player::AddToWorld()
         if (m_items[i])
             m_items[i]->AddToWorld();
 
-	if(lasthouse != 0)
+	if(house != 0)
 	{
-		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(lasthouse);
+		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(house);
 		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
-		if(location)
+		if(location && tempHouse)
 		{
 			if(location->id == tempHouse->houseTemplate->id)
 			{
 				if(PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
 				{
-					//PlayerHousingMgr.EnterGuildHouse(this, lasthouse);
-					this->SetPhaseMask(tempHouse->GetPhase(), true);
+					//PlayerHousingMgr.EnterGuildHouse(this, house);
+					this->house = tempHouse->GetPhase();
 				}
 				else
 				{
 					this->TeleportTo(this->GetStartPosition());
-					lasthouse = 0;
-					this->SetPhaseMask(1, true);
+					house = 0;
 				}
 			}
 			else
 			{
-				this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
-				lasthouse = 0;
-				this->SetPhaseMask(1, true);
+				this->TeleportTo(this->GetStartPosition());
+				house = 0;
 			}
 		}
 		else
 		{
-			this->TeleportTo(this->inn_pos_mapid, this->inn_pos_x,  this->inn_pos_y,  this->inn_pos_z, 0);
-			lasthouse = 0;
-			this->SetPhaseMask(1, true);
+			this->TeleportTo(this->GetStartPosition());
+			house = 0;
 		}
 	}
 }
@@ -2855,8 +2851,7 @@ void Player::SetGameMaster(bool on)
         getHostileRefManager().setOnlineOfflineState(false);
         CombatStopWithPets();
 
-		/*if(this->GetPhaseMask() < 200)
-			SetPhaseMask(uint32(200), false);    // see and visible in all phases*/
+        SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false); // see and visible in all phases
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
     }
     else
@@ -2871,8 +2866,7 @@ void Player::SetGameMaster(bool on)
         if (!newPhase)
             newPhase = PHASEMASK_NORMAL;
 
-		/*if(this->GetPhaseMask() < 200)
-			SetPhaseMask(1, false);*/
+        SetPhaseMask(newPhase, false);
 
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
@@ -16686,7 +16680,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     // 39           40                41                 42                    43          44          45              46           47               48              49
     //"arenaPoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, totalKills, todayKills, yesterdayKills, chosenTitle, knownCurrencies, watchedFaction, drunk, "
     // 50      51      52      53      54      55      56      57      58           59         60          61             62              63      64           65          66               67
-    //"health, power1, power2, power3, power4, power5, power6, power7, instance_id, speccount, activespec, exploredZones, equipmentCache, ammoId, knownTitles, actionBars, grantableLevels, lasthouse FROM characters WHERE guid = '%u'", guid);
+    //"health, power1, power2, power3, power4, power5, power6, power7, instance_id, speccount, activespec, exploredZones, equipmentCache, ammoId, knownTitles, actionBars, grantableLevels, house FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     if (!result)
@@ -17316,9 +17310,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
-	lasthouse = fields[67].GetUInt32();
-	sLog->outString(">> player lasthouse: %u", lasthouse);
-	house = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
+	house = fields[67].GetUInt32();
+	sLog->outString(">> player house: %u", house);
+	playerhouse = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
 	summon = NULL;
 	//this->SetPhaseMask(
 	PlayerHousingMgr.LoadAllowedHouses(this);
@@ -17392,14 +17386,14 @@ void Player::EditAllowedHouses(HouseName *name, bool allow)
 	if(current)
 	{
 		this->allowedHouses.remove(current);
-		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(lasthouse);
+		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(house);
 		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
 		if(location)
 		{
 			if(location->id == tempHouse->houseTemplate->id && !PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
 			{
 				this->TeleportTo(this->GetStartPosition());
-				lasthouse = 0;
+				house = 0;
 				this->SetPhaseMask(1, true);
 			}
 		}
@@ -18863,7 +18857,7 @@ void Player::SaveToDB(bool create /*=false*/)
         _SaveMail(trans);
 
     _SaveBGData(trans);
-	trans->PAppend("UPDATE characters SET lasthouse = %u WHERE guid = %u", lasthouse, this->GetGUIDLow());
+	trans->PAppend("UPDATE characters SET house = %u WHERE guid = %u", house, this->GetGUIDLow());
     _SaveInventory(trans);
     _SaveQuestStatus(trans);
     _SaveDailyQuestStatus(trans);

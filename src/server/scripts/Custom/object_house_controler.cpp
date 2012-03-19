@@ -23,13 +23,13 @@ class object_house_controler : public CreatureScript
 		void SelectNpcGo(Player *player, Creature *creature)
 		{
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-			if(player->house)
+			if(player->playerhouse)
 			{
 				int perpage = 8;
 				int i = 0;
 				int x = 0;
 				HouseItemList::iterator j;
-				for (j = player->house->houseItemList.begin(); j != player->house->houseItemList.end(); ++j)
+				for (j = player->playerhouse->houseItemList.begin(); j != player->playerhouse->houseItemList.end(); ++j)
 				{
 					HouseItem *item = *j;
 					if(!item->spawned && item->type == 0)
@@ -65,7 +65,7 @@ class object_house_controler : public CreatureScript
 		void Guests(Player *player, Creature *creature)
 		{
 			int perpage = 7;
-			int total = player->house->houseGuests.size();
+			int total = player->playerhouse->houseGuests.size();
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 			if(total < SOFT_FRIENDS)
 				player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Pridat zvaneho hosta", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9,
@@ -74,9 +74,9 @@ class object_house_controler : public CreatureScript
 				perpage++;
 
 			int i = 0;
-			player->house->houseGuests.sort();
+			player->playerhouse->houseGuests.sort();
 			HouseGuests::iterator g;
-			for (g = player->house->houseGuests.begin(); g != player->house->houseGuests.end(); ++g)
+			for (g = player->playerhouse->houseGuests.begin(); g != player->playerhouse->houseGuests.end(); ++g)
 			{
 				if(i >= player->pagehelper * perpage && i < (player->pagehelper + 1) * perpage)
 				{
@@ -110,9 +110,9 @@ class object_house_controler : public CreatureScript
         bool OnGossipSelect(Player* player, Creature* creature, uint32, uint32 uiAction)
         {
             player->PlayerTalkClass->ClearMenus(); //DATABASE_SLOT_OFFSET
-			if(player->house && PlayerHousingMgr.GetCurrentHouseArea(player))
+			if(player->playerhouse && PlayerHousingMgr.GetCurrentHouseArea(player))
 			{
-				if(player->GetPhaseMask() == player->house->GetPhase() && PlayerHousingMgr.GetCurrentHouseArea(player)->id == player->house->houseTemplate->id)
+				if(player->house == player->playerhouse->GetPhase() && PlayerHousingMgr.GetCurrentHouseArea(player)->id == player->playerhouse->houseTemplate->id)
 				{
 					if(uiAction == GOSSIP_ACTION_INFO_DEF)
 					{
@@ -121,7 +121,7 @@ class object_house_controler : public CreatureScript
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 1) // Delete go or creature?
 					{
 						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-						GameObject *object = player->house->GetNearestObject(player, creature);
+						GameObject *object = player->playerhouse->GetNearestObject(player, creature);
 						if(object)
 						{
 							std::string name = "Smazat objekt: " + PlayerHousingMgr.GetVendorItem((int)object->GetGOData()->id, false)->desc;
@@ -130,7 +130,7 @@ class object_house_controler : public CreatureScript
 						else
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Zadny objekt ve tve blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
-						Creature *creature2 = player->house->GetNearestCreature(player, creature);
+						Creature *creature2 = player->playerhouse->GetNearestCreature(player, creature);
 						if(creature2)
 						{
 							std::string name = "Smazat npc: " + PlayerHousingMgr.GetVendorItem((int)creature2->GetCreatureData()->id * (-1), false)->desc;
@@ -164,18 +164,18 @@ class object_house_controler : public CreatureScript
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 5) // delete go
 					{
-						PlayerHousingMgr.RemoveGameObject(player, player->house->GetNearestObject(player, creature));
+						PlayerHousingMgr.RemoveGameObject(player, player->playerhouse->GetNearestObject(player, creature));
 						MainMenu(player, creature);
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 6) // delete npc
 					{
-						PlayerHousingMgr.RemoveCreature(player, player->house->GetNearestCreature(player, creature));
+						PlayerHousingMgr.RemoveCreature(player, player->playerhouse->GetNearestCreature(player, creature));
 						MainMenu(player, creature);
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 7) // Base loc
 					{
-						player->TeleportTo(player->house->houseTemplate->map, player->house->houseTemplate->x, player->house->houseTemplate->y, 
-							player->house->houseTemplate->z, player->house->houseTemplate->o);
+						player->TeleportTo(player->playerhouse->houseTemplate->map, player->playerhouse->houseTemplate->x, player->playerhouse->houseTemplate->y, 
+							player->playerhouse->houseTemplate->z, player->playerhouse->houseTemplate->o);
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 8) // who can enter
 					{
@@ -192,7 +192,7 @@ class object_house_controler : public CreatureScript
 							uint32 id = uiAction - GOSSIP_ACTION_INFO_DEF - OFFSET_ADD_SOMETHING;
 							HouseItem *result = NULL;
 							int x = 0;
-							for (j = player->house->houseItemList.begin(); j != player->house->houseItemList.end(); ++j)
+							for (j = player->playerhouse->houseItemList.begin(); j != player->playerhouse->houseItemList.end(); ++j)
 							{
 								HouseItem *item = *j;
 								if(item->id == id)

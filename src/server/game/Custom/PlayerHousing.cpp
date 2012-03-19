@@ -13,7 +13,7 @@ PlayerHousing::PlayerHousing(void){}
 
 int House::GetPhase(void)
 {
-	return PHASE_OFFSET + owner_guid;
+	return owner_guid;
 }
 
 Creature* House::GetNearestCreature(Player *player, Unit *controller)
@@ -23,7 +23,7 @@ Creature* House::GetNearestCreature(Player *player, Unit *controller)
 	if(player->GetGUIDLow() == this->owner_guid)
 	{
 		HouseItemList::iterator i;
-		for (i = player->house->houseItemList.begin(); i != player->house->houseItemList.end(); ++i)
+		for (i = player->playerhouse->houseItemList.begin(); i != player->playerhouse->houseItemList.end(); ++i)
 		{
 			HouseItem *item = *i;
 			if(item->entry < 0 && item->spawned && item->type == 0)
@@ -49,19 +49,15 @@ GameObject* House::GetNearestObject(Player *player, Unit *controller)
 	float distance = 10;
 	if(player->GetGUIDLow() == this->owner_guid)
 	{
-		//sLog->outString(" GO >> This should be always true");
 		HouseItemList::iterator i;
-		for (i = player->house->houseItemList.begin(); i != player->house->houseItemList.end(); ++i)
+		for (i = player->playerhouse->houseItemList.begin(); i != player->playerhouse->houseItemList.end(); ++i)
 		{
-			//sLog->outString(" GO   >> Item");
 			HouseItem *item = *i;
 			if(item->entry > 0 && item->spawned && item->type == 0)
 			{
-				//sLog->outString(" GO     >> It is spawned");
 				GameObject *go = controller->FindNearestGameObjectInPhase(item->entry, 5);
 				if(go)
 				{
-					//sLog->outString(" GO     >> guid %u, id %d, phase %u", go->GetGUIDLow(), go->GetEntry(), go->GetPhaseMask());
 					if(controller->GetDistance(go) < distance)
 					{
 						result = go;
@@ -73,40 +69,6 @@ GameObject* House::GetNearestObject(Player *player, Unit *controller)
 	}
 	return result;
 }
-
-
-/*
-Creature* PlayerHousing::GetNearestCreature(int id, Player *player)
-{
-	Creature *result = NULL;
-	Creature *temp = NULL;
-
-	House *house = GetPlayerHouse(player->GetGUIDLow());
-	if(id > 0)
-		id = id * (-1);
-
-	HouseItemList::iterator i;
-	for (i = house->houseItemList.begin(); i != house->houseItemList.end(); ++i)
-	{
-		HouseItem *houseItem = *i;
-		if(houseItem->id == id && houseItem->spawned)
-		{
-			temp = this->GetCreatureByLowGuid(player, houseItem->guid, id * (-1));
-			if(temp)
-			{
-				if(temp->GetPhaseMask() == PHASE_OFFSET + house->owner_guid)
-				{
-					if(!result || temp->GetDistance2d(player) < result->GetDistance2d(player))
-						result = temp;
-				}
-			}
-		}
-	}
-
-
-	return result;
-}*/
-
 
 Creature* PlayerHousing::GetCreatureByLowGuid(Player *player, uint32 guid, int entry)
 {
@@ -151,7 +113,7 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 	if(!allow)
 	{
 		HouseGuest *currentDel = NULL;
-		for (g = player->house->houseGuests.begin(); g != player->house->houseGuests.end(); ++g)
+		for (g = player->playerhouse->houseGuests.begin(); g != player->playerhouse->houseGuests.end(); ++g)
 		{
 			HouseGuest *houseGuest = *g;
 			if(houseGuest->guid == guid)
@@ -163,14 +125,14 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 
 		if(currentDel)
 		{
-			player->house->houseGuests.remove(currentDel);
+			player->playerhouse->houseGuests.remove(currentDel);
 			CharacterDatabase.PExecute("DELETE FROM `character_guildhouses_guests` WHERE `owner` = %u AND `guest` = %u", player->GetGUIDLow(), guid);
 		}
 	}
 	else
 	{
 		bool passed = true;
-		for (g = player->house->houseGuests.begin(); g != player->house->houseGuests.end(); ++g)
+		for (g = player->playerhouse->houseGuests.begin(); g != player->playerhouse->houseGuests.end(); ++g)
 		{
 			HouseGuest *houseGuest = *g;
 			if(houseGuest->guid == guid)
@@ -188,7 +150,7 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 				do
 				{
 					Field *fields = name->Fetch();
-					player->house->houseGuests.push_back(new HouseGuest(fields[0].GetString(), guid));
+					player->playerhouse->houseGuests.push_back(new HouseGuest(fields[0].GetString(), guid));
 					CharacterDatabase.PExecute("REPLACE INTO `character_guildhouses_guests` (`owner`, `guest`) VALUES (%u, %u)", player->GetGUIDLow(), guid);
 				}
 				while (name->NextRow());
@@ -362,8 +324,9 @@ Creature * PlayerHousing::SpawnCreature(Player *player, int entry)
 		if(isCreature)
 		{				
 			Creature* creature = new Creature;
-			creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, house->GetPhase(), entry * (-1), 0, 0, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
-			creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->GetPhase());
+			creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, player->GetPhaseMaskForSpawn(), entry * (-1), 0, 0, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+			creature->house = house->GetPhase();
+			creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), player->GetPhaseMaskForSpawn());
 			uint32 db_guid = creature->GetDBTableGUIDLow();
 			creature->LoadCreatureFromDB(db_guid, map);
 			sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
@@ -385,13 +348,13 @@ Creature * PlayerHousing::SpawnCreature(Player *player, int entry)
 
 void PlayerHousing::RemoveCreature(Player *player, Creature *creature)
 {
-	if(player->house && creature)
+	if(player->playerhouse && creature)
 	{
 		CharacterDatabase.PExecute("UPDATE character_guildhouses_items SET `spawned` = 0, `guid` = 0 WHERE `owner` = %u AND `guid` = %u", 
 			player->GetGUIDLow(), creature->GetGUIDLow());
 
 		HouseItemList::iterator j;
-		for (j = player->house->houseItemList.begin(); j != player->house->houseItemList.end(); ++j)
+		for (j = player->playerhouse->houseItemList.begin(); j != player->playerhouse->houseItemList.end(); ++j)
 		{
 			HouseItem *item = *j;
 			if(item->guid == creature->GetGUIDLow())
@@ -409,13 +372,13 @@ void PlayerHousing::RemoveCreature(Player *player, Creature *creature)
 
 void PlayerHousing::RemoveGameObject(Player *player, GameObject *gameobject)
 {
-	if(player->house && gameobject)
+	if(player->playerhouse && gameobject)
 	{
 		CharacterDatabase.PExecute("UPDATE character_guildhouses_items SET `spawned` = 0, `guid` = 0 WHERE `owner` = %u AND `guid` = %u", 
 			player->GetGUIDLow(), gameobject->GetGUIDLow());
 
 		HouseItemList::iterator j;
-		for (j = player->house->houseItemList.begin(); j != player->house->houseItemList.end(); ++j)
+		for (j = player->playerhouse->houseItemList.begin(); j != player->playerhouse->houseItemList.end(); ++j)
 		{
 			HouseItem *item = *j;
 			if(item->guid == gameobject->GetGUIDLow())
@@ -446,9 +409,10 @@ GameObject * PlayerHousing::SpawnGameObject(Player *player, int entry)
 		{				
 			GameObject* object = new GameObject;
 			uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
-			object->Create(guidLow, entry, map, house->owner_guid + PHASE_OFFSET, player->GetPositionX(), 
+			object->Create(guidLow, entry, map, player->GetPhaseMaskForSpawn(), player->GetPositionX(), 
 				player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY);
-			object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), house->owner_guid + PHASE_OFFSET);
+			object->house = player->playerhouse->GetPhase();
+			object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), player->GetPhaseMaskForSpawn());
 			object->LoadGameObjectFromDB(guidLow, map);
 			sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
 			result = object;
@@ -563,7 +527,8 @@ House* PlayerHousing::CreateHouse(Player *player, int id)
 
 		house = new House(player->GetGUIDLow(), location);
 		house->SaveHouse(player, true);
-		player->house = house;
+		this->houseList.push_back(house);
+		player->playerhouse = house;
 	}
 
 	return house;
@@ -575,8 +540,7 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 	if(CanEnterGuildHouse(player, house))
 	{
 		house->TeleportToHouse(player);
-		player->lasthouse = guid;
-		player->SetPhaseMask(PHASE_OFFSET + guid, true);
+		player->house = guid;
 		player->SaveToDB();
 	}
 	else
@@ -680,28 +644,27 @@ void House::SaveHouse(Player *player, bool fresh)
 			if(creature)
 			{				
 				Creature* creature = new Creature;
-				creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, this->owner_guid + PHASE_OFFSET, baseItem->item * (-1), 0, 0,
-					baseItem->x, baseItem->y, baseItem->z, baseItem->o);
-				creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), this->owner_guid + PHASE_OFFSET);
-				uint32 db_guid = creature->GetDBTableGUIDLow();
-				guid = db_guid;
-				sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
+				creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, player->GetPhaseMaskForSpawn(), baseItem->item * (-1), 0, 0, baseItem->x, baseItem->y, baseItem->z, baseItem->o);
+				creature->house = player->GetGUIDLow();;
+				creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), player->GetPhaseMaskForSpawn());
+				guid = creature->GetDBTableGUIDLow();
+				creature->LoadCreatureFromDB(guid, map);
+				sObjectMgr->AddCreatureToGrid(guid, sObjectMgr->GetCreatureData(guid));
 			}
 			else
 			{
 				GameObject* object = new GameObject;
-				uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
-				id = baseItem->item;
-				guid = guidLow;
-				object->Create(guidLow, baseItem->item, map, this->owner_guid + PHASE_OFFSET, baseItem->x, baseItem->y, baseItem->z, baseItem->o, 
-					0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY);
-				object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), this->owner_guid + PHASE_OFFSET);
-				object->LoadGameObjectFromDB(guidLow, map);
-				sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
+				guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+				object->Create(guid, baseItem->item, map, player->GetPhaseMaskForSpawn(), baseItem->x, 
+				baseItem->y, baseItem->z, baseItem->o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY);
+				object->house = player->GetGUIDLow();
+				object->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), player->GetPhaseMaskForSpawn());
+				object->LoadGameObjectFromDB(guid, map);
+				sObjectMgr->AddGameobjectToGrid(guid, sObjectMgr->GetGOData(guid));
 			}
 
 			CharacterDatabase.PExecute("INSERT INTO character_guildhouses_items (`owner`, `guid`, `entry`, `spawned`, `type`) VALUES (%u, %u, %d, 1, 1)", this->owner_guid,
-				guid, id);
+				guid, baseItem->item);
 		}
 
 		/*

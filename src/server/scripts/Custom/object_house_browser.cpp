@@ -62,7 +62,7 @@ class object_house_browser : public GameObjectScript
 		{
 			int text = 0;
 
-			if(!player->house)
+			if(!player->playerhouse)
 			{
 				HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(player);
 				HouseLocationList::iterator i;
@@ -146,8 +146,7 @@ class object_house_browser : public GameObjectScript
 							break;
 						case 4:
 							PlayerHousingMgr.CreateHouse(player, location->id);
-							player->SetPhaseMask(PHASE_OFFSET + player->GetGUIDLow(), true);
-							player->house->TeleportToHouse(player);
+							PlayerHousingMgr.EnterGuildHouse(player, player->GetGUIDLow());
 							player->SaveToDB();
 							// add item
 							break;

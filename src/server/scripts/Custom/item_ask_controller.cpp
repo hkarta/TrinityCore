@@ -14,14 +14,15 @@ class item_ask_controller : public ItemScript
 
         bool OnUse(Player *player, Item *item, SpellCastTargets const& /*targets*/)
         {
-			if(!player->isInCombat() && !player->InArena() && player->house)
+			if(!player->isInCombat() && !player->InArena() && player->playerhouse)
 			{
 				HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(player);
-				if(location && player->GetPhaseMask() == player->house->GetPhase())
+				if(location && player->house == player->playerhouse->GetPhase())
 				{
 					if(player->summon)
 						player->summon->DespawnOrUnsummon(0);
 					player->summon = player->SummonCreature(218, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
+					//player->summon->house = player->house;
 
 					player->PrepareGossipMenu(player->summon);
 					player->pagehelper = 0;
@@ -35,9 +36,9 @@ class item_ask_controller : public ItemScript
 					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Prenest na vychozi pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
 					player->SendPreparedGossip(player->summon);
 				}
-				else if(player->house)
+				else if(player->playerhouse)
 				{
-					PlayerHousingMgr.EnterGuildHouse(player, player->house->owner_guid);
+					PlayerHousingMgr.EnterGuildHouse(player, player->playerhouse->owner_guid);
 				}
 			}
 
@@ -61,11 +62,12 @@ class item_ask_allowehouses : public ItemScript
 
         bool OnUse(Player *player, Item *item, SpellCastTargets const& /*targets*/)
         {
-			if(!player->isInCombat() && !player->InArena() && player->house)
+			if(!player->isInCombat() && !player->InArena())
 			{
 				if(player->summon)
 					player->summon->DespawnOrUnsummon(0);				
 				player->summon = player->SummonCreature(219, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
+				//player->summon->house = player->house;
 
 				player->PrepareGossipMenu(player->summon);
 				player->pagehelper = 0;
@@ -95,9 +97,9 @@ class item_purchase : public ItemScript
 
         bool OnUse(Player *player, Item *item, SpellCastTargets const& /*targets*/)
         {
-			if(player->house)
+			if(player->playerhouse)
 			{
-				player->house->AddItem(player, PlayerHousingMgr.GetVendorItem(item->GetTemplate()->ItemId, true)->entry);
+				player->playerhouse->AddItem(player, PlayerHousingMgr.GetVendorItem(item->GetTemplate()->ItemId, true)->entry);
 			}
 
 			return false;

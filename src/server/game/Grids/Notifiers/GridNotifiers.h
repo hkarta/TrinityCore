@@ -700,7 +700,7 @@ namespace Trinity
             NearestGameObjectEntryInObjectRangeCheckInPhase(WorldObject const& obj, uint32 entry, float range) : i_obj(obj), i_entry(entry), i_range(range) {}
             bool operator()(GameObject* go)
             {
-				if (go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range) && go->GetPhaseMask() == i_obj.GetPhaseMask())
+				if (go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range) && go->house == i_obj.house)
                 {
                     i_range = i_obj.GetDistance(go);        // use found GO range as new range limit for next check
                     return true;
@@ -1156,7 +1156,7 @@ namespace Trinity
 
             bool operator()(Creature* u)
             {
-				if (u->GetEntry() == i_entry && u->isAlive() == i_alive && i_obj.IsWithinDistInMap(u, i_range) && u->GetPhaseMask() == i_obj.GetPhaseMask())
+				if (u->GetEntry() == i_entry && u->isAlive() == i_alive && i_obj.IsWithinDistInMap(u, i_range) && u->house == i_obj.house)
                 {
                     i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
