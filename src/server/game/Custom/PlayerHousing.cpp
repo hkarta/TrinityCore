@@ -539,9 +539,10 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 	House *house = GetPlayerHouse(player->GetGUIDLow());
 	if(CanEnterGuildHouse(player, house))
 	{
-		house->TeleportToHouse(player);
 		player->house = guid;
+		house->TeleportToHouse(player);
 		player->SaveToDB();
+		player->SetPhaseMask(player->GetPhaseMask(), true);
 	}
 	else
 	{

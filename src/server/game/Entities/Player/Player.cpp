@@ -2069,12 +2069,21 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 		summon = NULL;
 	}
 
-	if(!PlayerHousingMgr.GetCurrentHouseArea(this) && this->house != 0)
+	HouseLocation *origin = PlayerHousingMgr.GetCurrentHouseArea(this);
+	if(origin && this->house != 0)
 	{
-		if(!PlayerHousingMgr.GetCurrentHouseArea(mapid, x, y, z, orientation) && this->house != 0)
+		HouseLocation *loc = PlayerHousingMgr.GetCurrentHouseArea(mapid, x, y, z, orientation);
+		if(!loc)
 		{
 			this->house = 0;
 			this->SaveToDB();
+			this->SetPhaseMask(this->GetPhaseMask(), true);
+		}
+		else if (loc->id != origin->id)
+		{
+			this->house = 0;
+			this->SaveToDB();
+			this->SetPhaseMask(this->GetPhaseMask(), true);
 		}
 	}
 
