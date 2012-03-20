@@ -1940,15 +1940,19 @@ Player* ObjectMgr::GetPlayerByLowGUID(uint32 lowguid) const
     return ObjectAccessor::FindPlayer(guid);
 }
 
-Creature* ObjectMgr::GetCreatureByLowGUID(uint32 lowguid) const
+Creature* ObjectMgr::GetCreatureByLowGUID(uint32 lowguid, int id) const
 {
-	uint64 guid = MAKE_NEW_GUID(lowguid, 0, HIGHGUID_UNIT);
-    return ObjectAccessor::FindUnit(guid)->ToCreature();
+	uint64 guid = MAKE_NEW_GUID(lowguid, id, HIGHGUID_UNIT);
+	Unit *unit = ObjectAccessor::FindUnit(guid);
+	if(unit)
+		return unit->ToCreature();
+	else
+		return NULL;
 }
 
-GameObject* ObjectMgr::GetGameObjectByLowGUID(uint32 lowguid) const
+GameObject* ObjectMgr::GetGameObjectByLowGUID(uint32 lowguid, int id) const
 {
-	uint64 guid = MAKE_NEW_GUID(lowguid, 0, HIGHGUID_GAMEOBJECT);
+	uint64 guid = MAKE_NEW_GUID(lowguid, id, HIGHGUID_GAMEOBJECT);
 	return ObjectAccessor::FindGameObject(guid);
 }
 

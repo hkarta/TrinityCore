@@ -114,6 +114,7 @@ public:
 	void AddGuest(uint32 guid); // todo
 	void RemoveGuest(uint32 guid); // todo
 	void PackHouse(Player *player);
+	void LoadItems(void);
 	GameObject* GetNearestObject(Player *player, Unit *controller);
 	Creature* GetNearestCreature(Player *player, Unit *controller);
 	int GetPhase(void);
