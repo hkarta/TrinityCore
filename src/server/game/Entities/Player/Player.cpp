@@ -2434,20 +2434,17 @@ void Player::AddToWorld()
 				}
 				else
 				{
-					this->TeleportTo(this->GetStartPosition());
-					house = 0;
+					PlayerHousingMgr.LeaveHouse(this);
 				}
 			}
 			else
 			{
-				this->TeleportTo(this->GetStartPosition());
-				house = 0;
+				PlayerHousingMgr.LeaveHouse(this);
 			}
 		}
 		else
 		{
-			this->TeleportTo(this->GetStartPosition());
-			house = 0;
+			PlayerHousingMgr.LeaveHouse(this);
 		}
 	}
 }
@@ -17324,6 +17321,29 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 	playerhouse = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
 	summon = NULL;
 	//this->SetPhaseMask(
+	beforeHouseEnterPos = NULL;
+	beforeHouseEnterMap = 0;
+	if(house != 0)
+	{
+		QueryResult lastPos = CharacterDatabase.PQuery("SELECT `map`, `x`, `y`, `z`, `orientation` FROM `character_guildhouses_originalpos` WHERE `guid` = '%u' LIMIT 1", this->GetGUIDLow());
+		//														0	   1    2    3    4
+		if (lastPos)
+		{
+			do
+			{
+				Field *fields = lastPos->Fetch();
+				Position *pos = new Position();
+				pos->m_positionX = fields[1].GetFloat();
+				pos->m_positionY = fields[2].GetFloat();
+				pos->m_positionZ = fields[3].GetFloat();
+				pos->m_orientation = fields[4].GetFloat();
+				beforeHouseEnterPos = pos;
+				beforeHouseEnterMap = fields[0].GetUInt32();
+			}
+			while (lastPos->NextRow());
+		}
+	}
+
 	PlayerHousingMgr.LoadAllowedHouses(this);
     return true;
 }
@@ -17401,9 +17421,7 @@ void Player::EditAllowedHouses(HouseName *name, bool allow)
 		{
 			if(location->id == tempHouse->houseTemplate->id && !PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
 			{
-				house = 0;
-				this->TeleportTo(this->GetStartPosition());
-				SetPhaseMask(GetPhaseMask(), true);
+				PlayerHousingMgr.LeaveHouse(this);
 			}
 		}
 	}
@@ -18867,6 +18885,14 @@ void Player::SaveToDB(bool create /*=false*/)
 
     _SaveBGData(trans);
 	trans->PAppend("UPDATE characters SET house = %u WHERE guid = %u", house, this->GetGUIDLow());
+
+	if(!beforeHouseEnterPos)
+		trans->PAppend("DELETE FROM `character_guildhouses_originalpos` WHERE `guid` = '%u'", GetGUIDLow());
+	else
+		trans->PAppend("REPLACE INTO `character_guildhouses_originalpos` (`guid`, `map`, `x`, `y`, `z`, `orientation`) VALUES (%u, %u, %f, %f, %f, %f)", 
+		GetGUIDLow(), beforeHouseEnterMap, beforeHouseEnterPos->GetPositionX(), beforeHouseEnterPos->GetPositionY(), beforeHouseEnterPos->GetPositionZ(), 
+		beforeHouseEnterPos->GetOrientation());	
+
     _SaveInventory(trans);
     _SaveQuestStatus(trans);
     _SaveDailyQuestStatus(trans);

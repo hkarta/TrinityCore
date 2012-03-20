@@ -113,6 +113,7 @@ public:
 	void AddItem(Player *player, int id);
 	void AddGuest(uint32 guid); // todo
 	void RemoveGuest(uint32 guid); // todo
+	void PackHouse(Player *player);
 	GameObject* GetNearestObject(Player *player, Unit *controller);
 	Creature* GetNearestCreature(Player *player, Unit *controller);
 	int GetPhase(void);
@@ -153,37 +154,37 @@ typedef std::list<HouseName *> AllowedHousesNames;
 typedef std::list<HouseLocation *> HouseLocationList;
 typedef std::list<VendorHouseItem *> VendorHouseItemList;
 typedef std::list<House *> HouseList;
+typedef std::list<uint32> GuidList;
 
 class PlayerHousing
 {
 public:
 	HouseLocationList houseLocationList;
-	bool CanEnterGuildHouse(Player *player, House *house); //done
+	bool CanEnterGuildHouse(Player *player, House *house);
 	void GuestChange(Player *player, uint32 guid, bool allow);
-	void EnterGuildHouse(Player *player, uint32 guid); // done
-	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true); // done
-	HouseItem* GetUnusedItem(House * house, int entry); // done
-	Creature *SpawnCreature(Player *player, int entry); // done
-	GameObject *SpawnGameObject(Player *player, int entry); // done
+	void EnterGuildHouse(Player *player, uint32 guid);
+	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true);
+	HouseItem* GetUnusedItem(House * house, int entry);
+	Creature *SpawnCreature(Player *player, int entry);
+	GameObject *SpawnGameObject(Player *player, int entry);
 	void RemoveCreature(Player *player, Creature *creature);
 	void RemoveGameObject(Player *player, GameObject *gameobject);
-	Creature *GetCreatureByLowGuid(Player *player, uint32 guid, int entry); // done
-	//Creature *GetNearestCreature(int id, Player *player);
-	GameObject* GetGoByLowGuid(Player *player, uint32 guid, int entry); // done
-	HouseLocation* GetCurrentHouseArea(Player *player); // done
+	Creature *GetCreatureByLowGuid(Player *player, uint32 guid, int entry);
+	GameObject* GetGoByLowGuid(Player *player, uint32 guid, int entry);
+	HouseLocation* GetCurrentHouseArea(Player *player);
 	HouseLocation* GetCurrentHouseArea(uint32 mapid, float x, float y, float z, float orientation);
 	HouseList houseList;
 	VendorHouseItem* GetVendorItem(int id, bool byPurchaseable);
 	VendorHouseItemList vendorItemList;
-	PlayerHousing(void); // done
-	int LoadHouses(void); // done
-	int LoadVendorItems(void); // done
-	void LoadAllowedHouses(Player *player); // done
-	House* GetPlayerHouse(uint32 guid); // done
-	House* CreateHouse(Player *p, int id); // done
+	PlayerHousing(void);
+	int LoadHouses(void);
+	int LoadVendorItems(void);
+	void LoadAllowedHouses(Player *player);
+	House* GetPlayerHouse(uint32 guid);
+	House* CreateHouse(Player *p, int id);
 	uint32 GetPlayerGuidByName(std::string name);
-
-	// House DestroyHouse(Player *p);
+	void SavePos(Player *player);
+	void LeaveHouse(Player *player);
 };
 
 class GuildhouseWorker

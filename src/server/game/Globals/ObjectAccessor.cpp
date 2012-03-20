@@ -163,6 +163,11 @@ Unit* ObjectAccessor::FindUnit(uint64 guid)
     return GetObjectInWorld(guid, (Unit*)NULL);
 }
 
+GameObject* ObjectAccessor::FindGameObject(uint64 guid)
+{
+    return GetObjectInWorld(guid, (GameObject*)NULL);
+}
+
 Player* ObjectAccessor::FindPlayerByName(const char* name)
 {
     TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());

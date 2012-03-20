@@ -101,9 +101,10 @@ class object_house_controler : public CreatureScript
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Pridat objekt/npc na mou pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Osoby opravnene ke vstupu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Nakoupit vybaveni", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Chtel bych jiny dum...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Chtel bych jiny dum...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Jake vyhody ma VIP hrac ve svem dome?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Prenest na vychozi pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Odejit z domu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
 			player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID()); // TODO MAIN MENU TEXT
 		}
 
@@ -183,6 +184,19 @@ class object_house_controler : public CreatureScript
 						player->categoryhelper = 8;
 
 						Guests(player, creature);
+					}
+					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 9) // delete house
+					{
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Ne, rozmyslel jsem si to", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Ano, chci zrusit tento dum", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
+					}
+					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 10) // delete house finish
+					{
+						player->playerhouse->PackHouse(player);
+					}
+					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 11) // leave house
+					{
+						PlayerHousingMgr.LeaveHouse(player);
 					}
 					else if(uiAction > GOSSIP_ACTION_INFO_DEF + OFFSET_ADD_SOMETHING)
 					{

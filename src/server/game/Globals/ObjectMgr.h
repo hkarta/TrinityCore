@@ -613,6 +613,8 @@ class ObjectMgr
         typedef std::map<uint32, uint32> CharacterConversionMap;
 
         Player* GetPlayerByLowGUID(uint32 lowguid) const;
+		Creature* GetCreatureByLowGUID(uint32 lowguid) const;
+		GameObject* GetGameObjectByLowGUID(uint32 lowguid) const;
 		Player* GetPlayerByLowGUIDNonConst(uint32 lowguid);
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 entry);

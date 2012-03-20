@@ -192,6 +192,7 @@ class ObjectAccessor
         static Pet* FindPet(uint64);
         static Player* FindPlayer(uint64);
         static Unit* FindUnit(uint64);
+		static GameObject* FindGameObject(uint64);
         static Player* FindPlayerByName(const char* name);
 
         // when using this, you must use the hashmapholder's lock

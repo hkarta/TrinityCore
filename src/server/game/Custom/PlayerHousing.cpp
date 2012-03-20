@@ -534,19 +534,29 @@ House* PlayerHousing::CreateHouse(Player *player, int id)
 	return house;
 }
 
+void PlayerHousing::SavePos(Player *player)
+{
+	if(player->house == 0)
+	{
+		player->beforeHouseEnterPos = new Position();
+		player->beforeHouseEnterPos->m_positionX = player->GetPositionX();
+		player->beforeHouseEnterPos->m_positionY = player->GetPositionY();
+		player->beforeHouseEnterPos->m_positionZ = player->GetPositionZ();
+		player->beforeHouseEnterPos->m_orientation = player->GetOrientation();
+		player->beforeHouseEnterMap = player->GetMapId();
+	}
+}
+
 void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 {
 	House *house = GetPlayerHouse(player->GetGUIDLow());
 	if(CanEnterGuildHouse(player, house))
 	{
+		SavePos(player);
 		player->house = guid;
 		house->TeleportToHouse(player);
 		player->SaveToDB();
 		player->SetPhaseMask(player->GetPhaseMask(), true);
-	}
-	else
-	{
-		// todo remove item // PHASE_OFFSET
 	}
 }
 
@@ -594,6 +604,72 @@ HouseLocation* PlayerHousing::GetCurrentHouseArea(uint32 mapid, float x, float y
 	}
 
 	return result;
+}
+
+void House::PackHouse(Player *player)
+{
+	HouseItemList::iterator i;
+	for (i = houseItemList.begin(); i != houseItemList.end(); ++i)
+	{
+		HouseItem *item = *i;
+		if(item->spawned)
+		{
+			if(item->entry < 0)
+			{
+				Creature *creature = sObjectMgr->GetCreatureByLowGUID(item->guid);
+				if(creature)
+					sLog->outError(" >> go: %u", creature->GetGUIDLow());
+				/*if(creature)
+					creature->DespawnOrUnsummon(0);*/
+			}
+			else
+			{
+				GameObject *gameobject = sObjectMgr->GetGameObjectByLowGUID(item->guid);
+				if(gameobject)
+					sLog->outError(" >> go: %u", gameobject->GetGUIDLow());
+				/*if(gameobject)
+					gameobject->Delete();*/
+			}
+		}
+	}
+
+	HouseGuests::iterator g;
+	GuidList list;
+	for (g = player->playerhouse->houseGuests.begin(); g != player->playerhouse->houseGuests.end(); ++g)
+	{
+		HouseGuest *houseGuest = *g;
+		list.push_back(houseGuest->guid);
+	}
+	GuidList::iterator r;
+	for (r = list.begin(); r != list.end(); ++r)
+	{
+		PlayerHousingMgr.GuestChange(player, *r, false);
+	}
+
+	CharacterDatabase.PExecute("DELETE FROM `character_guildhouses_guests` WHERE `owner` = %u", this->owner_guid);
+	CharacterDatabase.PExecute("DELETE FROM `character_guildhouses_items` WHERE `owner` = %u AND `type` = 1", this->owner_guid);
+	CharacterDatabase.PExecute("UPDATE `character_guildhouses_items` SET `guid` = 0 AND spawned = 0 WHERE `owner` = %u", this->owner_guid);
+	CharacterDatabase.PExecute("DELETE FROM `character_guildhouses` WHERE `owner` = %u", this->owner_guid);
+	WorldDatabase.PExecute("DELETE FROM `creature` WHERE `house` = %u", this->owner_guid);
+	WorldDatabase.PExecute("DELETE FROM `gameobject` WHERE `house` = %u", this->owner_guid);
+
+	PlayerHousingMgr.houseList.remove(player->playerhouse);
+	PlayerHousingMgr.LeaveHouse(player);
+
+	player->playerhouse = NULL;
+}
+
+void PlayerHousing::LeaveHouse(Player *player)
+{
+	if(player->beforeHouseEnterPos)
+		player->TeleportTo(player->beforeHouseEnterMap, player->beforeHouseEnterPos->GetPositionX(), player->beforeHouseEnterPos->GetPositionY(), player->beforeHouseEnterPos->GetPositionZ(),
+		player->beforeHouseEnterPos->GetOrientation());
+	else
+		player->TeleportTo(player->GetStartPosition());
+	player->SetPhaseMask(player->GetPhaseMask(), true);
+
+	player->beforeHouseEnterMap = 0;
+	player->beforeHouseEnterPos = NULL;
 }
 
 float HouseLocation::GetDistance(Player *player)
