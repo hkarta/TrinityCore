@@ -5,6 +5,7 @@
 #define LIMIT			20
 #define RANGE_LIMIT		100
 #define CONTROLLER_ID	218
+#define PREVIEW_HOUSE	4294967295
 
 extern WorldDatabaseWorkerPool WorldDatabase;
 extern CharacterDatabaseWorkerPool CharacterDatabase;
@@ -164,6 +165,7 @@ public:
 	bool CanEnterGuildHouse(Player *player, House *house);
 	void GuestChange(Player *player, uint32 guid, bool allow);
 	void EnterGuildHouse(Player *player, uint32 guid);
+	void EnterPreviewHouse(Player *player, int id);
 	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true);
 	HouseItem* GetUnusedItem(House * house, int entry);
 	Creature *SpawnCreature(Player *player, int entry);
@@ -182,6 +184,7 @@ public:
 	int LoadVendorItems(void);
 	void LoadAllowedHouses(Player *player);
 	House* GetPlayerHouse(uint32 guid);
+	HouseLocation* GetPreviewHouse(int id);
 	House* CreateHouse(Player *p, int id);
 	uint32 GetPlayerGuidByName(std::string name);
 	void SavePos(Player *player);

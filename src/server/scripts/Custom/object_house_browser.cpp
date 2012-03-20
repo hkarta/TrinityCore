@@ -10,18 +10,18 @@ enum eEnums
 };
 
 
-class object_house_browser : public GameObjectScript
+class object_house_browser : public CreatureScript
 {
     public:
 
         object_house_browser()
-            : GameObjectScript("object_house_browser")
+            : CreatureScript("object_house_browser")
         {
         }
 
-        bool OnGossipHello(Player* player, GameObject* gameobject)
+        bool OnGossipHello(Player* player, Creature* creature)
         {
-			MainMenu(player, gameobject, 0);
+			MainMenu(player, creature, 0);
             return true;
         }
 
@@ -44,21 +44,12 @@ class object_house_browser : public GameObjectScript
 					break;
 				default:
 					option = option - OFFSET_HOUSE_ID;
-					for (i = PlayerHousingMgr.houseLocationList.begin(); i != PlayerHousingMgr.houseLocationList.end(); ++i)
-					{
-						HouseLocation *house = *i;
-						if(house->id == option)
-						{
-							player->SetPhaseMask(1, true);
-							player->TeleportTo(house->map, house->x, house->y, house->z, house->o); 
-							break;
-						}
-					}
+					PlayerHousingMgr.EnterPreviewHouse(player, option);
 					break;
 			}
 		}
 
-		void MainMenu(Player *player, GameObject* gameobject, int option)
+		void MainMenu(Player *player, Creature* creature, int option)
 		{
 			int text = 0;
 
@@ -73,12 +64,12 @@ class object_house_browser : public GameObjectScript
 					{
 						case 0:
 							GenericMenu(player, option);
-							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 1:
 							text = 4;
 							GenericMenu(player, option);
-							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 2:
 							text = 6;
@@ -91,12 +82,12 @@ class object_house_browser : public GameObjectScript
 
 								if(x == 10)
 								{
-									player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+									player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 									x = 0;
 								}
 
 								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-								player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+								player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							}
 							break;
 						case 3:
@@ -115,12 +106,12 @@ class object_house_browser : public GameObjectScript
 						case 0:
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Chci si tento dum", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
 							GenericMenu(player, option);
-							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 1:
 							text = 4;
 							GenericMenu(player, option);
-							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 2:
 							text = 2;
@@ -133,12 +124,12 @@ class object_house_browser : public GameObjectScript
 
 								if(x == 10)
 								{
-									player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+									player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 									x = 0;
 								}
 
 								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-								player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+								player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							}
 							break;
 						case 3:
@@ -154,7 +145,7 @@ class object_house_browser : public GameObjectScript
 							text = 3;
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Ano, beru ho", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Jeste si to musim rozmyslet", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+0);
-							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						default:
 							GenericMenu(player, option);
@@ -167,14 +158,14 @@ class object_house_browser : public GameObjectScript
 				text = 5;
 				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Co je to?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-				player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, gameobject->GetGUID());
+				player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 			}
 		}
 
-        bool OnGossipSelect(Player* player, GameObject* gameobject, uint32, uint32 uiAction)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32, uint32 uiAction)
         {
             player->PlayerTalkClass->ClearMenus();
-			MainMenu(player, gameobject, uiAction - GOSSIP_ACTION_INFO_DEF);
+			MainMenu(player, creature, uiAction - GOSSIP_ACTION_INFO_DEF);
             return true;
 		}
 };

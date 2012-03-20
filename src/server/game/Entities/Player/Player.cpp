@@ -2070,7 +2070,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 	}
 
 	HouseLocation *origin = PlayerHousingMgr.GetCurrentHouseArea(this);
-	if(origin && this->house != 0)
+	if(origin && this->house != 0 && this->house != PREVIEW_HOUSE)
 	{
 		HouseLocation *loc = PlayerHousingMgr.GetCurrentHouseArea(mapid, x, y, z, orientation);
 		if(!loc)
@@ -2419,7 +2419,7 @@ void Player::AddToWorld()
         if (m_items[i])
             m_items[i]->AddToWorld();
 
-	if(house != 0)
+	if(house != 0 && house != PREVIEW_HOUSE)
 	{
 		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(house);
 		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);

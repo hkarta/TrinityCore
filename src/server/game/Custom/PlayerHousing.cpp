@@ -566,6 +566,32 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 	}
 }
 
+void PlayerHousing::EnterPreviewHouse(Player *player, int id)
+{
+	SavePos(player);
+	HouseLocation *loc = GetPreviewHouse(id);
+	if(loc)
+	{
+		player->house = PREVIEW_HOUSE;
+		player->TeleportTo(loc->map, loc->x, loc->y, loc->z, loc->o);
+		player->SaveToDB();
+		player->SetPhaseMask(player->GetPhaseMask(), true);
+	}
+}
+
+HouseLocation* PlayerHousing::GetPreviewHouse(int id)
+{
+	HouseLocation *result = NULL;
+	HouseLocationList::iterator i;
+	for (i = houseLocationList.begin(); i != houseLocationList.end(); ++i)
+	{
+		HouseLocation *houseLoc = *i;
+		if(houseLoc->id == id)
+			return houseLoc;
+	}
+	return result;
+}
+
 HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 {
 	float lastDist = (float)RANGE_LIMIT + 1;
@@ -624,13 +650,21 @@ void House::PackHouse(Player *player)
 			{
 				Creature *creature = sObjectMgr->GetCreatureByLowGUID(item->guid, item->entry * (-1));
 				if(creature)
-					creature->DespawnOrUnsummon(0);
+				{
+					creature->CombatStop();
+					creature->DeleteFromDB();
+					creature->AddObjectToRemoveList();
+				}
 			}
 			else
 			{
 				GameObject *gameobject = sObjectMgr->GetGameObjectByLowGUID(item->guid, item->entry);
 				if(gameobject)
+				{
+					gameobject->SetRespawnTime(0);  
 					gameobject->Delete();
+					gameobject->DeleteFromDB();
+				}
 			}
 		}
 	}
