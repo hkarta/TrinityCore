@@ -1251,6 +1251,18 @@ class go_veil_skith_cage : public GameObjectScript
        }
 };
 
+class go_banker : public GameObjectScript
+{
+    public:
+       go_banker() : GameObjectScript("go_banker") { }
+
+       bool OnGossipHello(Player* player, GameObject* go)
+       {
+		   player->GetSession()->SendShowBank(player->GetGUID());
+           return true;
+       }
+};
+
 void AddSC_go_scripts()
 {
     new go_cat_figurine;
@@ -1291,4 +1303,5 @@ void AddSC_go_scripts()
     new go_gjalerbron_cage;
     new go_large_gjalerbron_cage;
     new go_veil_skith_cage;
+	new go_banker();
 }

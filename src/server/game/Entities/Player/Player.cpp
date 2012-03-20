@@ -18890,9 +18890,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveBGData(trans);
 	trans->PAppend("UPDATE characters SET house = %u WHERE guid = %u", house, this->GetGUIDLow());
 
-	if(!beforeHouseEnterPos)
-		trans->PAppend("DELETE FROM `character_guildhouses_originalpos` WHERE `guid` = '%u'", GetGUIDLow());
-	else
+	if(beforeHouseEnterPos)
 		trans->PAppend("REPLACE INTO `character_guildhouses_originalpos` (`guid`, `map`, `x`, `y`, `z`, `orientation`) VALUES (%u, %u, %f, %f, %f, %f)", 
 		GetGUIDLow(), beforeHouseEnterMap, beforeHouseEnterPos->GetPositionX(), beforeHouseEnterPos->GetPositionY(), beforeHouseEnterPos->GetPositionZ(), 
 		beforeHouseEnterPos->GetOrientation());	

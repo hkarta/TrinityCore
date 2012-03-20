@@ -43,14 +43,14 @@ class item_ask_controller : public ItemScript
 						PlayerHousingMgr.EnterGuildHouse(player, player->playerhouse->owner_guid);
 					}
 				}
-				else if(player->house == PREVIEW_HOUSE)
+				else
 				{
 					if(player->summon)
 						player->summon->DespawnOrUnsummon(0);
 					player->summon = player->SummonCreature(220, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
 				
 					player->PrepareGossipMenu(player->summon);
-					if(location)
+					if(location && player->house == PREVIEW_HOUSE)
 					{
 						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Chci si tento dum", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
 						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Chci si prohlednout domy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
