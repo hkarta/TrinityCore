@@ -85,10 +85,9 @@ class object_house_browser : public CreatureScript
 									player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 									x = 0;
 								}
-
-								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-								player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							}
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 3:
 							GenericMenu(player, option);
@@ -127,10 +126,9 @@ class object_house_browser : public CreatureScript
 									player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 									x = 0;
 								}
-
-								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-								player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							}
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 3:
 							GenericMenu(player, option);
