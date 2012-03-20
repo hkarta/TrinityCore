@@ -2427,22 +2427,28 @@ void Player::AddToWorld()
 		{
 			if(location->id == tempHouse->houseTemplate->id)
 			{
-				if(PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
+				if(!PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
 				{
-					//PlayerHousingMgr.EnterGuildHouse(this, house);
-					this->house = tempHouse->GetPhase();
-				}
-				else
-				{
+					sLog->outError("Can enter this house");
 					PlayerHousingMgr.LeaveHouse(this);
 				}
 			}
 			else
 			{
+				sLog->outError("House id and location of character does NOT match");
 				PlayerHousingMgr.LeaveHouse(this);
 			}
 		}
 		else
+		{
+			PlayerHousingMgr.LeaveHouse(this);
+			sLog->outError("Such house doesnt exist and/or i am not in valid house area");
+		}
+	}
+	else if (house == PREVIEW_HOUSE)
+	{
+		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
+		if(!location)
 		{
 			PlayerHousingMgr.LeaveHouse(this);
 		}
@@ -6783,26 +6789,43 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
 	if(!isGameMaster() && !InArena())
 	{
-		if(AllowedAreasMgr.HasAccessToArea(this))
+		if(house == 0)
 		{
-			lastPosition.x = x;
-			lastPosition.y = y;
-			lastPosition.z = z;
-			lastPosition.o = orientation;
-			lastPosition.map_id = GetMapId();
+			if(AllowedAreasMgr.HasAccessToArea(this))
+			{
+				lastPosition.x = x;
+				lastPosition.y = y;
+				lastPosition.z = z;
+				lastPosition.o = orientation;
+				lastPosition.map_id = GetMapId();
+			}
+			else
+			{
+				if(lastPosition.map_id != -1)
+				{
+					float temp_o;
+					if(lastPosition.o > 3.14159)
+						temp_o = lastPosition.o - 3.14159;
+					else
+						temp_o = lastPosition.o + 3.14159;
+					this->TeleportTo(lastPosition.map_id, lastPosition.x, lastPosition.y, lastPosition.z, temp_o);
+					this->RepopAtGraveyard();
+				}
+			}
 		}
 		else
 		{
-			if(lastPosition.map_id != -1)
+
+			if(!this->currentLocation)
+				PlayerHousingMgr.LeaveHouse(this);
+			else if(currentLocation->GetDistance(this) == -1)
 			{
-				float temp_o;
-				if(lastPosition.o > 3.14159)
-					temp_o = lastPosition.o - 3.14159;
+				if(house == PREVIEW_HOUSE)
+					PlayerHousingMgr.EnterPreviewHouse(this, currentLocation->id);
 				else
-					temp_o = lastPosition.o + 3.14159;
-				this->TeleportTo(lastPosition.map_id, lastPosition.x, lastPosition.y, lastPosition.z, temp_o);
-				this->RepopAtGraveyard();
+					PlayerHousingMgr.EnterGuildHouse(this, house);
 			}
+
 		}
 	}
 
@@ -17342,6 +17365,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 			}
 			while (lastPos->NextRow());
 		}
+
+		this->currentLocation = PlayerHousingMgr.GetCurrentHouseArea(this);
 	}
 
 	PlayerHousingMgr.LoadAllowedHouses(this);

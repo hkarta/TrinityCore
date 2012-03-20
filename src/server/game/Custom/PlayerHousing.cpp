@@ -104,11 +104,6 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 	Player *guest = sObjectMgr->GetPlayerByLowGUID(guid);
 	HouseName *current = NULL;
 
-	if(guest)
-	{
-		guest->EditAllowedHouses(name, allow);
-	}
-
 	HouseGuests::iterator g;
 	if(!allow)
 	{
@@ -156,6 +151,11 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 				while (name->NextRow());
 			}
 		}
+	}
+
+	if(guest)
+	{
+		guest->EditAllowedHouses(name, allow);
 	}
 }
 
@@ -233,9 +233,9 @@ VendorHouseItem* PlayerHousing::GetVendorItem(int id, bool byPurchaseable)
 int PlayerHousing::LoadHouses(void)
 {
 	int i = 0;
-	//												      i     i          i    f    f    f    f    i             s
-	QueryResult locations = WorldDatabase.PQuery("SELECT `id`, `faction`, `map`, `x`, `y`, `z`, `o`, `house_pack`, `desc` FROM guildhouses_base");
-	//													  0		1          2    3    4    5    6    7             8
+	//												      i     i          i    f    f    f    f    i             s			f			f			f			f
+	QueryResult locations = WorldDatabase.PQuery("SELECT `id`, `faction`, `map`, `x`, `y`, `z`, `o`, `house_pack`, `desc`, `center_x`, `center_y`, `center_z`, `size` FROM guildhouses_base");
+	//													  0		1          2    3    4    5    6    7             8			9			10			11			12
 	if (locations)
 	{
 		do
@@ -243,7 +243,7 @@ int PlayerHousing::LoadHouses(void)
 			Field *fields = locations->Fetch();
 			HouseLocation * houseLoc = new HouseLocation(fields[0].GetInt32(), fields[1].GetInt32(), fields[2].GetInt32(),
 				fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetInt32(),
-				fields[8].GetString());
+				fields[8].GetString(), fields[9].GetFloat(), fields[10].GetFloat(), fields[11].GetFloat(), fields[12].GetFloat());
 
 			//												  i     i      f    f    f    f    i           
 			QueryResult items = WorldDatabase.PQuery("SELECT `id`, `item`, `x`, `y`, `z`, `o`, `removable` FROM guildhouses_baseitems WHERE `id` = %d", fields[0].GetInt32());
@@ -555,11 +555,12 @@ void PlayerHousing::SavePos(Player *player)
 
 void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 {
-	House *house = GetPlayerHouse(player->GetGUIDLow());
+	House *house = GetPlayerHouse(guid);
 	if(CanEnterGuildHouse(player, house))
 	{
 		SavePos(player);
 		player->house = guid;
+		player->currentLocation = house->houseTemplate;
 		house->TeleportToHouse(player);
 		player->SaveToDB();
 		player->SetPhaseMask(player->GetPhaseMask(), true);
@@ -572,6 +573,7 @@ void PlayerHousing::EnterPreviewHouse(Player *player, int id)
 	HouseLocation *loc = GetPreviewHouse(id);
 	if(loc)
 	{
+		player->currentLocation = loc;
 		player->house = PREVIEW_HOUSE;
 		player->TeleportTo(loc->map, loc->x, loc->y, loc->z, loc->o);
 		player->SaveToDB();
@@ -594,7 +596,7 @@ HouseLocation* PlayerHousing::GetPreviewHouse(int id)
 
 HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 {
-	float lastDist = (float)RANGE_LIMIT + 1;
+	float lastDist = -1;
 
 	HouseLocation *result = NULL;
 	HouseLocationList::iterator i;
@@ -604,7 +606,7 @@ HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 		float dist = houseLoc->GetDistance(player);
 		if(dist != -1)
 		{
-			if(dist < lastDist)
+			if(dist < lastDist || lastDist == -1)
 			{
 				lastDist = dist;
 				result = houseLoc;
@@ -617,7 +619,7 @@ HouseLocation* PlayerHousing::GetCurrentHouseArea(Player *player)
 
 HouseLocation* PlayerHousing::GetCurrentHouseArea(uint32 mapid, float x, float y, float z, float orientation)
 {
-	float lastDist = (float)RANGE_LIMIT + 1;
+	float lastDist = -1;
 
 	HouseLocation *result = NULL;
 	HouseLocationList::iterator i;
@@ -626,8 +628,8 @@ HouseLocation* PlayerHousing::GetCurrentHouseArea(uint32 mapid, float x, float y
 		HouseLocation *houseLoc = *i;
 		if(int(mapid) == houseLoc->map)
 		{
-			float dist = sqrt(pow(x-houseLoc->x, 2)+pow(y-houseLoc->y, 2));
-			if(dist < lastDist)
+			float dist = sqrt(pow(x-houseLoc->center_x, 2)+pow(y-houseLoc->center_y, 2));
+			if((dist < lastDist || lastDist == -1) && dist <= houseLoc->size)
 			{
 				lastDist = dist;
 				result = houseLoc;
@@ -717,11 +719,12 @@ float HouseLocation::GetDistance(Player *player)
 	{
 		float px = player->GetPositionX();
 		float py = player->GetPositionY();
-		float cx = x;
-		float cy = y;
-		float distance = sqrt((cx-px)*(cx-px)+(cy-py)*(cy-py));
+		float cx = center_x;
+		float cy = center_y;
+		float distance = sqrt(pow(cx-px, 2)+pow(cy-py, 2));
+		sLog->outError(" >> Calculated distance: %f", distance);
 
-		if(distance < RANGE_LIMIT)
+		if(distance < size)
 		{
 		   result = distance;
 		}

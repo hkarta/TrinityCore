@@ -1070,6 +1070,7 @@ class Player : public Unit, public GridObject<Player>
 		AllowedHousesNames allowedHouses;
 		House *playerhouse; 
 		Position *beforeHouseEnterPos;
+		HouseLocation *currentLocation;
 		uint32 beforeHouseEnterMap;
 		int pagehelper, categoryhelper;
 		LastPosition lastPosition;

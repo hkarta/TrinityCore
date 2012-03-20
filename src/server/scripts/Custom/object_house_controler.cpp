@@ -199,12 +199,8 @@ class object_house_controler : public CreatureScript
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 12) // house acessories
 					{
-						if(player->summon)
-							player->summon->DespawnOrUnsummon(0);
-						player->summon = player->SummonCreature(221, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
-
 						player->currentVendorEntry = -1;
-						player->GetSession()->SendListInventory(player->summon->GetGUID());
+						player->GetSession()->SendListInventory(creature->GetGUID());
 					}
 					else if(uiAction > GOSSIP_ACTION_INFO_DEF + OFFSET_ADD_SOMETHING)
 					{
@@ -250,7 +246,8 @@ class object_house_controler : public CreatureScript
 					}
 				}
 			}
-			player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
+			if(uiAction != GOSSIP_ACTION_INFO_DEF + 12)
+				player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
             return true;
 		}
 

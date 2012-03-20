@@ -54,11 +54,11 @@ class HouseLocation // DONE
 {
 public:
 	int id, faction, map, house_pack;
-	float x, y, z, o;
+	float x, y, z, o, center_x, center_y, center_z, size;
 	std::string desc;
 	HouseBaseItemList baseItems;
 
-	HouseLocation(int id, int faction, int map, float x, float y, float z, float o, int house_pack, std::string desc)
+	HouseLocation(int id, int faction, int map, float x, float y, float z, float o, int house_pack, std::string desc, float center_x, float center_y, float center_z, float size)
 	{
 		this->id = id;
 		this->faction = faction;
@@ -68,6 +68,10 @@ public:
 		this->z = z;
 		this->o = o;
 		this->desc = desc;
+		this->center_x = center_x;
+		this->center_y = center_y;
+		this->center_z = center_z;
+		this->size = size;
 	}
 
 	float GetDistance(Player *player); // done
