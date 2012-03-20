@@ -43,7 +43,7 @@ class item_ask_controller : public ItemScript
 						PlayerHousingMgr.EnterGuildHouse(player, player->playerhouse->owner_guid);
 					}
 				}
-				else
+				else if(player->house == PREVIEW_HOUSE)
 				{
 					if(player->summon)
 						player->summon->DespawnOrUnsummon(0);

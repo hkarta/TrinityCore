@@ -161,14 +161,17 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 
 bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
 {
-	if(player->GetGUIDLow() == house->owner_guid)
-		return true;
-	HouseGuests::iterator i;
-	for (i = house->houseGuests.begin(); i != house->houseGuests.end(); ++i)
+	if(house)
 	{
-		HouseGuest *guest = *i;
-		if(guest->guid == player->GetGUIDLow())
+		if(player->GetGUIDLow() == house->owner_guid)
 			return true;
+		HouseGuests::iterator i;
+		for (i = house->houseGuests.begin(); i != house->houseGuests.end(); ++i)
+		{
+			HouseGuest *guest = *i;
+			if(guest->guid == player->GetGUIDLow())
+				return true;
+		}
 	}
 	return false;
 }
@@ -561,10 +564,13 @@ void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
 		SavePos(player);
 		player->house = guid;
 		player->currentLocation = house->houseTemplate;
+		player->currentHouse = house;
 		house->TeleportToHouse(player);
 		player->SaveToDB();
 		player->SetPhaseMask(player->GetPhaseMask(), true);
 	}
+	else
+		LeaveHouse(player);
 }
 
 void PlayerHousing::EnterPreviewHouse(Player *player, int id)
@@ -699,16 +705,15 @@ void House::PackHouse(Player *player)
 
 void PlayerHousing::LeaveHouse(Player *player)
 {
-	player->house = 0;
 	if(player->beforeHouseEnterPos)
 		player->TeleportTo(player->beforeHouseEnterMap, player->beforeHouseEnterPos->GetPositionX(), player->beforeHouseEnterPos->GetPositionY(), player->beforeHouseEnterPos->GetPositionZ(),
 		player->beforeHouseEnterPos->GetOrientation());
 	else
 		player->TeleportTo(player->GetStartPosition());
+	player->currentLocation = NULL;
+	player->currentHouse = NULL;
+	player->house = 0;
 	player->SetPhaseMask(player->GetPhaseMask(), true);
-
-	player->beforeHouseEnterMap = 0;
-	player->beforeHouseEnterPos = NULL;
 }
 
 float HouseLocation::GetDistance(Player *player)
@@ -722,7 +727,6 @@ float HouseLocation::GetDistance(Player *player)
 		float cx = center_x;
 		float cy = center_y;
 		float distance = sqrt(pow(cx-px, 2)+pow(cy-py, 2));
-		sLog->outError(" >> Calculated distance: %f", distance);
 
 		if(distance < size)
 		{

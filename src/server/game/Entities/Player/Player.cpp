@@ -2076,12 +2076,16 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 		if(!loc)
 		{
 			this->house = 0;
+			this->currentHouse = NULL;
+			this->currentLocation = NULL;
 			this->SaveToDB();
 			this->SetPhaseMask(this->GetPhaseMask(), true);
 		}
 		else if (loc->id != origin->id)
 		{
 			this->house = 0;
+			this->currentHouse = NULL;
+			this->currentLocation = NULL;
 			this->SaveToDB();
 			this->SetPhaseMask(this->GetPhaseMask(), true);
 		}
@@ -2416,42 +2420,9 @@ void Player::AddToWorld()
     Unit::AddToWorld();
 
     for (uint8 i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; ++i)
+	{
         if (m_items[i])
             m_items[i]->AddToWorld();
-
-	if(house != 0 && house != PREVIEW_HOUSE)
-	{
-		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(house);
-		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
-		if(location && tempHouse)
-		{
-			if(location->id == tempHouse->houseTemplate->id)
-			{
-				if(!PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
-				{
-					sLog->outError("Can enter this house");
-					PlayerHousingMgr.LeaveHouse(this);
-				}
-			}
-			else
-			{
-				sLog->outError("House id and location of character does NOT match");
-				PlayerHousingMgr.LeaveHouse(this);
-			}
-		}
-		else
-		{
-			PlayerHousingMgr.LeaveHouse(this);
-			sLog->outError("Such house doesnt exist and/or i am not in valid house area");
-		}
-	}
-	else if (house == PREVIEW_HOUSE)
-	{
-		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
-		if(!location)
-		{
-			PlayerHousingMgr.LeaveHouse(this);
-		}
 	}
 }
 
@@ -6815,17 +6786,20 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 		}
 		else
 		{
-
-			if(!this->currentLocation)
-				PlayerHousingMgr.LeaveHouse(this);
-			else if(currentLocation->GetDistance(this) == -1)
+			if(PlayerHousingMgr.CanEnterGuildHouse(this, this->currentHouse))
 			{
-				if(house == PREVIEW_HOUSE)
-					PlayerHousingMgr.EnterPreviewHouse(this, currentLocation->id);
-				else
-					PlayerHousingMgr.EnterGuildHouse(this, house);
+				if(!this->currentLocation)
+					PlayerHousingMgr.LeaveHouse(this);
+				else if(currentLocation->GetDistance(this) == -1)
+				{
+					if(house == PREVIEW_HOUSE)
+						PlayerHousingMgr.EnterPreviewHouse(this, currentLocation->id);
+					else
+						PlayerHousingMgr.EnterGuildHouse(this, house);
+				}
 			}
-
+			else
+				PlayerHousingMgr.LeaveHouse(this);
 		}
 	}
 
@@ -17339,37 +17313,42 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
+	//if(PlayerHousingMgr.CanEnterGuildHouse(this, PlayerHousingMgr.GetPlayerHouse(fields[67].GetUInt32())))
 	house = fields[67].GetUInt32();
+
 	sLog->outString(">> player house: %u", house);
 	playerhouse = PlayerHousingMgr.GetPlayerHouse(this->GetGUIDLow());
 	summon = NULL;
 	//this->SetPhaseMask(
 	beforeHouseEnterPos = NULL;
 	beforeHouseEnterMap = 0;
+
+	QueryResult lastPos = CharacterDatabase.PQuery("SELECT `map`, `x`, `y`, `z`, `orientation` FROM `character_guildhouses_originalpos` WHERE `guid` = '%u' LIMIT 1", this->GetGUIDLow());
+	//														0	   1    2    3    4
+	if (lastPos)
+	{
+		do
+		{
+			Field *fields = lastPos->Fetch();
+			Position *pos = new Position();
+			pos->m_positionX = fields[1].GetFloat();
+			pos->m_positionY = fields[2].GetFloat();
+			pos->m_positionZ = fields[3].GetFloat();
+			pos->m_orientation = fields[4].GetFloat();
+			beforeHouseEnterPos = pos;
+			beforeHouseEnterMap = fields[0].GetUInt32();
+		}
+		while (lastPos->NextRow());
+	}
+
 	if(house != 0)
 	{
-		QueryResult lastPos = CharacterDatabase.PQuery("SELECT `map`, `x`, `y`, `z`, `orientation` FROM `character_guildhouses_originalpos` WHERE `guid` = '%u' LIMIT 1", this->GetGUIDLow());
-		//														0	   1    2    3    4
-		if (lastPos)
-		{
-			do
-			{
-				Field *fields = lastPos->Fetch();
-				Position *pos = new Position();
-				pos->m_positionX = fields[1].GetFloat();
-				pos->m_positionY = fields[2].GetFloat();
-				pos->m_positionZ = fields[3].GetFloat();
-				pos->m_orientation = fields[4].GetFloat();
-				beforeHouseEnterPos = pos;
-				beforeHouseEnterMap = fields[0].GetUInt32();
-			}
-			while (lastPos->NextRow());
-		}
-
 		this->currentLocation = PlayerHousingMgr.GetCurrentHouseArea(this);
+		this->currentHouse = PlayerHousingMgr.GetPlayerHouse(house);
 	}
 
 	PlayerHousingMgr.LoadAllowedHouses(this);
+
     return true;
 }
 

@@ -1071,6 +1071,7 @@ class Player : public Unit, public GridObject<Player>
 		House *playerhouse; 
 		Position *beforeHouseEnterPos;
 		HouseLocation *currentLocation;
+		House *currentHouse;
 		uint32 beforeHouseEnterMap;
 		int pagehelper, categoryhelper;
 		LastPosition lastPosition;
