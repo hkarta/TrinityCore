@@ -6,6 +6,8 @@
 #include <list>
 #include <math.h>
 #include "ObjectMgr.h"
+#include "GuildMgr.h"
+#include "Guild.h"
 
 PlayerHousing PlayerHousingMgr;
 
@@ -159,12 +161,16 @@ void PlayerHousing::GuestChange(Player *player, uint32 guid, bool allow)
 	}
 }
 
-bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
+bool PlayerHousing::CanEnterHouse(Player *player, House *house)
 {
 	if(house)
 	{
 		if(player->GetGUIDLow() == house->owner_guid)
 			return true;
+		sLog->outError("House to enter: %u, owner: %u", PlayerHousingMgr.GetGuildHouseIdIfExists(player), house->owner_guid);
+		if(PlayerHousingMgr.GetGuildHouseIdIfExists(player) == house->owner_guid)
+			return true;
+
 		HouseGuests::iterator i;
 		for (i = house->houseGuests.begin(); i != house->houseGuests.end(); ++i)
 		{
@@ -174,6 +180,11 @@ bool PlayerHousing::CanEnterGuildHouse(Player *player, House *house)
 		}
 	}
 	return false;
+}
+
+void PlayerHousing::ValidatePlayerPosition(Player *p)
+{
+
 }
 
 int PlayerHousing::LoadVendorItems(void)
@@ -293,6 +304,18 @@ int PlayerHousing::GetItemCount(Player *player, int entry, bool onlyAvaiable)
 				x++;
 		}
 		return x;
+	}
+	return 0;
+}
+
+uint32 PlayerHousing::GetGuildHouseIdIfExists(Player *player)
+{
+	Guild *guild = sGuildMgr->GetGuildById(player->GetGuildId());
+	if(guild)
+	{
+		uint32 houseid = guild->GetGhId();
+		if(houseid != 0 && GetPlayerHouse(houseid))
+			return houseid;
 	}
 	return 0;
 }
@@ -556,18 +579,20 @@ void PlayerHousing::SavePos(Player *player)
 	}
 }
 
-void PlayerHousing::EnterGuildHouse(Player *player, uint32 guid)
+void PlayerHousing::EnterHouse(Player *player, uint32 guid)
 {
 	House *house = GetPlayerHouse(guid);
-	if(CanEnterGuildHouse(player, house))
+	if(CanEnterHouse(player, house))
 	{
+
 		SavePos(player);
-		player->house = guid;
+		//player->SetPhaseMask(player->GetPhaseMask() - 1, true);
+		house->TeleportToHouse(player);
 		player->currentLocation = house->houseTemplate;
 		player->currentHouse = house;
-		house->TeleportToHouse(player);
-		player->SaveToDB();
+		player->house = guid;
 		player->SetPhaseMask(player->GetPhaseMask(), true);
+		player->SaveToDB();
 	}
 	else
 		LeaveHouse(player);
@@ -688,6 +713,13 @@ void House::PackHouse(Player *player)
 	for (r = list.begin(); r != list.end(); ++r)
 	{
 		PlayerHousingMgr.GuestChange(player, *r, false);
+	}
+
+	Guild * guild = sGuildMgr->GetGuildById(player->GetGuildId());
+	if(guild)
+	{
+		if(guild->GetGhId() == player->GetGUIDLow())
+			guild->GuildHouseSold();
 	}
 
 	CharacterDatabase.PExecute("DELETE FROM `character_guildhouses_guests` WHERE `owner` = %u", this->owner_guid);

@@ -22,7 +22,7 @@ class object_house_controler : public CreatureScript
 
 		void SelectNpcGo(Player *player, Creature *creature)
 		{
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Back to menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 			if(player->playerhouse)
 			{
 				int perpage = 8;
@@ -38,12 +38,12 @@ class object_house_controler : public CreatureScript
 						{
 							if(item->entry < 0)
 							{
-								std::string name = "Pridat npc: " + PlayerHousingMgr.GetVendorItem(item->entry, false)->desc;
+								std::string name = "Add npc: " + PlayerHousingMgr.GetVendorItem(item->entry, false)->desc;
 								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_ADD_SOMETHING+item->id);
 							}
 							else
 							{
-								std::string name = "Pridat objekt: " + PlayerHousingMgr.GetVendorItem(item->entry, false)->desc;
+								std::string name = "Add object: " + PlayerHousingMgr.GetVendorItem(item->entry, false)->desc;
 								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_ADD_SOMETHING+item->id);
 							}
 						}
@@ -54,11 +54,11 @@ class object_house_controler : public CreatureScript
 				}
 
 				if(player->pagehelper != 0)
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "<< Predchozi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "<< Previous page", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
 				if(i - (player->pagehelper * perpage) > perpage)
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, ">> Dalsi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, ">> Next page", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
 
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, append(append("Spawnnute npc a objekty [", x) + "/", SOFT_LIMIT) + "]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, append(append("Spawned npcs a objects [", x) + "/", SOFT_LIMIT) + "]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 			}
 		}
 
@@ -66,10 +66,10 @@ class object_house_controler : public CreatureScript
 		{
 			int perpage = 7;
 			int total = player->playerhouse->houseGuests.size();
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Back to menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 			if(total < SOFT_FRIENDS)
-				player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Pridat zvaneho hosta", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9,
-					"Zadej jmeno hrace, kteremu chces umoznit pristup do sveho domu.", 0, true);
+				player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_INTERACT_1, "Add allowed visitor", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9,
+					"Enter name of player that you wish to grant access to.", 0, true);
 			else 
 				perpage++;
 
@@ -81,15 +81,15 @@ class object_house_controler : public CreatureScript
 				if(i >= player->pagehelper * perpage && i < (player->pagehelper + 1) * perpage)
 				{
 					HouseGuest *houseGuest = *g;
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Zakazat vstup hraci " + houseGuest->name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_ADD_SOMETHING+houseGuest->guid);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_BATTLE, "Disable access to " + houseGuest->name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_ADD_SOMETHING+houseGuest->guid);
 				}
 				i++;
 			}
 			if(player->pagehelper != 0)
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "<< Predchozi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "<< Previous page", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
 			if(i - (player->pagehelper * perpage) > perpage)
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, ">> Dalsi strana", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, append(append("Zvani hoste [", total) + "/", SOFT_FRIENDS) + "]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, ">> Next page", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, append(append("Allowed visitors [", total) + "/", SOFT_FRIENDS) + "]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 8);
 			
 		}
 
@@ -97,13 +97,13 @@ class object_house_controler : public CreatureScript
 		{
 			player->pagehelper = 0;
 			player->categoryhelper = 0;
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Smazat objekt/npc v me blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Pridat objekt/npc na mou pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Osoby opravnene ke vstupu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Nakoupit vybaveni", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Chtel bych jiny dum...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Prenest na vychozi pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Odejit z domu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Remove nearest object/npc", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Remove nearest/npc", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Allowed visitors", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Buy new items for house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "I would like different house...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Reset my position", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Leave house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
 			player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID()); // TODO MAIN MENU TEXT
 		}
 
@@ -120,24 +120,24 @@ class object_house_controler : public CreatureScript
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 1) // Delete go or creature?
 					{
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Zpet do menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Back to menu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 						GameObject *object = player->playerhouse->GetNearestObject(player, creature);
 						if(object)
 						{
-							std::string name = "Smazat objekt: " + PlayerHousingMgr.GetVendorItem((int)object->GetGOData()->id, false)->desc;
+							std::string name = "Remove object: " + PlayerHousingMgr.GetVendorItem((int)object->GetGOData()->id, false)->desc;
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5); // REMOVE OBJECT
 						}
 						else
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Zadny objekt ve tve blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "No object near", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
 						Creature *creature2 = player->playerhouse->GetNearestCreature(player, creature);
 						if(creature2)
 						{
-							std::string name = "Smazat npc: " + PlayerHousingMgr.GetVendorItem((int)creature2->GetCreatureData()->id * (-1), false)->desc;
+							std::string name = "Remove npc: " + PlayerHousingMgr.GetVendorItem((int)creature2->GetCreatureData()->id * (-1), false)->desc;
 							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, name, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6); // REMOVE NPC
 						}
 						else
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Zadne npc ve tve blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "No npc near", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 						player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 2)
@@ -186,8 +186,8 @@ class object_house_controler : public CreatureScript
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 9) // delete house
 					{
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Ne, rozmyslel jsem si to", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Ano, chci zrusit tento dum", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "No, I changed my mind", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Yes, i'd like to delete this house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
 					}
 					else if(uiAction == GOSSIP_ACTION_INFO_DEF + 10) // delete house finish
 					{

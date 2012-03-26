@@ -24,6 +24,7 @@
 #include "WorldPacket.h"
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "../Custom/PlayerHousing.h"
 
 class Item;
 
@@ -32,7 +33,7 @@ enum GuildMisc
     GUILD_BANK_MAX_TABS                 = 6,                    // send by client for money log also
     GUILD_BANK_MAX_SLOTS                = 98,
     GUILD_BANK_MONEY_LOGS_TAB           = 100,                  // used for money log in DB
-    GUILD_RANKS_MIN_COUNT               = 5,
+    GUILD_RANKS_MIN_COUNT               = 6,
     GUILD_RANKS_MAX_COUNT               = 10,
     GUILD_RANK_NONE                     = 0xFF,
     GUILD_WITHDRAW_MONEY_UNLIMITED      = 0xFFFFFFFF,
@@ -44,10 +45,11 @@ enum GuildDefaultRanks
 {
     // These ranks can be modified, but they cannot be deleted
     GR_GUILDMASTER  = 0,
-    GR_OFFICER      = 1,
-    GR_VETERAN      = 2,
-    GR_MEMBER       = 3,
-    GR_INITIATE     = 4,
+	GR_HOUSEKEEPER  = 1,
+    GR_OFFICER      = 2,
+    GR_VETERAN      = 3,
+    GR_MEMBER       = 4,
+    GR_INITIATE     = 5,
     // When promoting member server does: rank--
     // When demoting member server does: rank++
 };
@@ -258,7 +260,6 @@ private:
 
     public:
         Member(uint32 guildId, uint64 guid, uint8 rankId) : m_guildId(guildId), m_guid(guid), m_logoutTime(::time(NULL)), m_rankId(rankId) { }
-
         void SetStats(Player* player);
         void SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId);
         bool CheckStats() const;
@@ -272,7 +273,7 @@ private:
 
         uint64 GetGUID() const { return m_guid; }
         std::string GetName() const { return m_name; }
-        uint32 GetAccountId() const { return m_accountId; }
+		uint32 GetAccountId() const { return m_accountId; }
         uint8 GetRankId() const { return m_rankId; }
 
         void ChangeRank(uint8 newRank);
@@ -581,6 +582,7 @@ private:
 public:
     static void SendCommandResult(WorldSession* session, GuildCommandType type, GuildCommandError errCode, const std::string& param = "");
     static void SendSaveEmblemResult(WorldSession* session, GuildEmblemError errCode);
+	uint32 house;
 
     Guild();
     ~Guild();
@@ -597,6 +599,7 @@ public:
 
     // Handle client commands
     void HandleRoster(WorldSession* session = NULL);          // NULL = broadcast
+	uint32 GetGhId(void);
     void HandleQuery(WorldSession* session);
     void HandleSetMOTD(WorldSession* session, const std::string& motd);
     void HandleSetInfo(WorldSession* session, const std::string& info);
@@ -652,6 +655,24 @@ public:
             if (Player* player = itr->second->FindPlayer())
                 if (player != except)
                     _do(player);
+    }
+
+	void GuildHouseSold()
+    {
+		uint32 guildHouse = GetGhId();
+		if(guildHouse)
+		{
+			for (Members::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+			{
+				if (Player* player = itr->second->FindPlayer())
+				{
+					if(player->house == guildHouse)
+					{
+						player->EditAllowedHouses(new HouseName("", guildHouse), false);
+					}
+				}
+			}
+		}
     }
 
     // Members
@@ -715,6 +736,17 @@ private:
                 return itr->second;
 
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PLAYER_NOT_IN_GUILD_S, name);
+        return NULL;
+    }
+	inline Member* GetHousekeeper()
+    {
+        for (Members::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+		{
+			if (itr->second->IsRank(GR_HOUSEKEEPER))
+			{
+				return itr->second;
+			}
+		}
         return NULL;
     }
     inline void _DeleteMemberFromDB(uint32 lowguid) const

@@ -723,6 +723,7 @@ enum TrinityStrings
     LANG_ACCOUNT_FOR_PLAYER_NOT_FOUND   = 809,
     LANG_ACHIEVEMENT_EARNED             = 810,
     LANG_GUILD_MASTER                   = 811,
+	LANG_GUILD_HOUSEKEEPER				= 12001,
     LANG_GUILD_OFFICER                  = 812,
     LANG_GUILD_VETERAN                  = 813,
     LANG_GUILD_MEMBER                   = 814,

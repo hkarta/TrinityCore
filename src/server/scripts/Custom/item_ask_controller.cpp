@@ -1,5 +1,6 @@
 #include "ScriptPCH.h"
 #include "ScriptMgr.h"
+#include "GuildMgr.h"
 #include "../../game/Custom/PlayerHousing.h"
 #include <list>
 
@@ -26,21 +27,21 @@ class item_ask_controller : public ItemScript
 						player->summon = player->SummonCreature(218, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
 						//player->summon->house = player->house;
 
-						player->PrepareGossipMenu(player->summon);
+						player->PrepareGossipMenu(player->summon, GOSSIP_ACTION_INFO_DEF);
 						player->pagehelper = 0;
 						player->categoryhelper = 0;
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Smazat objekt/npc v me blizkosti", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Pridat objekt/npc na mou pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Osoby opravnene ke vstupu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Nakoupit vybaveni", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Chtel bych jiny dum...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Prenest na vychozi pozici", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Odejit z domu", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Remove nearest object/npc", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "Remove nearest/npc", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Allowed visitors", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_MONEY_BAG, "Buy new items for house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, "I would like different house...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+9);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Reset my position", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Leave house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
 						player->SendPreparedGossip(player->summon);
 					}
 					else if(player->playerhouse)
 					{
-						PlayerHousingMgr.EnterGuildHouse(player, player->playerhouse->owner_guid);
+						PlayerHousingMgr.EnterHouse(player, player->playerhouse->owner_guid);
 					}
 				}
 				else
@@ -52,15 +53,14 @@ class item_ask_controller : public ItemScript
 					player->PrepareGossipMenu(player->summon);
 					if(location && player->house == PREVIEW_HOUSE)
 					{
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Chci si tento dum", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Chci si prohlednout domy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "I'd like this house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "I'd like to see more houses", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Not now, take me back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
 					}
 					else
 					{
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Co je to?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Chci si prohlednout domy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "I'd like to see more houses", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+						player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Not now, take me back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
 					}
 					player->SendPreparedGossip(player->summon);
 				}
@@ -93,11 +93,20 @@ class item_ask_allowehouses : public ItemScript
 				player->summon = player->SummonCreature(219, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN);
 				//player->summon->house = player->house;
 
-				player->PrepareGossipMenu(player->summon);
+				player->PrepareGossipMenu(player->summon, GOSSIP_ACTION_INFO_DEF);
 				player->pagehelper = 0;
 				player->categoryhelper = 0;
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Vstup do domu sveho znameho", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Vstup do domu sve guildy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1); 
+
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Enter friend's home", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+				Guild *guild = sGuildMgr->GetGuildById(player->GetGuildId());
+				if(PlayerHousingMgr.GetGuildHouseIdIfExists(player) != 0)
+				{
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TABARD, "Enter guild house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1); 
+				}
+				if(player->house != 0)
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Leave house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5); 
+
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "Not now", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 				player->SendPreparedGossip(player->summon);
 			}
 

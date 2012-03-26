@@ -166,9 +166,9 @@ class PlayerHousing
 {
 public:
 	HouseLocationList houseLocationList;
-	bool CanEnterGuildHouse(Player *player, House *house);
+	bool CanEnterHouse(Player *player, House *house);
 	void GuestChange(Player *player, uint32 guid, bool allow);
-	void EnterGuildHouse(Player *player, uint32 guid);
+	void EnterHouse(Player *player, uint32 guid);
 	void EnterPreviewHouse(Player *player, int id);
 	int GetItemCount(Player *player, int entry, bool onlyAvaiable = true);
 	HouseItem* GetUnusedItem(House * house, int entry);
@@ -193,6 +193,8 @@ public:
 	uint32 GetPlayerGuidByName(std::string name);
 	void SavePos(Player *player);
 	void LeaveHouse(Player *player);
+	uint32 GetGuildHouseIdIfExists(Player *player);
+	void ValidatePlayerPosition(Player *p);
 };
 
 class GuildhouseWorker
