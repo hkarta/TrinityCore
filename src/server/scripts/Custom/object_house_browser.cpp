@@ -31,13 +31,12 @@ class object_house_browser : public CreatureScript
 			switch(option)
 			{
 				case 0:
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Co je to?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Chci si prohlednout domy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "I'd like to see more houses", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Not now, take me back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
 					break;
 				case 1:
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "Chci si prohlednout domy", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TALK, "I'd like to see more houses", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Not now, take me back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
 					break;
 				case 3:
 					player->CLOSE_GOSSIP_MENU();
@@ -78,7 +77,7 @@ class object_house_browser : public CreatureScript
 							{
 								HouseLocation *house = *i;
 								x++;
-								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Ukaz mi " + house->desc, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_HOUSE_ID+house->id);
+								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Show me " + house->desc, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_HOUSE_ID+house->id);
 
 								if(x == 10)
 								{
@@ -86,7 +85,7 @@ class object_house_browser : public CreatureScript
 									x = 0;
 								}
 							}
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Not now, take me back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
 							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 3:
@@ -103,7 +102,7 @@ class object_house_browser : public CreatureScript
 					switch(option)
 					{
 						case 0:
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Chci si tento dum", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "I'd like this house", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
 							GenericMenu(player, option);
 							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
@@ -119,7 +118,7 @@ class object_house_browser : public CreatureScript
 							{
 								HouseLocation *house = *i;
 								x++;
-								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Ukaz mi " + house->desc, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_HOUSE_ID+house->id);
+								player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Show me " + house->desc, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+OFFSET_HOUSE_ID+house->id);
 
 								if(x == 10)
 								{
@@ -127,7 +126,7 @@ class object_house_browser : public CreatureScript
 									x = 0;
 								}
 							}
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Not now, take me back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
 							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						case 3:
@@ -135,14 +134,14 @@ class object_house_browser : public CreatureScript
 							break;
 						case 4:
 							PlayerHousingMgr.CreateHouse(player, location->id);
-							PlayerHousingMgr.EnterGuildHouse(player, player->GetGUIDLow());
+							PlayerHousingMgr.EnterHouse(player, player->GetGUIDLow());
 							player->SaveToDB();
 							// add item
 							break;
 						case 5:
 							text = 3;
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Ano, beru ho", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
-							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Jeste si to musim rozmyslet", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+0);
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, "Yes, I want it", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+							player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I am not sure yet", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+0);
 							player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 							break;
 						default:
@@ -154,8 +153,7 @@ class object_house_browser : public CreatureScript
 			else
 			{
 				text = 5;
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Co je to?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Musim si to nechat projit hlavou...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Not now, take me back", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
 				player->PlayerTalkClass->SendGossipMenu(BASE_TEXT + text, creature->GetGUID());
 			}
 		}

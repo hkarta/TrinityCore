@@ -1558,6 +1558,25 @@ void Guild::HandleUpdateMemberRank(WorldSession* session, const std::string& nam
                 SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_RANK_TOO_HIGH_S, name);
                 return;
             }
+
+			if(member->GetRankId() == GR_HOUSEKEEPER && demote)
+			{
+				sLog->outError("Player should have been demoted from housekeeper");
+			}
+
+			if(member->GetRankId() - 1 == GR_HOUSEKEEPER && !demote)
+			{
+				GuildHouseSold();
+
+				if(PlayerHousingMgr.GetPlayerHouse(GUID_LOPART(member->GetGUID())))
+				{
+					Member *oldkeeper = GetHousekeeper();
+					if(oldkeeper)
+						HandleUpdateMemberRank(session, oldkeeper->GetName(), true);
+				}
+				else
+					return;
+			}
         }
 
         // When promoting player, rank is decreased, when demoting - increased
@@ -1566,6 +1585,27 @@ void Guild::HandleUpdateMemberRank(WorldSession* session, const std::string& nam
         _LogEvent(demote ? GUILD_EVENT_LOG_DEMOTE_PLAYER : GUILD_EVENT_LOG_PROMOTE_PLAYER, player->GetGUIDLow(), GUID_LOPART(member->GetGUID()), newRankId);
         _BroadcastEvent(demote ? GE_DEMOTION : GE_PROMOTION, 0, player->GetName(), name.c_str(), _GetRankName(newRankId).c_str());
     }
+}
+
+uint32 Guild::GetGhId(void)
+{	
+	/*for (Members::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+	{
+		if (itr->second->IsRank(GR_HOUSEKEEPER))
+		{
+			sLog->outError(" >> Member with rank %u, highguid %u and lowguid %u", itr->second->GetRankId(), itr->second->GetGUID(), GUID_LOPART(itr->second->GetGUID()));
+			return GUID_LOPART(itr->second->GetGUID());
+		}
+	}
+	
+	return 0;*/
+	if(Member * housekeeper = this->GetHousekeeper())
+	{
+		sLog->outError(" >> Member with rank %u, highguid %u and lowguid %u", housekeeper->GetRankId(), housekeeper->GetGUID(), GUID_LOPART(housekeeper->GetGUID()));
+		return GUID_LOPART(housekeeper->GetGUID());
+	}
+	else
+		return NULL;
 }
 
 void Guild::HandleAddNewRank(WorldSession* session, const std::string& name)
@@ -1847,6 +1887,7 @@ bool Guild::LoadFromDB(Field* fields)
         m_bankTabs[i] = new BankTab(m_id, i);
 
     _CreateLogHolders();
+
     return true;
 }
 
@@ -2282,6 +2323,7 @@ void Guild::_CreateDefaultGuildRanks(LocaleConstant loc)
     CharacterDatabase.Execute(stmt);
 
     _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_MASTER,   loc), GR_RIGHT_ALL);
+	_CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_HOUSEKEEPER,  loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
     _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_OFFICER,  loc), GR_RIGHT_ALL);
     _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_VETERAN,  loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
     _CreateRank(sObjectMgr->GetTrinityString(LANG_GUILD_MEMBER,   loc), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);

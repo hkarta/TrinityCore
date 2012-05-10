@@ -6876,6 +6876,19 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 		summon = NULL;
 	}
 
+	if(house != 0)
+	{
+		if(!this->currentLocation)
+			PlayerHousingMgr.LeaveHouse(this);
+		else if(currentLocation->GetDistance(this) == -1)
+		{
+			if(house == PREVIEW_HOUSE)
+				PlayerHousingMgr.EnterPreviewHouse(this, currentLocation->id);
+			else
+				PlayerHousingMgr.EnterHouse(this, house);
+		}
+	}
+
 	if(!isGameMaster() && !InArena())
 	{
 		if(house == 0)
@@ -6901,23 +6914,6 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 					this->RepopAtGraveyard();
 				}
 			}
-		}
-		else
-		{
-			if(PlayerHousingMgr.CanEnterGuildHouse(this, this->currentHouse))
-			{
-				if(!this->currentLocation)
-					PlayerHousingMgr.LeaveHouse(this);
-				else if(currentLocation->GetDistance(this) == -1)
-				{
-					if(house == PREVIEW_HOUSE)
-						PlayerHousingMgr.EnterPreviewHouse(this, currentLocation->id);
-					else
-						PlayerHousingMgr.EnterGuildHouse(this, house);
-				}
-			}
-			else
-				PlayerHousingMgr.LeaveHouse(this);
 		}
 	}
 
@@ -17584,27 +17580,30 @@ void Player::EditAllowedHouses(HouseName *name, bool allow)
 {
 	HouseName *current = NULL;
 	AllowedHousesNames::iterator i;
+
 	if(!allow)
 	{
-		for (i = this->allowedHouses.begin(); i != this->allowedHouses.end(); ++i)
+		if(name->name.length() != 0)
 		{
-			HouseName *houseName = *i;
-			if(houseName->guid == name->guid)
+			for (i = this->allowedHouses.begin(); i != this->allowedHouses.end(); ++i)
 			{
-				current = houseName;
-				break;
+				HouseName *houseName = *i;
+				if(houseName->guid == name->guid)
+				{
+					current = houseName;
+					break;
+				}
 			}
-		}
-	}
 
-	if(current)
-	{
-		this->allowedHouses.remove(current);
+			if(current)
+				this->allowedHouses.remove(current);
+		}
+
 		House *tempHouse = PlayerHousingMgr.GetPlayerHouse(house);
 		HouseLocation *location = PlayerHousingMgr.GetCurrentHouseArea(this);
 		if(location)
 		{
-			if(location->id == tempHouse->houseTemplate->id && !PlayerHousingMgr.CanEnterGuildHouse(this, tempHouse))
+			if(location->id == tempHouse->houseTemplate->id && !PlayerHousingMgr.CanEnterHouse(this, tempHouse))
 			{
 				PlayerHousingMgr.LeaveHouse(this);
 			}

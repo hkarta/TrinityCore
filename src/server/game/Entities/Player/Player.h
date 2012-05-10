@@ -34,7 +34,7 @@
 #include "QuestDef.h"
 #include "ReputationMgr.h"
 #include "Unit.h"
-#include "Util.h"                                           // for Tokens typedef
+#include "Util.h"   
 #include "WorldSession.h"
 #include "../Custom/AllowedAreas.h"
 #include "../Custom/ItemLoader.h"
