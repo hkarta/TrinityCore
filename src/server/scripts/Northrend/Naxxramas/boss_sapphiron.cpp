@@ -81,7 +81,7 @@ public:
 
     struct boss_sapphironAI : public BossAI
     {
-        boss_sapphironAI(Creature* c) : BossAI(c, BOSS_SAPPHIRON)
+        boss_sapphironAI(Creature* creature) : BossAI(creature, BOSS_SAPPHIRON)
             , phase(PHASE_NULL)
         {
             map = me->GetMap();
@@ -145,7 +145,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*who*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
             me->CastSpell(me, SPELL_DIES, true);

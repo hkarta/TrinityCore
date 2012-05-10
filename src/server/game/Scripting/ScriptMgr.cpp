@@ -283,7 +283,7 @@ void ScriptMgr::Initialize()
 void ScriptMgr::Unload()
 {
     #define SCR_CLEAR(T) \
-        FOR_SCRIPTS(T, itr, end) \
+        for (SCR_REG_ITR(T) itr = SCR_REG_LST(T).begin(); itr != SCR_REG_LST(T).end(); ++itr) \
             delete itr->second; \
         SCR_REG_LST(T).clear();
 
@@ -605,7 +605,7 @@ void ScriptMgr::OnCreateMap(Map* map)
 {
     ASSERT(map);
 
-    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
         itr->second->OnCreate(map);
     SCR_MAP_END;
 
@@ -622,7 +622,7 @@ void ScriptMgr::OnDestroyMap(Map* map)
 {
     ASSERT(map);
 
-    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
         itr->second->OnDestroy(map);
     SCR_MAP_END;
 
@@ -640,7 +640,7 @@ void ScriptMgr::OnLoadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy)
     ASSERT(map);
     ASSERT(gmap);
 
-    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
         itr->second->OnLoadGridMap(map, gmap, gx, gy);
     SCR_MAP_END;
 
@@ -658,7 +658,7 @@ void ScriptMgr::OnUnloadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy)
     ASSERT(map);
     ASSERT(gmap);
 
-    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
         itr->second->OnUnloadGridMap(map, gmap, gx, gy);
     SCR_MAP_END;
 
@@ -676,7 +676,7 @@ void ScriptMgr::OnPlayerEnterMap(Map* map, Player* player)
     ASSERT(map);
     ASSERT(player);
 
-    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
         itr->second->OnPlayerEnter(map, player);
     SCR_MAP_END;
 
@@ -694,7 +694,7 @@ void ScriptMgr::OnPlayerLeaveMap(Map* map, Player* player)
     ASSERT(map);
     ASSERT(player);
 
-    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
         itr->second->OnPlayerLeave(map, player);
     SCR_MAP_END;
 
@@ -711,7 +711,7 @@ void ScriptMgr::OnMapUpdate(Map* map, uint32 diff)
 {
     ASSERT(map);
 
-    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsContinent);
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
         itr->second->OnUpdate(map, diff);
     SCR_MAP_END;
 
@@ -975,6 +975,14 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effInd
 
     GET_SCRIPT_RET(GameObjectScript, target->GetScriptId(), tmpscript, false);
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
+}
+
+GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* go)
+{
+    ASSERT(go);
+
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, NULL);
+    return tmpscript->GetAI(go);
 }
 
 bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
@@ -1438,7 +1446,7 @@ FormulaScript::FormulaScript(const char* name)
 WorldMapScript::WorldMapScript(const char* name, uint32 mapId)
     : ScriptObject(name), MapScript<Map>(mapId)
 {
-    if (GetEntry() && !GetEntry()->IsContinent())
+    if (GetEntry() && !GetEntry()->IsWorldMap())
         sLog->outError("WorldMapScript for map %u is invalid.", mapId);
 
     ScriptRegistry<WorldMapScript>::AddScript(this);

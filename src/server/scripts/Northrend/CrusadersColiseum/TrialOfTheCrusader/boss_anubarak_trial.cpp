@@ -104,7 +104,7 @@ enum BossSpells
     SPELL_SPIKE_TELE        = 66170,
 };
 
-#define SPELL_PERMAFROST_HELPER RAID_MODE<uint32>(66193, 67856, 67855, 67857)
+#define SPELL_PERMAFROST_HELPER RAID_MODE<uint32>(66193, 67855, 67856, 67857)
 
 enum SummonActions
 {
@@ -141,10 +141,10 @@ public:
     {
         boss_anubarak_trialAI(Creature* creature) : ScriptedAI(creature), Summons(me)
         {
-            m_instance = (InstanceScript*)creature->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* m_instance;
+        InstanceScript* instance;
 
         SummonList Summons;
         std::list<uint64> m_vBurrowGUID;
@@ -195,8 +195,8 @@ public:
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
                 DoScriptText(urand(0, 1) ? SAY_KILL1 : SAY_KILL2, me);
-                if (m_instance)
-                    m_instance->SetData(DATA_TRIBUTE_TO_IMMORTALITY_ELEGIBLE, 0);
+                if (instance)
+                    instance->SetData(DATA_TRIBUTE_TO_IMMORTALITY_ELEGIBLE, 0);
             }
         }
 
@@ -211,8 +211,8 @@ public:
 
         void JustReachedHome()
         {
-            if (m_instance)
-                m_instance->SetData(TYPE_ANUBARAK, FAIL);
+            if (instance)
+                instance->SetData(TYPE_ANUBARAK, FAIL);
             //Summon Scarab Swarms neutral at random places
             for (int i=0; i < 10; i++)
                 if (Creature* temp = me->SummonCreature(NPC_SCARAB, AnubarakLoc[1].GetPositionX()+urand(0, 50)-25, AnubarakLoc[1].GetPositionY()+urand(0, 50)-25, AnubarakLoc[1].GetPositionZ()))
@@ -223,8 +223,8 @@ public:
         {
             Summons.DespawnAll();
             DoScriptText(SAY_DEATH, me);
-            if (m_instance)
-                m_instance->SetData(TYPE_ANUBARAK, DONE);
+            if (instance)
+                instance->SetData(TYPE_ANUBARAK, DONE);
         }
 
         void JustSummoned(Creature* summoned)
@@ -260,10 +260,11 @@ public:
             DoScriptText(SAY_AGGRO, me);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetInCombatWithZone();
-            if (m_instance)
-                m_instance->SetData(TYPE_ANUBARAK, IN_PROGRESS);
+            if (instance)
+                instance->SetData(TYPE_ANUBARAK, IN_PROGRESS);
             //Despawn Scarab Swarms neutral
-            Summons.DoAction(NPC_SCARAB, ACTION_SCARAB_SUBMERGE);
+            EntryCheckPredicate pred(NPC_SCARAB);
+            Summons.DoAction(ACTION_SCARAB_SUBMERGE, pred);
             //Spawn Burrow
             for (int i=0; i < 4; i++)
                 me->SummonCreature(NPC_BURROW, AnubarakLoc[i+2]);
@@ -276,6 +277,9 @@ public:
         void UpdateAI(const uint32 uiDiff)
         {
             if (!UpdateVictim())
+                return;
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             switch (m_uiStage)
@@ -301,7 +305,8 @@ public:
 
                     if (IsHeroic() && m_uiNerubianShadowStrikeTimer <= uiDiff)
                     {
-                        Summons.DoAction(NPC_BURROWER, ACTION_SHADOW_STRIKE);
+                        EntryCheckPredicate pred(NPC_BURROWER);
+                        Summons.DoAction(ACTION_SHADOW_STRIKE, pred);
                         m_uiNerubianShadowStrikeTimer = 30*IN_MILLISECONDS;
                     } else m_uiNerubianShadowStrikeTimer -= uiDiff;
 
@@ -426,10 +431,10 @@ public:
     {
         mob_swarm_scarabAI(Creature* creature) : ScriptedAI(creature)
         {
-            m_instance = (InstanceScript*)creature->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* m_instance;
+        InstanceScript* instance;
 
         uint32 m_uiDeterminationTimer;
 
@@ -493,10 +498,10 @@ public:
     {
         mob_nerubian_burrowerAI(Creature* creature) : ScriptedAI(creature)
         {
-            m_instance = (InstanceScript*)creature->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* m_instance;
+        InstanceScript* instance;
 
         uint32 m_uiSpiderFrenzyTimer;
         uint32 m_uiSubmergeTimer;
@@ -639,10 +644,10 @@ public:
     {
         mob_anubarak_spikeAI(Creature* creature) : ScriptedAI(creature)
         {
-            m_instance = (InstanceScript*)creature->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* m_instance;
+        InstanceScript* instance;
         uint32 m_uiIncreaseSpeedTimer;
         uint8  m_uiSpeed;
         uint64 m_uiTargetGUID;
@@ -674,7 +679,7 @@ public:
             Unit* target = Unit::GetPlayer(*me, m_uiTargetGUID);
             if (!target || !target->isAlive() || !target->HasAura(SPELL_MARK))
             {
-                if (Creature* pAnubarak = Unit::GetCreature((*me), m_instance->GetData64(NPC_ANUBARAK)))
+                if (Creature* pAnubarak = Unit::GetCreature((*me), instance->GetData64(NPC_ANUBARAK)))
                     pAnubarak->CastSpell(pAnubarak, SPELL_SPIKE_TELE, false);
                 me->DisappearAndDie();
                 return;

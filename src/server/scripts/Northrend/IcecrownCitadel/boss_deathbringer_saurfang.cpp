@@ -39,6 +39,7 @@ enum ScriptTexts
     SAY_FRENZY                      = 11,
     SAY_BERSERK                     = 12,
     SAY_DEATH                       = 13,
+    EMOTE_SCENT_OF_BLOOD            = 14,
 
     // High Overlord Saurfang
     SAY_INTRO_HORDE_1               = 0,
@@ -145,6 +146,7 @@ enum EventTypes
     EVENT_BOILING_BLOOD         = 20,
     EVENT_BLOOD_NOVA            = 21,
     EVENT_RUNE_OF_BLOOD         = 22,
+    EVENT_SCENT_OF_BLOOD        = 52,
 
     EVENT_OUTRO_ALLIANCE_1      = 23,
     EVENT_OUTRO_ALLIANCE_2      = 24,
@@ -269,6 +271,9 @@ class boss_deathbringer_saurfang : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                if (_dead)
+                    return;
+
                 if (!instance->CheckRequiredBosses(DATA_DEATHBRINGER_SAURFANG, who->ToPlayer()))
                 {
                     EnterEvadeMode();
@@ -294,7 +299,7 @@ class boss_deathbringer_saurfang : public CreatureScript
 
                 Talk(SAY_AGGRO);
                 events.ScheduleEvent(EVENT_SUMMON_BLOOD_BEAST, 30000, 0, PHASE_COMBAT);
-                events.ScheduleEvent(EVENT_BERSERK, 480000, 0, PHASE_COMBAT);
+                events.ScheduleEvent(EVENT_BERSERK, IsHeroic() ? 360000 : 480000, 0, PHASE_COMBAT);
                 events.ScheduleEvent(EVENT_BOILING_BLOOD, 15500, 0, PHASE_COMBAT);
                 events.ScheduleEvent(EVENT_BLOOD_NOVA, 17000, 0, PHASE_COMBAT);
                 events.ScheduleEvent(EVENT_RUNE_OF_BLOOD, 20000, 0, PHASE_COMBAT);
@@ -336,8 +341,11 @@ class boss_deathbringer_saurfang : public CreatureScript
                     Talk(SAY_KILL);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
+                if (damage >= me->GetHealth())
+                    damage = me->GetHealth() - 1;
+
                 if (!_frenzied && HealthBelowPct(31)) // AT 30%, not below
                 {
                     _frenzied = true;
@@ -350,6 +358,7 @@ class boss_deathbringer_saurfang : public CreatureScript
                     _dead = true;
                     _JustDied();
                     _EnterEvadeMode();
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
 
                     DoCastAOE(SPELL_REMOVE_MARKS_OF_THE_FALLEN_CHAMPION);
                     DoCast(me, SPELL_ACHIEVEMENT, true);
@@ -367,16 +376,13 @@ class boss_deathbringer_saurfang : public CreatureScript
                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                     summon->AI()->AttackStart(target);
 
-                if (IsHeroic())
-                    DoCast(summon, SPELL_SCENT_OF_BLOOD);
-
-                summon->AI()->DoCast(summon, SPELL_BLOOD_LINK_BEAST, true);
-                summon->AI()->DoCast(summon, SPELL_RESISTANT_SKIN, true);
+                summon->CastSpell(summon, SPELL_BLOOD_LINK_BEAST, true);
+                summon->CastSpell(summon, SPELL_RESISTANT_SKIN, true);
                 summons.Summon(summon);
                 DoZoneInCombat(summon);
             }
 
-            void SummonedCreatureDespawn(Creature* summon)
+            void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
             {
                 summons.Despawn(summon);
             }
@@ -456,18 +462,13 @@ class boss_deathbringer_saurfang : public CreatureScript
                                     DoCast(me, SPELL_SUMMON_BLOOD_BEAST_25_MAN+i25);
                             Talk(SAY_BLOOD_BEASTS);
                             events.ScheduleEvent(EVENT_SUMMON_BLOOD_BEAST, 40000, 0, PHASE_COMBAT);
+                            if (IsHeroic())
+                                events.ScheduleEvent(EVENT_SCENT_OF_BLOOD, 10000, 0, PHASE_COMBAT);
                             break;
                         case EVENT_BLOOD_NOVA:
-                        {
-                            // select at range only
-                            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, -10.0f, true);
-                            if (!target)
-                                target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);    // noone? select melee
-                            if (target)
-                                DoCast(target, SPELL_BLOOD_NOVA_TRIGGER);
+                            DoCastAOE(SPELL_BLOOD_NOVA_TRIGGER);
                             events.ScheduleEvent(EVENT_BLOOD_NOVA, urand(20000, 25000), 0, PHASE_COMBAT);
                             break;
-                        }
                         case EVENT_RUNE_OF_BLOOD:
                             DoCastVictim(SPELL_RUNE_OF_BLOOD);
                             events.ScheduleEvent(EVENT_RUNE_OF_BLOOD, urand(20000, 25000), 0, PHASE_COMBAT);
@@ -479,6 +480,13 @@ class boss_deathbringer_saurfang : public CreatureScript
                         case EVENT_BERSERK:
                             DoCast(me, SPELL_BERSERK);
                             Talk(SAY_BERSERK);
+                            break;
+                        case EVENT_SCENT_OF_BLOOD:
+                            if (!summons.empty())
+                            {
+                                Talk(EMOTE_SCENT_OF_BLOOD);
+                                DoCastAOE(SPELL_SCENT_OF_BLOOD);
+                            }
                             break;
                         default:
                             break;
@@ -1230,10 +1238,16 @@ class spell_deathbringer_blood_nova_targeting : public SpellScriptLoader
                 unitList.push_back(target);
             }
 
+            void HandleForceCast(SpellEffIndex /*effIndex*/)
+            {
+                GetCaster()->CastSpell(GetHitUnit(), uint32(GetEffectValue()), TRIGGERED_FULL_MASK);
+            }
+
             void Register()
             {
                 OnUnitTargetSelect += SpellUnitTargetFn(spell_deathbringer_blood_nova_targeting_SpellScript::FilterTargetsInitial, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
                 OnUnitTargetSelect += SpellUnitTargetFn(spell_deathbringer_blood_nova_targeting_SpellScript::FilterTargetsSubsequent, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnEffectHitTarget += SpellEffectFn(spell_deathbringer_blood_nova_targeting_SpellScript::HandleForceCast, EFFECT_0, SPELL_EFFECT_FORCE_CAST);
             }
 
             Unit* target;
@@ -1265,7 +1279,7 @@ class spell_deathbringer_boiling_blood : public SpellScriptLoader
                 if (unitList.empty())
                     return;
 
-                Unit* target = SelectRandomContainerElement(unitList);
+                Unit* target = Trinity::Containers::SelectRandomContainerElement(unitList);
                 unitList.clear();
                 unitList.push_back(target);
             }

@@ -57,14 +57,14 @@ enum SpellCastFlags
     CAST_FLAG_UNKNOWN_17         = 0x00010000,
     CAST_FLAG_ADJUST_MISSILE     = 0x00020000,
     CAST_FLAG_UNKNOWN_19         = 0x00040000,
-    CAST_FLAG_UNKNOWN_20         = 0x00080000,
+    CAST_FLAG_VISUAL_CHAIN       = 0x00080000,
     CAST_FLAG_UNKNOWN_21         = 0x00100000,
     CAST_FLAG_RUNE_LIST          = 0x00200000,
     CAST_FLAG_UNKNOWN_23         = 0x00400000,
     CAST_FLAG_UNKNOWN_24         = 0x00800000,
     CAST_FLAG_UNKNOWN_25         = 0x01000000,
     CAST_FLAG_UNKNOWN_26         = 0x02000000,
-    CAST_FLAG_UNKNOWN_27         = 0x04000000,
+    CAST_FLAG_IMMUNITY           = 0x04000000,
     CAST_FLAG_UNKNOWN_28         = 0x08000000,
     CAST_FLAG_UNKNOWN_29         = 0x10000000,
     CAST_FLAG_UNKNOWN_30         = 0x20000000,
@@ -455,7 +455,7 @@ class Spell
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
         bool IsNextMeleeSwingSpell() const;
-        bool IsTriggered() const {return _triggeredCastFlags & TRIGGERED_FULL_MASK;};
+        bool IsTriggered() const { return _triggeredCastFlags & TRIGGERED_FULL_MASK; };
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
         bool IsAutoActionResetSpell() const;
 
@@ -596,7 +596,7 @@ class Spell
 
         SpellDestination m_destTargets[MAX_SPELL_EFFECTS];
 
-        void AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid = true);
+        void AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid = true, bool implicit = true);
         void AddGOTarget(GameObject* target, uint32 effectMask);
         void AddItemTarget(Item* item, uint32 effectMask);
         void AddDestTarget(SpellDestination const& dest, uint32 effIndex);
@@ -633,10 +633,18 @@ class Spell
         void CallScriptAfterUnitTargetSelectHandlers(std::list<Unit*>& unitTargets, SpellEffIndex effIndex);
         std::list<SpellScript*> m_loadedScripts;
 
-        bool CanExecuteTriggersOnHit(uint8 effMask, SpellInfo const* spellInfo = NULL) const;
+        struct HitTriggerSpell
+        {
+            SpellInfo const* triggeredSpell;
+            SpellInfo const* triggeredByAura;
+            // uint8 triggeredByEffIdx          This might be needed at a later stage - No need known for now
+            int32 chance;
+        };
+
+        bool CanExecuteTriggersOnHit(uint8 effMask, SpellInfo const* triggeredByAura = NULL) const;
         void PrepareTriggersExecutedOnHit();
-        typedef std::list< std::pair<SpellInfo const*, int32> > HitTriggerSpells;
-        HitTriggerSpells m_hitTriggerSpells;
+        typedef std::list<HitTriggerSpell> HitTriggerSpellList;
+        HitTriggerSpellList m_hitTriggerSpells;
 
         // effect helpers
         void SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons);

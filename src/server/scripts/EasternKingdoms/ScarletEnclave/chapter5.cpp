@@ -497,9 +497,9 @@ public:
             SetEscortPaused(bOnHold);
         }
 
-        void WaypointReached(uint32 wpId)
+        void WaypointReached(uint32 waypointId)
         {
-            switch (wpId)
+            switch (waypointId)
             {
                 case 0:
                     me->SetWalk(false);
@@ -507,7 +507,6 @@ public:
                     break;
                 case 1:
                     SetHoldState(true);
-
                     SpawnNPC();
                     if (Creature* temp = Unit::GetCreature(*me, uiKorfaxGUID))
                         DoScriptText(SAY_LIGHT_OF_DAWN07, temp);
@@ -578,7 +577,8 @@ public:
                         temp->GetMotionMaster()->MovePoint(0, LightofDawnLoc[16].x, LightofDawnLoc[16].y, LightofDawnLoc[16].z);
                     }
                     JumpToNextStep(10000);
-                } break;
+                }
+                break;
                 case 4:
                     DoScriptText(SAY_LIGHT_OF_DAWN27, me);
                     me->SetStandState(UNIT_STAND_STATE_KNEEL);
@@ -938,7 +938,7 @@ public:
                         case 33: // Darion supports to jump to lich king here
                             if (Unit::GetCreature(*me, uiLichKingGUID))
                                 DoCast(me, SPELL_MOGRAINE_CHARGE); // jumping charge
-    //   doesn't make it looks well, so workarounds, Darion charges, looks better
+                            // doesn't make it looks well, so workarounds, Darion charges, looks better
                             me->SetSpeed(MOVE_RUN, 3.0f);
                             me->SetWalk(false);
                             SetHoldState(false);
@@ -1010,8 +1010,7 @@ public:
 
                                 if (fLichPositionX && fLichPositionY)
                                 {
-                                    Unit* temp;
-                                    temp = me->SummonCreature(NPC_DEFENDER_OF_THE_LIGHT, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
+                                    Unit* temp = me->SummonCreature(NPC_DEFENDER_OF_THE_LIGHT, LightofDawnLoc[0].x+rand()%10, LightofDawnLoc[0].y+rand()%10, LightofDawnLoc[0].z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
                                     temp->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_ATTACK_UNARMED);
                                     temp->SetWalk(false);
                                     temp->SetSpeed(MOVE_RUN, 2.0f);
@@ -1309,7 +1308,6 @@ public:
                         case 71:
                             //if (GameObject* go = me->GetMap()->GetGameObject(uiDawnofLightGUID)) // Turn off dawn of light
                             //    go->SetPhaseMask(0, true);
-
                             {
                                 Map* map = me->GetMap(); // search players with in 50 yards for quest credit
                                 Map::PlayerList const &PlayerList = map->GetPlayers();

@@ -1972,6 +1972,35 @@ uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
     return (castTime > 0) ? uint32(castTime) : 0;
 }
 
+uint32 SpellInfo::GetMaxTicks() const
+{
+    int32 DotDuration = GetDuration();
+    if (DotDuration == 0)
+        return 1;
+
+    // 200% limit
+    if (DotDuration > 30000)
+        DotDuration = 30000;
+
+    uint8 x = 0;
+    for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+    {
+        if (Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && (
+            Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
+            Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_HEAL   ||
+            Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_LEECH))
+        {
+            x = j;
+            break;
+        }
+    }
+
+    if (Effects[x].Amplitude != 0)
+        return DotDuration / Effects[x].Amplitude;
+
+    return 6;
+}
+
 uint32 SpellInfo::GetRecoveryTime() const
 {
     return RecoveryTime > CategoryRecoveryTime ? RecoveryTime : CategoryRecoveryTime;
@@ -2177,12 +2206,12 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
             switch (Id)
             {
                 case 34700: // Allergic Reaction
-                case 61716: // Rabbit Costume
-                case 61734: // Noblegarden Bunny
                 case 61987: // Avenging Wrath Marker
                 case 61988: // Divine Shield exclude aura
                 case 62532: // Conservator's Grip
                     return false;
+                case 61716: // Rabbit Costume
+                case 61734: // Noblegarden Bunny
                 case 30877: // Tag Murloc
                 case 62344: // Fists of Stone
                     return true;

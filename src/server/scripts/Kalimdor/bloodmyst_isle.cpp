@@ -49,7 +49,7 @@ public:
 
     struct mob_webbed_creatureAI : public ScriptedAI
     {
-        mob_webbed_creatureAI(Creature* c) : ScriptedAI(c) {}
+        mob_webbed_creatureAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
@@ -59,7 +59,7 @@ public:
         {
         }
 
-        void JustDied(Unit* Killer)
+        void JustDied(Unit* killer)
         {
             uint32 spawnCreatureID = 0;
 
@@ -67,8 +67,8 @@ public:
             {
                 case 0:
                     spawnCreatureID = 17681;
-                    if (Killer->GetTypeId() == TYPEID_PLAYER)
-                        CAST_PLR(Killer)->KilledMonsterCredit(spawnCreatureID, 0);
+                    if (Player* player = killer->ToPlayer())
+                        player->KilledMonsterCredit(spawnCreatureID, 0);
                     break;
                 case 1:
                 case 2:
@@ -193,7 +193,7 @@ public:
             if (type == POINT_MOTION_TYPE && id == 1)
             {
                 DoScriptText(SAY_DIRECTION, me);
-                me->ForcedDespawn();
+                me->DespawnOrUnsummon();
             }
         }
     };

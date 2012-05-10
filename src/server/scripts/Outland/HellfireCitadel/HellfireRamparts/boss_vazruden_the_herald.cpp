@@ -194,9 +194,9 @@ class boss_nazan : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* Creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_nazanAI (Creature);
+            return new boss_nazanAI(creature);
         }
 };
 
@@ -236,9 +236,9 @@ class boss_vazruden : public CreatureScript
                     DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
             }
 
-            void JustDied(Unit* who)
+            void JustDied(Unit* killer)
             {
-                if (who && who != me)
+                if (killer && killer != me)
                     DoScriptText(SAY_DIE, me);
             }
 
@@ -272,9 +272,9 @@ class boss_vazruden : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-        CreatureAI* GetAI(Creature* Creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_vazrudenAI (Creature);
+            return new boss_vazrudenAI(creature);
         }
 };
 
@@ -453,9 +453,9 @@ class boss_vazruden_the_herald : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* Creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_vazruden_the_heraldAI (Creature);
+            return new boss_vazruden_the_heraldAI(creature);
         }
 };
 
@@ -480,10 +480,10 @@ class mob_hellfire_sentry : public CreatureScript
 
             void EnterCombat(Unit* /*who*/) {}
 
-            void JustDied(Unit* who)
+            void JustDied(Unit* killer)
             {
                 if (Creature* herald = me->FindNearestCreature(ENTRY_VAZRUDEN_HERALD, 150))
-                    CAST_AI(boss_vazruden_the_herald::boss_vazruden_the_heraldAI, herald->AI())->SentryDownBy(who);
+                    CAST_AI(boss_vazruden_the_herald::boss_vazruden_the_heraldAI, herald->AI())->SentryDownBy(killer);
             }
 
             void UpdateAI(const uint32 diff)
@@ -503,9 +503,9 @@ class mob_hellfire_sentry : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-        CreatureAI* GetAI(Creature* Creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
-            return new mob_hellfire_sentryAI (Creature);
+            return new mob_hellfire_sentryAI(creature);
         }
 };
 void AddSC_boss_vazruden_the_herald()

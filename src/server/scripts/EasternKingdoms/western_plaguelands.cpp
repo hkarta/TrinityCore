@@ -85,6 +85,7 @@ public:
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
+
         if (creature->isVendor())
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
@@ -95,7 +96,8 @@ public:
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HDA3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HDA4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
             player->SEND_GOSSIP_MENU(3985, creature->GetGUID());
-        }else
+        }
+        else
             player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
 
         return true;
@@ -166,7 +168,7 @@ public:
 
     struct npc_the_scourge_cauldronAI : public ScriptedAI
     {
-        npc_the_scourge_cauldronAI(Creature* c) : ScriptedAI(c) {}
+        npc_the_scourge_cauldronAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() {}
 
@@ -250,7 +252,7 @@ public:
 
     struct npc_andorhal_towerAI : public Scripted_NoMovementAI
     {
-        npc_andorhal_towerAI(Creature* c) : Scripted_NoMovementAI(c) {}
+        npc_andorhal_towerAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         void MoveInLineOfSight(Unit* who)
         {
@@ -326,10 +328,11 @@ public:
                 summoned->AI()->AttackStart(me);
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-            switch (i)
+
+            switch (waypointId)
             {
                 case 8:
                     DoScriptText(SAY_WP_0, me);
@@ -378,8 +381,7 @@ public:
 
          void JustDied(Unit* /*killer*/)
         {
-           Player* player = GetPlayerForEscort();
-            if (player)
+            if (Player* player = GetPlayerForEscort())
                 player->FailQuest(QUEST_TOMB_LIGHTBRINGER);
         }
 

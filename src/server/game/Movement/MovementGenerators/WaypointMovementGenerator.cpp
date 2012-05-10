@@ -107,7 +107,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
         i_currentNode = (i_currentNode+1) % i_path->size();
     }
 
-    const WaypointData *node = i_path->at(i_currentNode);
+    WaypointData const* node = i_path->at(i_currentNode);
 
     m_isArrivalDone = false;
 
@@ -116,7 +116,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     Movement::MoveSplineInit init(creature);
     init.MoveTo(node->x, node->y, node->z);
 
-    if (node->orientation != 100 && node->delay != 0)
+    //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
+    if (node->orientation && node->delay)
         init.SetFacing(node->orientation);
 
     init.SetWalk(!node->run);
@@ -231,7 +232,7 @@ void FlightPathMovementGenerator::Reset(Player & player)
     uint32 end = GetPathAtMapEnd();
     for (uint32 i = GetCurrentNode(); i != end; ++i)
     {
-        G3D::Vector3 vertice((*i_path)[i].x,(*i_path)[i].y,(*i_path)[i].z);
+        G3D::Vector3 vertice((*i_path)[i].x, (*i_path)[i].y, (*i_path)[i].z);
         init.Path().push_back(vertice);
     }
     init.SetFirstPointId(GetCurrentNode());

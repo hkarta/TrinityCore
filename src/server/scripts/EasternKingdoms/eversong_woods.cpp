@@ -247,7 +247,7 @@ public:
                     CAST_PLR(Killed)->FailQuest(QUEST_SECOND_TRIAL);
         }
 
-        void JustDied(Unit* Killer);
+        void JustDied(Unit* killer);
     };
 };
 
@@ -293,7 +293,7 @@ public:
 
     struct master_kelerun_bloodmournAI : public ScriptedAI
     {
-        master_kelerun_bloodmournAI(Creature* c) : ScriptedAI(c) {}
+        master_kelerun_bloodmournAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint8  questPhase;
         uint8  paladinPhase;
@@ -417,10 +417,10 @@ class go_second_trial : public GameObjectScript
 public:
     go_second_trial() : GameObjectScript("go_second_trial") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* pGO)
+    bool OnGossipHello(Player* /*player*/, GameObject* go)
     {
         // find spawn :: master_kelerun_bloodmourn
-        if (Creature* creature = pGO->FindNearestCreature(MASTER_KELERUN_BLOODMOURN, 30.0f))
+        if (Creature* creature = go->FindNearestCreature(MASTER_KELERUN_BLOODMOURN, 30.0f))
            CAST_AI(npc_second_trial_controller::master_kelerun_bloodmournAI, creature->AI())->StartEvent();
 
         return true;
@@ -457,7 +457,7 @@ public:
 
     struct npc_apprentice_mirvedaAI : public ScriptedAI
     {
-        npc_apprentice_mirvedaAI(Creature* c) : ScriptedAI(c), Summons(me) {}
+        npc_apprentice_mirvedaAI(Creature* creature) : ScriptedAI(creature), Summons(me) {}
 
         uint32 KillCount;
         uint64 PlayerGUID;
@@ -490,14 +490,14 @@ public:
         {
             if (PlayerGUID)
                 if (Player* player = Unit::GetPlayer(*me, PlayerGUID))
-                    CAST_PLR(player)->FailQuest(QUEST_UNEXPECTED_RESULT);
+                    player->FailQuest(QUEST_UNEXPECTED_RESULT);
         }
 
         void UpdateAI(const uint32 /*diff*/)
         {
             if (KillCount >= 3 && PlayerGUID)
                 if (Player* player = Unit::GetPlayer(*me, PlayerGUID))
-                    CAST_PLR(player)->CompleteQuest(QUEST_UNEXPECTED_RESULT);
+                    player->CompleteQuest(QUEST_UNEXPECTED_RESULT);
 
             if (Summon)
             {
@@ -547,7 +547,7 @@ public:
 
     struct npc_infused_crystalAI : public Scripted_NoMovementAI
     {
-        npc_infused_crystalAI(Creature* c) : Scripted_NoMovementAI(c) {}
+        npc_infused_crystalAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         uint32 EndTimer;
         uint32 WaveTimer;

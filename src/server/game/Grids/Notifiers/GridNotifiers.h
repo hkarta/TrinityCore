@@ -820,7 +820,7 @@ namespace Trinity
                 if (u->GetTypeId() == TYPEID_UNIT && ((Creature*)u)->isTotem())
                     return false;
 
-                if(!u->isTargetableForAttack(false))
+                if (!u->isTargetableForAttack(false))
                     return false;
 
                 return i_obj->IsWithinDistInMap(u, i_range) && !i_funit->IsFriendlyTo(u);
@@ -881,6 +881,30 @@ namespace Trinity
             float i_range;
     };
 
+    class AnyGroupedUnitInObjectRangeCheck
+    {
+        public:
+            AnyGroupedUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool raid) : _source(obj), _refUnit(funit), _range(range), _raid(raid) {}
+            bool operator()(Unit* u)
+            {
+                if (_raid)
+                {
+                    if (!_refUnit->IsInRaidWith(u))
+                        return false;
+                }
+                else if (!_refUnit->IsInPartyWith(u))
+                    return false;
+
+                return !_refUnit->IsHostileTo(u) && u->isAlive() && _source->IsWithinDistInMap(u, _range);
+            }
+
+        private:
+            WorldObject const* _source;
+            Unit const* _refUnit;
+            float _range;
+            bool _raid;
+    };
+
     class AnyUnitInObjectRangeCheck
     {
         public:
@@ -926,13 +950,15 @@ namespace Trinity
     {
         public:
             AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range)
-                : i_obj(obj), i_funit(funit), i_range(range)
+                : i_obj(obj), i_funit(funit), _spellInfo(NULL), i_range(range)
             {
                 Unit const* check = i_funit;
                 Unit const* owner = i_funit->GetOwner();
                 if (owner)
                     check = owner;
                 i_targetForPlayer = (check->GetTypeId() == TYPEID_PLAYER);
+                if (i_obj->GetTypeId() == TYPEID_DYNAMICOBJECT)
+                    _spellInfo = sSpellMgr->GetSpellInfo(((DynamicObject*)i_obj)->GetSpellId());
             }
             bool operator()(Unit* u)
             {
@@ -940,7 +966,7 @@ namespace Trinity
                 if (u->GetTypeId() == TYPEID_UNIT && ((Creature*)u)->isTotem())
                     return false;
 
-                if (i_funit->IsValidAttackTarget(u) && i_obj->IsWithinDistInMap(u, i_range))
+                if (i_funit->_IsValidAttackTarget(u, _spellInfo) && i_obj->IsWithinDistInMap(u, i_range))
                     return true;
 
                 return false;
@@ -949,6 +975,7 @@ namespace Trinity
             bool i_targetForPlayer;
             WorldObject const* i_obj;
             Unit const* i_funit;
+            SpellInfo const* _spellInfo;
             float i_range;
     };
 
@@ -968,7 +995,7 @@ namespace Trinity
                     return;
 
                 // too far
-                if (!u->IsWithinDistInMap(i_enemy, i_range))
+                if (!u->IsWithinDistInMap(i_funit, i_range))
                     return;
 
                 // only if see assisted creature's enemy
@@ -1309,7 +1336,7 @@ namespace Trinity
         AllWorldObjectsInRange(const WorldObject* object, float maxRange) : m_pObject(object), m_fRange(maxRange) {}
         bool operator() (WorldObject* go)
         {
-            return m_pObject->IsWithinDist(go, m_fRange, false);
+            return m_pObject->IsWithinDist(go, m_fRange, false) && m_pObject->InSamePhase(go);
         }
     private:
         const WorldObject* m_pObject;

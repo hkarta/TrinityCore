@@ -109,11 +109,11 @@ public:
 
     struct npc_barnesAI : public npc_escortAI
     {
-        npc_barnesAI(Creature* c) : npc_escortAI(c)
+        npc_barnesAI(Creature* creature) : npc_escortAI(creature)
         {
             RaidWiped = false;
             m_uiEventId = 0;
-            instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
         InstanceScript* instance;
@@ -158,12 +158,12 @@ public:
 
         void EnterCombat(Unit* /*who*/) {}
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             if (!instance)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
                 case 0:
                     DoCast(me, SPELL_TUXEDO, false);
@@ -474,9 +474,9 @@ public:
 
     struct npc_image_of_medivhAI : public ScriptedAI
     {
-        npc_image_of_medivhAI(Creature* c) : ScriptedAI(c)
+        npc_image_of_medivhAI(Creature* creature) : ScriptedAI(creature)
         {
-            instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
         InstanceScript* instance;
@@ -536,7 +536,7 @@ public:
 
         uint32 NextStep(uint32 Step)
         {
-            Unit* arca = Unit::GetUnit((*me), ArcanagosGUID);
+            Unit* arca = Unit::GetUnit(*me, ArcanagosGUID);
             Map* map = me->GetMap();
             switch (Step)
             {
@@ -625,7 +625,7 @@ public:
 
             if (Step >= 7 && Step <= 12)
             {
-                Unit* arca = Unit::GetUnit((*me), ArcanagosGUID);
+                Unit* arca = Unit::GetUnit(*me, ArcanagosGUID);
 
                 if (FireArcanagosTimer <= diff)
                 {

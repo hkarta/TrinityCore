@@ -296,7 +296,7 @@ public:
     struct npc_clintar_spiritAI : public npc_escortAI
     {
     public:
-        npc_clintar_spiritAI(Creature* c) : npc_escortAI(c) {}
+        npc_clintar_spiritAI(Creature* creature) : npc_escortAI(creature) {}
 
         uint32 Step;
         uint32 CurrWP;
@@ -537,9 +537,9 @@ public:
             } else if (Event_onWait) Event_Timer -= diff;
         }
 
-        void WaypointReached(uint32 id)
+        void WaypointReached(uint32 waypointId)
         {
-            CurrWP = id;
+            CurrWP = waypointId;
             Event_Timer = 0;
             Step = 0;
             Event_onWait = true;

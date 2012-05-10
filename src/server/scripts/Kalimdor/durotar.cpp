@@ -48,14 +48,14 @@ public:
 
     struct npc_lazy_peonAI : public ScriptedAI
     {
-        npc_lazy_peonAI(Creature* c) : ScriptedAI(c) {}
+        npc_lazy_peonAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 uiPlayerGUID;
 
         uint32 m_uiRebuffTimer;
         bool work;
 
-        void Reset ()
+        void Reset()
         {
             uiPlayerGUID = 0;
             m_uiRebuffTimer = 0;
@@ -264,7 +264,7 @@ class npc_tiger_matriarch : public CreatureScript
                     vehSummoner->RemoveAurasDueToSpell(SPELL_SPIRIT_OF_THE_TIGER_RIDER);
                     vehSummoner->RemoveAurasDueToSpell(SPELL_SUMMON_ZENTABRA_TRIGGER);
                 }
-                me->ForcedDespawn();
+                me->DespawnOrUnsummon();
             }
 
             void DamageTaken(Unit* attacker, uint32& damage)
@@ -287,7 +287,7 @@ class npc_tiger_matriarch : public CreatureScript
                         vehSummoner->RemoveAurasDueToSpell(SPELL_SUMMON_ZENTABRA_TRIGGER);
                     }
 
-                    me->ForcedDespawn();
+                    me->DespawnOrUnsummon();
                 }
             }
 

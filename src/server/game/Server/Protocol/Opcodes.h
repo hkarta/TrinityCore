@@ -911,7 +911,7 @@ enum Opcodes
     CMSG_LFG_SET_ROLES                              = 0x36A,
     CMSG_LFG_SET_NEEDS                              = 0x36B,
     CMSG_LFG_SET_BOOT_VOTE                          = 0x36C,
-    SMSG_LFG_BOOT_PLAYER                            = 0x36D,    // uint8, uint8, uint8, uint64, uint32, uint32, uint32, uint32
+    SMSG_LFG_BOOT_PROPOSAL_UPDATE                   = 0x36D,    // uint8, uint8, uint8, uint64, uint32, uint32, uint32, uint32
     CMSG_LFD_PLAYER_LOCK_INFO_REQUEST               = 0x36E,
     SMSG_LFG_PLAYER_INFO                            = 0x36F,    // uint8, for (uint8) { uint32, uint8, uint32, uint32, uint32, uint32, uint8, for (uint8) {uint32, uint32, uint32}}, uint32, for (uint32) {uint32, uint32}
     CMSG_LFG_TELEPORT                               = 0x370,
@@ -1344,7 +1344,7 @@ enum Opcodes
     CMSG_COMMENTATOR_SKIRMISH_QUEUE_COMMAND         = 0x51B,
     SMSG_COMMENTATOR_SKIRMISH_QUEUE_RESULT1         = 0x51C,
     SMSG_COMMENTATOR_SKIRMISH_QUEUE_RESULT2         = 0x51D,
-    SMSG_COMPRESSED_UNKNOWN_1310                    = 0x51E, // some compressed packet?
+    SMSG_MULTIPLE_MOVES                             = 0x51E, // uncompressed version of SMSG_COMPRESSED_MOVES
     NUM_MSG_TYPES                                   = 0x51F
 };
 

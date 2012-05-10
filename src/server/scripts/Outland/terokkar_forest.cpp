@@ -62,7 +62,7 @@ public:
 
     struct mob_unkor_the_ruthlessAI : public ScriptedAI
     {
-        mob_unkor_the_ruthlessAI(Creature* c) : ScriptedAI(c) {}
+        mob_unkor_the_ruthlessAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool CanDoQuest;
         uint32 UnkorUnfriendly_Timer;
@@ -168,7 +168,7 @@ public:
 
     struct mob_infested_root_walkerAI : public ScriptedAI
     {
-        mob_infested_root_walkerAI(Creature* c) : ScriptedAI(c) {}
+        mob_infested_root_walkerAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() { }
         void EnterCombat(Unit* /*who*/) { }
@@ -200,15 +200,15 @@ public:
     struct npc_skywingAI : public npc_escortAI
     {
     public:
-        npc_skywingAI(Creature* c) : npc_escortAI(c) {}
+        npc_skywingAI(Creature* creature) : npc_escortAI(creature) {}
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
                 case 8:
                     player->AreaExploredOrEventHappens(10898);
@@ -261,7 +261,7 @@ public:
 
     struct mob_rotting_forest_ragerAI : public ScriptedAI
     {
-        mob_rotting_forest_ragerAI(Creature* c) : ScriptedAI(c) {}
+        mob_rotting_forest_ragerAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() { }
         void EnterCombat(Unit* /*who*/) { }
@@ -300,30 +300,32 @@ public:
 
     struct mob_netherweb_victimAI : public ScriptedAI
     {
-        mob_netherweb_victimAI(Creature* c) : ScriptedAI(c) {}
+        mob_netherweb_victimAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() { }
         void EnterCombat(Unit* /*who*/) { }
         void MoveInLineOfSight(Unit* /*who*/) { }
 
-        void JustDied(Unit* Killer)
+        void JustDied(Unit* killer)
         {
-            if (Killer->GetTypeId() == TYPEID_PLAYER)
-            {
-                if (CAST_PLR(Killer)->GetQuestStatus(10873) == QUEST_STATUS_INCOMPLETE)
-                {
-                    if (rand()%100 < 25)
-                    {
-                        me->SummonCreature(QUEST_TARGET, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
-                        CAST_PLR(Killer)->KilledMonsterCredit(QUEST_TARGET, 0);
-                    }
-                    else
-                        me->SummonCreature(netherwebVictims[rand()%6], 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+            Player* player = killer->ToPlayer();
+            if (!player)
+                return;
 
-                    if (rand()%100 < 75)
-                        me->SummonCreature(netherwebVictims[rand()%6], 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
-                    me->SummonCreature(netherwebVictims[rand()%6], 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+            if (player->GetQuestStatus(10873) == QUEST_STATUS_INCOMPLETE)
+            {
+                if (rand()%100 < 25)
+                {
+                    me->SummonCreature(QUEST_TARGET, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                    player->KilledMonsterCredit(QUEST_TARGET, 0);
                 }
+                else
+                    me->SummonCreature(netherwebVictims[rand()%6], 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+
+                if (rand()%100 < 75)
+                    me->SummonCreature(netherwebVictims[rand()%6], 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+
+                me->SummonCreature(netherwebVictims[rand()%6], 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
             }
         }
     };
@@ -387,9 +389,9 @@ public:
 
     struct npc_floonAI : public ScriptedAI
     {
-        npc_floonAI(Creature* c) : ScriptedAI(c)
+        npc_floonAI(Creature* creature) : ScriptedAI(creature)
         {
-            m_uiNormFaction = c->getFaction();
+            m_uiNormFaction = creature->getFaction();
         }
 
         uint32 m_uiNormFaction;
@@ -459,40 +461,44 @@ public:
 
     struct npc_isla_starmaneAI : public npc_escortAI
     {
-        npc_isla_starmaneAI(Creature* c) : npc_escortAI(c) {}
+        npc_isla_starmaneAI(Creature* creature) : npc_escortAI(creature) {}
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
-            case 0:
-                {
-                GameObject* Cage = me->FindNearestGameObject(GO_CAGE, 10);
-                if (Cage)
-                    Cage->SetGoState(GO_STATE_ACTIVE);
-                }
-                break;
-            case 2: DoScriptText(SAY_PROGRESS_1, me, player); break;
-            case 5: DoScriptText(SAY_PROGRESS_2, me, player); break;
-            case 6: DoScriptText(SAY_PROGRESS_3, me, player); break;
-            case 29:DoScriptText(SAY_PROGRESS_4, me, player);
-                if (player)
-                {
+                case 0:
+                    if (GameObject* Cage = me->FindNearestGameObject(GO_CAGE, 10))
+                        Cage->SetGoState(GO_STATE_ACTIVE);
+                    break;
+                case 2:
+                    DoScriptText(SAY_PROGRESS_1, me, player);
+                    break;
+                case 5:
+                    DoScriptText(SAY_PROGRESS_2, me, player);
+                    break;
+                case 6:
+                    DoScriptText(SAY_PROGRESS_3, me, player);
+                    break;
+                case 29:
+                    DoScriptText(SAY_PROGRESS_4, me, player);
                     if (player->GetTeam() == ALLIANCE)
                         player->GroupEventHappens(QUEST_EFTW_A, me);
                     else if (player->GetTeam() == HORDE)
                         player->GroupEventHappens(QUEST_EFTW_H, me);
-                }
-                me->SetInFront(player); break;
-            case 30: me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE); break;
-            case 31: DoCast(me, SPELL_CAT);
-                me->SetWalk(false);
-                break;
+                    me->SetInFront(player);
+                    break;
+                case 30:
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);
+                    break;
+                case 31:
+                    DoCast(me, SPELL_CAT);
+                    me->SetWalk(false);
+                    break;
             }
         }
 
@@ -660,23 +666,22 @@ public:
 
     struct npc_akunoAI : public npc_escortAI
     {
-        npc_akunoAI(Creature* c) : npc_escortAI(c) {}
+        npc_akunoAI(Creature* creature) : npc_escortAI(creature) {}
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
                 case 3:
                     me->SummonCreature(NPC_CABAL_SKRIMISHER, -2795.99f, 5420.33f, -34.53f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
                     me->SummonCreature(NPC_CABAL_SKRIMISHER, -2793.55f, 5412.79f, -34.53f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
                     break;
                 case 11:
-                    if (player && player->GetTypeId() == TYPEID_PLAYER)
+                    if (player->GetTypeId() == TYPEID_PLAYER)
                         player->GroupEventHappens(QUEST_ESCAPING_THE_TOMB, me);
                     break;
             }

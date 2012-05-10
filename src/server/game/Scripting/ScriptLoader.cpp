@@ -73,7 +73,6 @@ void AddSC_reload_commandscript();
 void AddSC_tele_commandscript();
 void AddSC_titles_commandscript();
 void AddSC_wp_commandscript();
-void AddSC_gps_commandscript();
 
 #ifdef SCRIPTS
 //world
@@ -437,6 +436,7 @@ void AddSC_ulduar_teleporter();
 void AddSC_boss_mimiron();
 void AddSC_boss_hodir();
 void AddSC_boss_freya();
+void AddSC_boss_algalon_the_observer();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
 void AddSC_boss_skarvald_dalronn();
@@ -675,7 +675,6 @@ void AddCommandScripts()
     AddSC_tele_commandscript();
     AddSC_titles_commandscript();
     AddSC_wp_commandscript();
-    AddSC_gps_commandscript();
 }
 
 void AddWorldScripts()
@@ -1141,6 +1140,7 @@ void AddNorthrendScripts()
     AddSC_boss_mimiron();
     AddSC_boss_hodir();
     AddSC_boss_freya();
+    AddSC_boss_algalon_the_observer();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
     AddSC_boss_skarvald_dalronn();

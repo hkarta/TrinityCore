@@ -145,7 +145,7 @@ class boss_alar : public CreatureScript
                 me->setActive(true);
             }
 
-            void JustDied(Unit* /*victim*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_ALAREVENT, DONE);
@@ -450,9 +450,9 @@ class boss_alar : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* Creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_alarAI(Creature);
+            return new boss_alarAI(creature);
         }
 };
 
@@ -500,7 +500,7 @@ class mob_ember_of_alar : public CreatureScript
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     if (instance && instance->GetData(DATA_ALAREVENT) == 2)
                     {
-                        if (Unit* Alar = Unit::GetUnit((*me), instance->GetData64(DATA_ALAR)))
+                        if (Unit* Alar = Unit::GetUnit(*me, instance->GetData64(DATA_ALAR)))
                         {
                             int32 AlarHealth = int32(Alar->GetHealth()) - int32(Alar->CountPctFromMaxHealth(3));
                             if (AlarHealth > 0)
@@ -529,9 +529,9 @@ class mob_ember_of_alar : public CreatureScript
 
         };
 
-        CreatureAI* GetAI(Creature* Creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
-            return new mob_ember_of_alarAI(Creature);
+            return new mob_ember_of_alarAI(creature);
         }
 };
 
@@ -554,9 +554,9 @@ class mob_flame_patch_alar : public CreatureScript
             void UpdateAI(const uint32 /*diff*/) {}
         };
 
-        CreatureAI* GetAI(Creature* Creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
-            return new mob_flame_patch_alarAI(Creature);
+            return new mob_flame_patch_alarAI(creature);
         }
 };
 

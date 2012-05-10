@@ -69,7 +69,7 @@ public:
 
     struct npc_draenei_survivorAI : public ScriptedAI
     {
-        npc_draenei_survivorAI(Creature* c) : ScriptedAI(c) {}
+        npc_draenei_survivorAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 pCaster;
 
@@ -223,12 +223,12 @@ public:
 
     struct npc_engineer_spark_overgrindAI : public ScriptedAI
     {
-        npc_engineer_spark_overgrindAI(Creature* c) : ScriptedAI(c)
+        npc_engineer_spark_overgrindAI(Creature* creature) : ScriptedAI(creature)
         {
-            NormFaction = c->getFaction();
-            NpcFlags = c->GetUInt32Value(UNIT_NPC_FLAGS);
+            NormFaction = creature->getFaction();
+            NpcFlags = creature->GetUInt32Value(UNIT_NPC_FLAGS);
 
-            if (c->GetAreaId() == AREA_COVE || c->GetAreaId() == AREA_ISLE)
+            if (creature->GetAreaId() == AREA_COVE || creature->GetAreaId() == AREA_ISLE)
                 IsTreeEvent = true;
         }
 
@@ -301,7 +301,7 @@ public:
 
     struct npc_injured_draeneiAI : public ScriptedAI
     {
-        npc_injured_draeneiAI(Creature* c) : ScriptedAI(c) {}
+        npc_injured_draeneiAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
@@ -309,8 +309,13 @@ public:
             me->SetHealth(me->CountPctFromMaxHealth(15));
             switch (rand()%2)
             {
-                case 0: me->SetStandState(UNIT_STAND_STATE_SIT); break;
-                case 1: me->SetStandState(UNIT_STAND_STATE_SLEEP); break;
+                case 0:
+                    me->SetStandState(UNIT_STAND_STATE_SIT);
+                    break;
+
+                case 1:
+                    me->SetStandState(UNIT_STAND_STATE_SLEEP);
+                    break;
             }
         }
 
@@ -367,31 +372,30 @@ public:
 
     struct npc_magwinAI : public npc_escortAI
     {
-        npc_magwinAI(Creature* c) : npc_escortAI(c) {}
+        npc_magwinAI(Creature* creature) : npc_escortAI(creature) {}
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
-            case 0:
-                DoScriptText(SAY_START, me, player);
-                break;
-            case 17:
-                DoScriptText(SAY_PROGRESS, me, player);
-                break;
-            case 28:
-                DoScriptText(SAY_END1, me, player);
-                break;
-            case 29:
-                DoScriptText(EMOTE_HUG, me, player);
-                DoScriptText(SAY_END2, me, player);
-                player->GroupEventHappens(QUEST_A_CRY_FOR_SAY_HELP, me);
-                break;
+                case 0:
+                    DoScriptText(SAY_START, me, player);
+                    break;
+                case 17:
+                    DoScriptText(SAY_PROGRESS, me, player);
+                    break;
+                case 28:
+                    DoScriptText(SAY_END1, me, player);
+                    break;
+                case 29:
+                    DoScriptText(EMOTE_HUG, me, player);
+                    DoScriptText(SAY_END2, me, player);
+                    player->GroupEventHappens(QUEST_A_CRY_FOR_SAY_HELP, me);
+                    break;
             }
         }
 
@@ -443,7 +447,7 @@ public:
 
     struct npc_geezleAI : public ScriptedAI
     {
-        npc_geezleAI(Creature* c) : ScriptedAI(c) {}
+        npc_geezleAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 SparkGUID;
 
@@ -597,7 +601,7 @@ public:
                 ravager->AI()->AttackStart(player);
             }
         }
-        return true ;
+        return true;
     }
 };
 
@@ -613,7 +617,7 @@ public:
 
     struct npc_death_ravagerAI : public ScriptedAI
     {
-        npc_death_ravagerAI(Creature* c) : ScriptedAI(c){}
+        npc_death_ravagerAI(Creature* creature) : ScriptedAI(creature){}
 
         uint32 RendTimer;
         uint32 EnragingBiteTimer;

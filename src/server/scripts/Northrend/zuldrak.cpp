@@ -52,8 +52,7 @@ public:
             float x, y, z;
             me->GetClosePoint(x, y, z, me->GetObjectSize() / 3, 0.1f);
 
-            if (Unit* summon = me->SummonCreature(NPC_RAGECLAW, x, y, z,
-                0, TEMPSUMMON_DEAD_DESPAWN, 1000))
+            if (Unit* summon = me->SummonCreature(NPC_RAGECLAW, x, y, z, 0, TEMPSUMMON_DEAD_DESPAWN, 1000))
             {
                 RageclawGUID = summon->GetGUID();
                 LockRageclaw();
@@ -741,9 +740,9 @@ public:
             bEnrage = false;
         }
 
-        void WaypointReached(uint32 uiI)
+        void WaypointReached(uint32 waypointId)
         {
-            switch (uiI)
+            switch (waypointId)
             {
                 case 6:
                     me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
@@ -935,9 +934,9 @@ public:
             bThunderClap = false;
         }
 
-        void WaypointReached(uint32 uiI)
+        void WaypointReached(uint32 waypointId)
         {
-            switch (uiI)
+            switch (waypointId)
             {
                 case 7:
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
@@ -1072,7 +1071,7 @@ public:
 
             SummonList.clear();
 
-            for (uint8 uiI = 0; uiI < 16 ; uiI++)
+            for (uint8 uiI = 0; uiI < 16; uiI++)
             {
                 if (Creature* summon = me->SummonCreature(Boss[uiBossRandom].uiAdd, AddSpawnPosition[uiI]))
                 {
@@ -1397,14 +1396,14 @@ class go_scourge_enclosure : public GameObjectScript
 public:
     go_scourge_enclosure() : GameObjectScript("go_scourge_enclosure") { }
 
-    bool OnGossipHello(Player* player, GameObject* pGO)
+    bool OnGossipHello(Player* player, GameObject* go)
     {
         if (player->GetQuestStatus(QUEST_OUR_ONLY_HOPE) == QUEST_STATUS_INCOMPLETE)
         {
-            Creature* pGymerDummy = pGO->FindNearestCreature(NPC_GYMER_DUMMY, 20.0f);
+            Creature* pGymerDummy = go->FindNearestCreature(NPC_GYMER_DUMMY, 20.0f);
             if (pGymerDummy)
             {
-                pGO->UseDoorOrButton();
+                go->UseDoorOrButton();
                 player->KilledMonsterCredit(pGymerDummy->GetEntry(), pGymerDummy->GetGUID());
                 pGymerDummy->CastSpell(pGymerDummy, 55529, true);
                 pGymerDummy->DisappearAndDie();

@@ -55,7 +55,7 @@ public:
 
     struct npc_injured_rainspeaker_oracleAI : public npc_escortAI
     {
-        npc_injured_rainspeaker_oracleAI(Creature* c) : npc_escortAI(c) { c_guid = c->GetGUID(); }
+        npc_injured_rainspeaker_oracleAI(Creature* creature) : npc_escortAI(creature) { c_guid = creature->GetGUID(); }
 
         uint64 c_guid;
 
@@ -70,39 +70,40 @@ public:
             }
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
-            case 1: SetRun(); break;
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-            case 17:
-            case 18:
-                me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
-                me->RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING);
-                me->SetSpeed(MOVE_SWIM, 0.85f, true);
-                me->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_DISABLE_GRAVITY);
-                break;
-            case 19:
-                me->SetUnitMovementFlags(MOVEMENTFLAG_JUMPING);
-                break;
-            case 28:
-                player->GroupEventHappens(QUEST_FORTUNATE_MISUNDERSTANDINGS, me);
-              //  me->RestoreFaction();
-                DoScriptText(SAY_END_IRO, me);
-                SetRun(false);
-                break;
+                case 1:
+                    SetRun();
+                    break;
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                case 14:
+                case 15:
+                case 16:
+                case 17:
+                case 18:
+                    me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+                    me->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+                    me->SetSpeed(MOVE_SWIM, 0.85f, true);
+                    me->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_DISABLE_GRAVITY);
+                    break;
+                case 19:
+                    me->SetUnitMovementFlags(MOVEMENTFLAG_FALLING);
+                    break;
+                case 28:
+                    player->GroupEventHappens(QUEST_FORTUNATE_MISUNDERSTANDINGS, me);
+                    // me->RestoreFaction();
+                    DoScriptText(SAY_END_IRO, me);
+                    SetRun(false);
+                    break;
             }
         }
 
@@ -113,8 +114,8 @@ public:
 
             if (Player* player = GetPlayerForEscort())
             {
-              if (player->GetQuestStatus(QUEST_FORTUNATE_MISUNDERSTANDINGS) != QUEST_STATUS_COMPLETE)
-                player->FailQuest(QUEST_FORTUNATE_MISUNDERSTANDINGS);
+                if (player->GetQuestStatus(QUEST_FORTUNATE_MISUNDERSTANDINGS) != QUEST_STATUS_COMPLETE)
+                    player->FailQuest(QUEST_FORTUNATE_MISUNDERSTANDINGS);
             }
         }
     };
@@ -139,7 +140,7 @@ public:
         {
             CAST_AI(npc_escortAI, (creature->AI()))->Start(true, false, player->GetGUID());
             CAST_AI(npc_escortAI, (creature->AI()))->SetMaxPlayerDistance(35.0f);
-            creature->SetUnitMovementFlags(MOVEMENTFLAG_JUMPING);
+            creature->SetUnitMovementFlags(MOVEMENTFLAG_FALLING);
             DoScriptText(SAY_START_IRO, creature);
 
             switch (player->GetTeam()){
@@ -305,10 +306,9 @@ public:
             if (me->isDead())
                 return;
 
-            if (me->isSummon())
-                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
-                    if (summoner)
-                        me->GetMotionMaster()->MovePoint(0, summoner->GetPositionX(), summoner->GetPositionY(), summoner->GetPositionZ());
+            if (TempSummon* summ = me->ToTempSummon())
+                if (Unit* summoner = summ->GetSummoner())
+                    me->GetMotionMaster()->MovePoint(0, summoner->GetPositionX(), summoner->GetPositionY(), summoner->GetPositionZ());
 
             Reset();
         }
@@ -359,10 +359,11 @@ public:
 
         uint32 m_uiChatTimer;
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-            switch (i)
+
+            switch (waypointId)
             {
                 case 0:
                     DoScriptText(SAY_WP_2, me);
@@ -401,12 +402,12 @@ public:
         {
             m_uiChatTimer = 4000;
         }
+
         void JustDied(Unit* /*killer*/)
         {
-            Player* player = GetPlayerForEscort();
             if (HasEscortState(STATE_ESCORT_ESCORTING))
             {
-                if (player)
+                if (Player* player = GetPlayerForEscort())
                     player->FailQuest(QUEST_DISASTER);
             }
         }

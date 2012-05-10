@@ -474,7 +474,9 @@ void LoadDBCStores(const std::string& dataPath)
     for (unsigned int i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
-        if (!talentInfo) continue;
+        if (!talentInfo)
+            continue;
+
         for (int j = 0; j < MAX_TALENT_RANK; j++)
             if (talentInfo->RankID[j])
                 sTalentSpellPosMap[talentInfo->RankID[j]] = TalentSpellPos(i, j);
@@ -534,7 +536,7 @@ void LoadDBCStores(const std::string& dataPath)
     // include existed nodes that have at least single not spell base (scripted) path
     {
         std::set<uint32> spellPaths;
-        for (uint32 i = 1; i < sSpellStore.GetNumRows (); ++i)
+        for (uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
             if (SpellEntry const* sInfo = sSpellStore.LookupEntry (i))
                 for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
                     if (sInfo->Effect[j] == SPELL_EFFECT_SEND_TAXI)

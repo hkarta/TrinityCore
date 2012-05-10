@@ -47,7 +47,7 @@ public:
 
     struct boss_azuregosAI : public ScriptedAI
     {
-        boss_azuregosAI(Creature* c) : ScriptedAI(c) {}
+        boss_azuregosAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 MarkOfFrost_Timer;
         uint32 ManaStorm_Timer;
@@ -87,7 +87,7 @@ public:
                 std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
                 for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
                 {
-                    Unit* unit = Unit::GetUnit((*me), (*i)->getUnitGuid());
+                    Unit* unit = Unit::GetUnit(*me, (*i)->getUnitGuid());
                     if (unit && (unit->GetTypeId() == TYPEID_PLAYER))
                     {
                         DoTeleportPlayer(unit, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()+3, unit->GetOrientation());

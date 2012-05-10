@@ -143,15 +143,15 @@ public:
 
     struct boss_lady_vashjAI : public ScriptedAI
     {
-        boss_lady_vashjAI (Creature* c) : ScriptedAI(c)
+        boss_lady_vashjAI (Creature* creature) : ScriptedAI(creature)
         {
-            Instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
             Intro = false;
             JustCreated = true;
-            c->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // set it only once on Creature create (no need do intro if wiped)
+            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // set it only once on Creature create (no need do intro if wiped)
         }
 
-        InstanceScript* Instance;
+        InstanceScript* instance;
 
         uint64 ShieldGeneratorChannel[4];
 
@@ -204,8 +204,8 @@ public:
                 if (Unit* remo = Unit::GetUnit(*me, ShieldGeneratorChannel[i]))
                     remo->setDeathState(JUST_DIED);
 
-            if (Instance)
-                Instance->SetData(DATA_LADYVASHJEVENT, NOT_STARTED);
+            if (instance)
+                instance->SetData(DATA_LADYVASHJEVENT, NOT_STARTED);
             ShieldGeneratorChannel[0] = 0;
             ShieldGeneratorChannel[1] = 0;
             ShieldGeneratorChannel[2] = 0;
@@ -226,12 +226,12 @@ public:
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
         }
 
-        void JustDied(Unit* /*victim*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
-            if (Instance)
-                Instance->SetData(DATA_LADYVASHJEVENT, DONE);
+            if (instance)
+                instance->SetData(DATA_LADYVASHJEVENT, DONE);
         }
 
         void StartEvent()
@@ -240,13 +240,13 @@ public:
 
             Phase = 1;
 
-            if (Instance)
-                Instance->SetData(DATA_LADYVASHJEVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_LADYVASHJEVENT, IN_PROGRESS);
         }
 
         void EnterCombat(Unit* who)
         {
-            if (Instance)
+            if (instance)
             {
                 // remove old tainted cores to prevent cheating in phase 2
                 Map* map = me->GetMap();
@@ -491,7 +491,7 @@ public:
                     Creature* coilfangElite = me->SummonCreature(COILFANG_ELITE, CoilfangElitePos[pos][0], CoilfangElitePos[pos][1], CoilfangElitePos[pos][2], CoilfangElitePos[pos][3], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                     if (coilfangElite)
                     {
-                        if (Unit* target = target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             coilfangElite->AI()->AttackStart(target);
                         else if (me->getVictim())
                             coilfangElite->AI()->AttackStart(me->getVictim());
@@ -517,7 +517,7 @@ public:
                 if (CheckTimer <= diff)
                 {
                     // Start Phase 3
-                    if (Instance && Instance->GetData(DATA_CANSTARTPHASE3))
+                    if (instance && instance->GetData(DATA_CANSTARTPHASE3))
                     {
                         // set life 50%
                         me->SetHealth(me->CountPctFromMaxHealth(50));
@@ -553,12 +553,12 @@ public:
 
     struct mob_enchanted_elementalAI : public ScriptedAI
     {
-        mob_enchanted_elementalAI(Creature* c) : ScriptedAI(c)
+        mob_enchanted_elementalAI(Creature* creature) : ScriptedAI(creature)
         {
-            Instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* Instance;
+        InstanceScript* instance;
         uint32 Move;
         uint32 Phase;
         float X, Y, Z;
@@ -589,8 +589,8 @@ public:
                 }
             }
 
-            if (Instance)
-                VashjGUID = Instance->GetData64(DATA_LADYVASHJ);
+            if (instance)
+                VashjGUID = instance->GetData64(DATA_LADYVASHJ);
         }
 
         void EnterCombat(Unit* /*who*/) {}
@@ -599,7 +599,7 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if (!Instance)
+            if (!instance)
                 return;
 
             if (!VashjGUID)
@@ -647,12 +647,12 @@ public:
 
     struct mob_tainted_elementalAI : public ScriptedAI
     {
-        mob_tainted_elementalAI(Creature* c) : ScriptedAI(c)
+        mob_tainted_elementalAI(Creature* creature) : ScriptedAI(creature)
         {
-            Instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* Instance;
+        InstanceScript* instance;
 
         uint32 PoisonBoltTimer;
         uint32 DespawnTimer;
@@ -665,8 +665,8 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            if (Instance)
-                if (Creature* vashj = Unit::GetCreature((*me), Instance->GetData64(DATA_LADYVASHJ)))
+            if (instance)
+                if (Creature* vashj = Unit::GetCreature((*me), instance->GetData64(DATA_LADYVASHJ)))
                     CAST_AI(boss_lady_vashj::boss_lady_vashjAI, vashj->AI())->EventTaintedElementalDeath();
         }
 
@@ -716,13 +716,13 @@ public:
 
     struct mob_toxic_sporebatAI : public ScriptedAI
     {
-        mob_toxic_sporebatAI(Creature* c) : ScriptedAI(c)
+        mob_toxic_sporebatAI(Creature* creature) : ScriptedAI(creature)
         {
-            Instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
             EnterEvadeMode();
         }
 
-        InstanceScript* Instance;
+        InstanceScript* instance;
 
         uint32 MovementTimer;
         uint32 ToxicSporeTimer;
@@ -780,10 +780,10 @@ public:
             // CheckTimer
             if (CheckTimer <= diff)
             {
-                if (Instance)
+                if (instance)
                 {
                     // check if vashj is death
-                    Unit* Vashj = Unit::GetUnit((*me), Instance->GetData64(DATA_LADYVASHJ));
+                    Unit* Vashj = Unit::GetUnit(*me, instance->GetData64(DATA_LADYVASHJ));
                     if (!Vashj || (Vashj && !Vashj->isAlive()) || (Vashj && CAST_AI(boss_lady_vashj::boss_lady_vashjAI, CAST_CRE(Vashj)->AI())->Phase != 3))
                     {
                         // remove
@@ -812,12 +812,12 @@ public:
 
     struct mob_shield_generator_channelAI : public ScriptedAI
     {
-        mob_shield_generator_channelAI(Creature* c) : ScriptedAI(c)
+        mob_shield_generator_channelAI(Creature* creature) : ScriptedAI(creature)
         {
-            Instance = c->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* Instance;
+        InstanceScript* instance;
         uint32 CheckTimer;
         bool Casted;
 
@@ -834,12 +834,12 @@ public:
 
         void UpdateAI (const uint32 diff)
         {
-            if (!Instance)
+            if (!instance)
                 return;
 
             if (CheckTimer <= diff)
             {
-                Unit* vashj = Unit::GetUnit((*me), Instance->GetData64(DATA_LADYVASHJ));
+                Unit* vashj = Unit::GetUnit(*me, instance->GetData64(DATA_LADYVASHJ));
 
                 if (vashj && vashj->isAlive())
                 {
@@ -865,7 +865,6 @@ public:
     bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& targets)
     {
         InstanceScript* instance = player->GetInstanceScript();
-
         if (!instance)
         {
             player->GetSession()->SendNotification(TEXT_NOT_INITIALIZED);
@@ -908,12 +907,8 @@ public:
                 }
 
                 // get and remove channel
-                
                 if (Unit* channel = Unit::GetCreature(*vashj, CAST_AI(boss_lady_vashj::boss_lady_vashjAI, vashj->AI())->ShieldGeneratorChannel[channelIdentifier]))
-                {
-                    // call Unsummon()
-                    channel->setDeathState(JUST_DIED);
-                }
+                    channel->setDeathState(JUST_DIED); // call Unsummon()
 
                 instance->SetData(identifier, 1);
 

@@ -83,9 +83,9 @@ public:
 
     struct npc_raliq_the_drunkAI : public ScriptedAI
     {
-        npc_raliq_the_drunkAI(Creature* c) : ScriptedAI(c)
+        npc_raliq_the_drunkAI(Creature* creature) : ScriptedAI(creature)
         {
-            m_uiNormFaction = c->getFaction();
+            m_uiNormFaction = creature->getFaction();
         }
 
         uint32 m_uiNormFaction;
@@ -151,7 +151,7 @@ public:
 
     struct npc_salsalabimAI : public ScriptedAI
     {
-        npc_salsalabimAI(Creature* c) : ScriptedAI(c) {}
+        npc_salsalabimAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 MagneticPull_Timer;
 
@@ -317,41 +317,82 @@ public:
     struct npc_kservantAI : public npc_escortAI
     {
     public:
-        npc_kservantAI(Creature* c) : npc_escortAI(c) {}
+        npc_kservantAI(Creature* creature) : npc_escortAI(creature) {}
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 waypointId)
         {
             Player* player = GetPlayerForEscort();
-
             if (!player)
                 return;
 
-            switch (i)
+            switch (waypointId)
             {
-                case 0: DoScriptText(SAY1, me, player); break;
-                case 4: DoScriptText(WHISP1, me, player); break;
-                case 6: DoScriptText(WHISP2, me, player); break;
-                case 7: DoScriptText(WHISP3, me, player); break;
-                case 8: DoScriptText(WHISP4, me, player); break;
-                case 17: DoScriptText(WHISP5, me, player); break;
-                case 18: DoScriptText(WHISP6, me, player); break;
-                case 19: DoScriptText(WHISP7, me, player); break;
-                case 33: DoScriptText(WHISP8, me, player); break;
-                case 34: DoScriptText(WHISP9, me, player); break;
-                case 35: DoScriptText(WHISP10, me, player); break;
-                case 36: DoScriptText(WHISP11, me, player); break;
-                case 43: DoScriptText(WHISP12, me, player); break;
-                case 44: DoScriptText(WHISP13, me, player); break;
-                case 49: DoScriptText(WHISP14, me, player); break;
-                case 50: DoScriptText(WHISP15, me, player); break;
-                case 51: DoScriptText(WHISP16, me, player); break;
-                case 52: DoScriptText(WHISP17, me, player); break;
-                case 53: DoScriptText(WHISP18, me, player); break;
-                case 54: DoScriptText(WHISP19, me, player); break;
-                case 55: DoScriptText(WHISP20, me, player); break;
-                case 56: DoScriptText(WHISP21, me, player);
-                    if (player)
-                        player->GroupEventHappens(10211, me);
+                case 0:
+                    DoScriptText(SAY1, me, player);
+                    break;
+                case 4:
+                    DoScriptText(WHISP1, me, player);
+                    break;
+                case 6:
+                    DoScriptText(WHISP2, me, player);
+                    break;
+                case 7:
+                    DoScriptText(WHISP3, me, player);
+                    break;
+                case 8:
+                    DoScriptText(WHISP4, me, player);
+                    break;
+                case 17:
+                    DoScriptText(WHISP5, me, player);
+                    break;
+                case 18:
+                    DoScriptText(WHISP6, me, player);
+                    break;
+                case 19:
+                    DoScriptText(WHISP7, me, player);
+                    break;
+                case 33:
+                    DoScriptText(WHISP8, me, player);
+                    break;
+                case 34:
+                    DoScriptText(WHISP9, me, player);
+                    break;
+                case 35:
+                    DoScriptText(WHISP10, me, player);
+                    break;
+                case 36:
+                    DoScriptText(WHISP11, me, player);
+                    break;
+                case 43:
+                    DoScriptText(WHISP12, me, player);
+                    break;
+                case 44:
+                    DoScriptText(WHISP13, me, player);
+                    break;
+                case 49:
+                    DoScriptText(WHISP14, me, player);
+                    break;
+                case 50:
+                    DoScriptText(WHISP15, me, player);
+                    break;
+                case 51:
+                    DoScriptText(WHISP16, me, player);
+                    break;
+                case 52:
+                    DoScriptText(WHISP17, me, player);
+                    break;
+                case 53:
+                    DoScriptText(WHISP18, me, player);
+                    break;
+                case 54:
+                    DoScriptText(WHISP19, me, player);
+                    break;
+                case 55:
+                    DoScriptText(WHISP20, me, player);
+                    break;
+                case 56:
+                    DoScriptText(WHISP21, me, player);
+                    player->GroupEventHappens(10211, me);
                     break;
             }
         }
@@ -402,7 +443,7 @@ public:
 
     struct npc_dirty_larryAI : public ScriptedAI
     {
-        npc_dirty_larryAI(Creature* c) : ScriptedAI(c) {}
+        npc_dirty_larryAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool Event;
         bool Attack;
