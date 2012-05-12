@@ -2988,8 +2988,119 @@ public:
     };
 };
 
+/*########
+# visual_minecart_resuply
+#########*/
+
+#define REPEAT			 30000
+#define WORKTIME         10000
+#define MINECART         28842
+#define VOIDBERG		 190019
+
+class visual_minecart_resuply : public CreatureScript
+{
+public:
+    visual_minecart_resuply() : CreatureScript("visual_minecart_resuply") { }
+
+    struct visual_minecart_resuplyAI : public ScriptedAI
+    {
+        visual_minecart_resuplyAI(Creature* creature) : ScriptedAI(creature) {}
+
+        uint32 ResetTimer, DespawnTimer;
+		int map;
+		float voidLocation[3];
+		float location1[3];
+		float location2[3];
+		float location3[3];
+		TempSummon *summon;
+		GameObject *voidbergsum; // facing2: = 2.47; normal = 3.99
+		bool working;
+
+        void Reset()
+        {
+			map = 530;
+			location1[0] = 4092.784424; location1[1] = 2977.997314; location1[2] = 355.467529;
+			location2[0] = 4097.934082; location2[1] = 2981.281738; location2[2] = 355.250275;
+			location3[0] = 4099.158691; location3[1] = 2982.938965; location3[2] = 355.221832;
+			voidLocation[0] = 4088.663574; voidLocation[1] = 2979.556885; voidLocation[2] = 362.896576;
+            ResetTimer = REPEAT;
+			DespawnTimer = WORKTIME;
+			working = false;
+        }
+
+        void EnterCombat(Unit* /*who*/) {}
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (ResetTimer <= diff)
+            {
+                location1[0] = 4092.784424; location1[1] = 2977.997314; location1[2] = 355.467529;
+				location2[0] = 4097.934082; location2[1] = 2981.281738; location2[2] = 355.250275;
+				location3[0] = 4099.158691; location3[1] = 2982.938965; location3[2] = 355.221832;
+				voidLocation[0] = 4088.663574; voidLocation[1] = 2979.556885; voidLocation[2] = 362.896576;
+				ResetTimer = REPEAT;
+				DespawnTimer = WORKTIME;
+				working = false;
+				voidbergsum = me->SummonGameObject(VOIDBERG, voidLocation[0], voidLocation[1], voidLocation[2], 0, 0, 0, 0, 0, 3000);
+				summon = me->SummonCreature(MINECART, location1[0], location1[1], location1[2], 0.64, TEMPSUMMON_MANUAL_DESPAWN);
+            }
+            else
+                ResetTimer -= diff;
+
+			if(summon)
+			{
+				if(summon->GetDistance2d(location1[0], location1[1]) < 1)
+					summon->GetMotionMaster()->MovePoint(0, location2[0], location2[1], location2[2]);
+				if(summon->GetDistance2d(location2[0], location2[1]) < 0.5)
+				{
+					if(voidbergsum)
+					{
+						voidbergsum->Delete();
+						voidbergsum = NULL;
+					}
+					summon->GetMotionMaster()->MovePoint(0, location3[0], location3[1], location3[2]);
+				}
+				if(summon->GetDistance2d(location2[0], location2[1]) < 0.2)
+				{
+					working = true;
+					me->AddAura(43831, me);
+				}
+			}
+
+			if(working)
+			{
+				if (DespawnTimer <= diff)
+				{
+					if(summon)
+					{
+						summon->DespawnOrUnsummon();
+						summon = NULL;
+						DespawnTimer = WORKTIME / 2;
+						me->SetFacingTo(2.47);
+					}
+					else
+					{
+						me->RemoveAura(43831, me->GetGUID());
+						me->SetFacingTo(3.99);
+						working = false;
+					}
+				}
+				else
+					DespawnTimer -= diff;
+			}
+        }
+
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new visual_minecart_resuplyAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
+	new visual_minecart_resuply();
     new npc_air_force_bots();
     new npc_lunaclaw_spirit();
     new npc_chicken_cluck();
