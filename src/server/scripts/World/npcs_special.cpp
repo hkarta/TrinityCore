@@ -2992,10 +2992,10 @@ public:
 # visual_minecart_resuply
 #########*/
 
-#define REPEAT			 30000
+#define REPEAT			 20000
 #define WORKTIME         10000
 #define MINECART         28842
-#define VOIDBERG		 190019
+#define VOIDBERG		 195477
 
 class visual_minecart_resuply : public CreatureScript
 {
@@ -3022,7 +3022,7 @@ public:
 			location1[0] = 4092.784424; location1[1] = 2977.997314; location1[2] = 355.467529;
 			location2[0] = 4097.934082; location2[1] = 2981.281738; location2[2] = 355.250275;
 			location3[0] = 4099.158691; location3[1] = 2982.938965; location3[2] = 355.221832;
-			voidLocation[0] = 4088.663574; voidLocation[1] = 2979.556885; voidLocation[2] = 362.896576;
+			voidLocation[0] = 4088.385986; voidLocation[1] = 2979.247070; voidLocation[2] = 355.427826;
             ResetTimer = REPEAT;
 			DespawnTimer = WORKTIME;
 			working = false;
