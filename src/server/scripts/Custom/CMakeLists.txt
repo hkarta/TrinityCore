@@ -11,6 +11,7 @@
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   Custom/VAS_AutoBalance.cpp
+  Custom/script_bot_giver.cpp
 )
 
 message("  -> Prepared: Custom")

@@ -526,6 +526,15 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool SetDisableGravity(bool disable, bool packetOnly = false);
         bool SetHover(bool enable);
 
+        //Bot commands
+        void SetBotAI(CreatureAI *newAI)
+        {
+            bot_AI = newAI;
+        }
+        CreatureAI *GetBotAI(){ return bot_AI; }
+        void SetIAmABot(bool bot){ is_a_bot = bot; }
+        bool GetIAmABot(){ return is_a_bot; }
+
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {
             return (getLevel()/2 + uint32(GetStat(STAT_STRENGTH)/20));
@@ -768,12 +777,15 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool IsInvisibleDueToDespawn() const;
         bool CanAlwaysSee(WorldObject const* obj) const;
     private:
-        void ForcedDespawn(uint32 timeMSToDespawn = 0);
+
+        bool is_a_bot;
+        CreatureAI *bot_AI;
 
         //WaypointMovementGenerator vars
         uint32 m_waypointID;
         uint32 m_path_id;
 
+        void ForcedDespawn(uint32 timeMSToDespawn = 0);
         //Formation var
         CreatureGroup* m_formation;
         bool TriggerJustRespawned;

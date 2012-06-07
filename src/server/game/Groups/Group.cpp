@@ -34,6 +34,10 @@
 #include "MapInstanced.h"
 #include "Util.h"
 #include "LFGMgr.h"
+//Playerbot mod
+#include "Config.h"
+#include "PlayerbotAI.h"
+#include "PlayerbotClassAI.h"
 
 Roll::Roll(uint64 _guid, LootItem const& li) : itemGUID(_guid), itemid(li.itemid),
 itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix), itemCount(li.count),
@@ -108,7 +112,7 @@ bool Group::Create(Player* leader)
     if (m_groupType & GROUPTYPE_RAID)
         _initRaidSubGroupsCounter();
 
-    m_lootMethod = GROUP_LOOT;
+    m_lootMethod = (LootMethod)ConfigMgr::GetIntDefault("Bot.LootMethod", 2);
     m_lootThreshold = ITEM_QUALITY_UNCOMMON;
     m_looterGuid = leaderGuid;
 
@@ -447,6 +451,31 @@ bool Group::AddMember(Player* player)
 bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOVEMETHOD_DEFAULT*/, uint64 kicker /*= 0*/, const char* reason /*= NULL*/)
 {
     BroadcastGroupUpdate();
+    {
+        Player *player = ObjectAccessor::FindPlayer(guid);
+
+        if(player)
+        {
+            //Log out any Playerbots by the player
+            WorldSession *session = player->GetSession();
+
+            //save the map of playerbots first because if the map gets altered when
+            //a playerbot logs out which will corrupt the for loop
+            PlayerBotMap m_playerBots;
+            for(PlayerBotMap::const_iterator itr = session->GetPlayerBotsBegin(); itr != session->GetPlayerBotsEnd(); ++itr)
+            {
+                Player *bot = itr->second;
+                (m_playerBots)[itr->first] = bot;
+            }
+
+            //now log out any playerbots it may have
+            for(PlayerBotMap::const_iterator itr2 = m_playerBots.begin(); itr2 != m_playerBots.end(); ++itr2)
+            {
+                Player *bot = itr2->second;
+                session->LogoutPlayerBot(bot->GetGUID(),true);
+            }
+        }
+    }
 
     sScriptMgr->OnGroupRemoveMember(this, guid, method, kicker, reason);
 
@@ -504,6 +533,8 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
         // Reevaluate group enchanter if the leaving player had enchanting skill or the player is offline
         if ((player && player->GetSkillValue(SKILL_ENCHANTING)) || !player)
             ResetMaxEnchantingLevel();
+        if (ObjectAccessor::FindPlayer(guid)) SendUpdate();
+		    ResetMaxEnchantingLevel();
 
         // Remove player from loot rolls
         for (Rolls::iterator it = RollId.begin(); it != RollId.end(); ++it)
@@ -582,7 +613,7 @@ void Group::ChangeLeader(uint64 guid)
     if (slot == m_memberSlots.end())
         return;
 
-    Player* player = ObjectAccessor::FindPlayer(slot->guid);
+    Player* player = ObjectAccessor::FindPlayer(guid);
 
     // Don't allow switching leader to offline players
     if (!player)
@@ -1259,6 +1290,33 @@ void Group::CountTheRoll(Rolls::iterator rollI)
     RollId.erase(rollI);
     delete roll;
 }
+
+//
+// Bot changes
+//
+uint64 Group::GetTargetWithIconByGroup(uint64 guid)
+{
+  //  if (icon >= TARGETICONCOUNT) return 0;
+
+    uint64 targetGUID = 0;
+
+    switch(GetMemberGroup(guid))
+    {
+    case 0: targetGUID = m_targetIcons[STAR]; break;
+    case 1: targetGUID = m_targetIcons[CIRCLE]; break;
+    case 2: targetGUID = m_targetIcons[DIAMOND]; break;
+    case 3: targetGUID = m_targetIcons[TRIANGLE]; break;
+    case 4: targetGUID = m_targetIcons[MOON]; break;
+    case 5: targetGUID = m_targetIcons[SQUARE]; break;
+    case 6: targetGUID = m_targetIcons[CROSS]; break;
+    default: break;
+    }
+
+    // if no target icon, default to star
+    if (targetGUID==0) m_targetIcons[STAR];
+
+   return targetGUID;
+} // end getTargetWithIcon
 
 void Group::SetTargetIcon(uint8 id, uint64 whoGuid, uint64 targetGuid)
 {
@@ -2139,6 +2197,25 @@ void Group::SetGroupMemberFlag(uint64 guid, bool apply, GroupMemberFlags flag)
     stmt->setUInt32(1, GUID_LOPART(guid));
 
     CharacterDatabase.Execute(stmt);
+
+    Player *pPlayer = ObjectAccessor::FindPlayer(guid);
+    if (pPlayer->GetPlayerbotAI()!=NULL) {
+        if (apply) {
+            pPlayer->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);        // if pBot is maintank, acknowledge it
+        } else {
+            pPlayer->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
+        }
+    }
+    // tell all the bots who is the main tank now
+    if (apply)
+        for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
+        {
+            Player* tPlayer = itr->getSource();
+            PlayerbotAI *ai = tPlayer->GetPlayerbotAI();
+            ai->GetClassAI();
+            if (tPlayer->IsPlayerbot())
+                tPlayer->GetPlayerbotAI()->GetClassAI()->SetMainTank(ObjectAccessor::FindPlayer(guid));
+        }
 
     // Broadcast the changes to the group
     SendUpdate();

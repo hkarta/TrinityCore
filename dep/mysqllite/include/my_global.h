@@ -937,6 +937,11 @@ typedef unsigned __int64 my_ulonglong;
 typedef unsigned long long my_ulonglong;
 #endif
 
+#ifndef SIZEOF_CHARP
+#define SIZEOF_CHARP SIZEOF_LONG
+#endif
+
+
 #if SIZEOF_CHARP == SIZEOF_INT
 typedef int intptr;
 #elif SIZEOF_CHARP == SIZEOF_LONG
