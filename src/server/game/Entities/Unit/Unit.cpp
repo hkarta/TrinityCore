@@ -1274,7 +1274,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
         damageInfo->damage = 0;
 
 	//Hook For CalculateMeleeDamage
-	sScriptMgr->CalculateMeleeDamage(pVictim, damage, damageInfo, attackType);
+	sScriptMgr->CalculateMeleeDamage(victim, damage, damageInfo, attackType);
 }
 
 void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)

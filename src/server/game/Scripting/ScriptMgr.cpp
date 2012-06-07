@@ -28,7 +28,7 @@
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
 #include "Transport.h"
-#include "Creature.h"
+//#include "Creature.h"
 
 // Utility macros to refer to the script registry.
 #define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptMap
@@ -872,7 +872,7 @@ void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
     tmpscript->OnUpdate(creature, diff);
 }
 
-void ScriptMgr::Creature_SelectLevel(const CreatureInfo *cinfo, Creature* creature)
+void ScriptMgr::Creature_SelectLevel(const CreatureTemplate *cinfo, Creature* creature)
 {
 	FOREACH_SCRIPT(AllCreatureScript)->Creature_SelectLevel(cinfo, creature);
 }
@@ -1454,7 +1454,7 @@ uint32 ScriptMgr::DealDamage(Unit* AttackerUnit, Unit *pVictim, uint32 damage, D
 	return damage;
 }
 
-void ScriptMgr::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellEntry const *spellInfo, WeaponAttackType attackType, bool crit)
+void ScriptMgr::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellInfo const *spellInfo, WeaponAttackType attackType, bool crit)
 {
 	FOREACH_SCRIPT(UnitScript)->CalculateSpellDamageTaken(damageInfo, damage, spellInfo, attackType, crit);
 }
@@ -1467,7 +1467,7 @@ void ScriptMgr::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInf
 UnitScript::UnitScript(const char* name)
 : ScriptObject(name)
 {
-	ScriptMgr::ScriptRegistry<UnitScript>::AddScript(this);
+	ScriptRegistry<UnitScript>::AddScript(this);
 }
 
 SpellScriptLoader::SpellScriptLoader(const char* name)
@@ -1497,7 +1497,7 @@ FormulaScript::FormulaScript(const char* name)
 AllMapScript::AllMapScript(const char* name)
 	: ScriptObject(name)
 {
-	ScriptMgr::ScriptRegistry<AllMapScript>::AddScript(this);
+	ScriptRegistry<AllMapScript>::AddScript(this);
 }
 
 WorldMapScript::WorldMapScript(const char* name, uint32 mapId)
@@ -1536,7 +1536,7 @@ ItemScript::ItemScript(const char* name)
 AllCreatureScript::AllCreatureScript(const char* name)
 : ScriptObject(name)
 {
-	ScriptMgr::ScriptRegistry<AllCreatureScript>::AddScript(this);
+	ScriptRegistry<AllCreatureScript>::AddScript(this);
 }
 
 CreatureScript::CreatureScript(const char* name)

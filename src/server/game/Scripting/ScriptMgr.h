@@ -199,7 +199,7 @@ class UnitScript : public ScriptObject
 	public:
 		
 		virtual uint32 DealDamage(Unit* AttackerUnit, Unit *pVictim, uint32 damage, DamageEffectType damagetype) { return damage;}
-		virtual void CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellEntry const *spellInfo, WeaponAttackType attackType, bool crit) { }
+		virtual void CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellInfo const *spellInfo, WeaponAttackType attackType, bool crit) { }
 		virtual void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType) { }
 };
 
@@ -479,7 +479,7 @@ class AllCreatureScript : public ScriptObject
 		virtual void OnAllCreatureUpdate(Creature* /*creature*/, uint32 /*diff*/) { }
 
 		// Called from End of Creature SelectLevel.
-		virtual void Creature_SelectLevel(const CreatureInfo* /*cinfo*/, Creature* /*creature*/) { }
+		virtual void Creature_SelectLevel(const CreatureTemplate* /*cinfo*/, Creature* /*creature*/) { }
 };
 
 class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
@@ -871,7 +871,7 @@ class ScriptMgr
 	public: /* UnitScriptLoader */
 
 		uint32 DealDamage(Unit* AttackerUnit, Unit *pVictim,uint32 damage,DamageEffectType damagetype);
-		void CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellEntry const *spellInfo, WeaponAttackType attackType, bool crit);
+		void CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellInfo const *spellInfo, WeaponAttackType attackType, bool crit);
 		void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType);
 
     public: /* Initialization */
@@ -960,7 +960,7 @@ class ScriptMgr
 	public: /* AllCreatureScript */
 
 		void OnAllCreatureUpdate(Creature* creature, uint32 diff);
-		void Creature_SelectLevel(const CreatureInfo *cinfo, Creature* creature);
+		void Creature_SelectLevel(const CreatureTemplate *cinfo, Creature* creature);
 
     public: /* CreatureScript */
 

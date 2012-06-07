@@ -517,7 +517,7 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
         }
 
 
-	void Creature_SelectLevel(const CreatureInfo *cinfo, Creature* creature)
+	void Creature_SelectLevel(const CreatureTemplate *cinfo, Creature* creature)
 	{
 		if (Config_xPlayer <= 0)
 			return;
