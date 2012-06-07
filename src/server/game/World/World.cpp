@@ -1759,6 +1759,8 @@ void World::SetInitialWorldSettings()
     sLog->outString("Initialize AuctionHouseBot...");
     auctionbot.Initialize();
 
+	sScriptMgr.SetInitialWorldSettings();
+
     // possibly enable db logging; avoid massive startup spam by doing it here.
     if (sLog->GetLogDBLater())
     {

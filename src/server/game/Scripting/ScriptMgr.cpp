@@ -16,6 +16,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Vehicle.h"
+#include "sc_npc_teleport.h"
 #include "ScriptPCH.h"
 #include "ScriptMgr.h"
 #include "Config.h"
@@ -26,8 +28,37 @@
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
 #include "Transport.h"
-#include "Vehicle.h"
-#include "sc_npc_teleport.h"
+#include "Creature.h"
+
+// Utility macros to refer to the script registry.
+#define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptMap
+#define SCR_REG_ITR(T) ScriptRegistry<T>::ScriptMapIterator
+#define SCR_REG_LST(T) ScriptRegistry<T>::ScriptPointerList
+
+// Utility macros for looping over scripts.
+#define FOR_SCRIPTS(T, C, E) \
+    if (SCR_REG_LST(T).empty()) \
+        return; \
+    for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
+        C != SCR_REG_LST(T).end(); ++C)
+#define FOR_SCRIPTS_RET(T, C, E, R) \
+    if (SCR_REG_LST(T).empty()) \
+        return R; \
+    for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
+        C != SCR_REG_LST(T).end(); ++C)
+#define FOREACH_SCRIPT(T) \
+    FOR_SCRIPTS(T, itr, end) \
+    itr->second
+
+// Utility macros for finding specific scripts.
+#define GET_SCRIPT(T, I, V) \
+    T* V = ScriptRegistry<T>::GetScriptById(I); \
+    if (!V) \
+        return;
+#define GET_SCRIPT_RET(T, I, V, R) \
+    T* V = ScriptRegistry<T>::GetScriptById(I); \
+    if (!V) \
+        return R;
 
 // This is the global static registry of scripts.
 template<class TScript>
@@ -125,36 +156,6 @@ class ScriptRegistry
         // Counter used for code-only scripts.
         static uint32 _scriptIdCounter;
 };
-
-// Utility macros to refer to the script registry.
-#define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptMap
-#define SCR_REG_ITR(T) ScriptRegistry<T>::ScriptMapIterator
-#define SCR_REG_LST(T) ScriptRegistry<T>::ScriptPointerList
-
-// Utility macros for looping over scripts.
-#define FOR_SCRIPTS(T, C, E) \
-    if (SCR_REG_LST(T).empty()) \
-        return; \
-    for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
-        C != SCR_REG_LST(T).end(); ++C)
-#define FOR_SCRIPTS_RET(T, C, E, R) \
-    if (SCR_REG_LST(T).empty()) \
-        return R; \
-    for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
-        C != SCR_REG_LST(T).end(); ++C)
-#define FOREACH_SCRIPT(T) \
-    FOR_SCRIPTS(T, itr, end) \
-    itr->second
-
-// Utility macros for finding specific scripts.
-#define GET_SCRIPT(T, I, V) \
-    T* V = ScriptRegistry<T>::GetScriptById(I); \
-    if (!V) \
-        return;
-#define GET_SCRIPT_RET(T, I, V, R) \
-    T* V = ScriptRegistry<T>::GetScriptById(I); \
-    if (!V) \
-        return R;
 
 void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* target)
 {
@@ -272,10 +273,12 @@ void ScriptMgr::Unload()
     SCR_CLEAR(ServerScript);
     SCR_CLEAR(WorldScript);
     SCR_CLEAR(FormulaScript);
+	SCR_CLEAR(AllMapScript);
     SCR_CLEAR(WorldMapScript);
     SCR_CLEAR(InstanceMapScript);
     SCR_CLEAR(BattlegroundMapScript);
     SCR_CLEAR(ItemScript);
+	SCR_CLEAR(AllCreatureScript);
     SCR_CLEAR(CreatureScript);
     SCR_CLEAR(GameObjectScript);
     SCR_CLEAR(AreaTriggerScript);
@@ -292,6 +295,7 @@ void ScriptMgr::Unload()
     SCR_CLEAR(PlayerScript);
     SCR_CLEAR(GuildScript);
     SCR_CLEAR(GroupScript);
+	SCR_CLEAR(UnitScript);
 
     #undef SCR_CLEAR
 }
@@ -653,6 +657,8 @@ void ScriptMgr::OnUnloadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy)
 
 void ScriptMgr::OnPlayerEnterMap(Map* map, Player* player)
 {
+	FOREACH_SCRIPT(AllMapScript)->OnPlayerEnterAll(map, player);
+
     ASSERT(map);
     ASSERT(player);
 
@@ -671,6 +677,8 @@ void ScriptMgr::OnPlayerEnterMap(Map* map, Player* player)
 
 void ScriptMgr::OnPlayerLeaveMap(Map* map, Player* player)
 {
+	FOREACH_SCRIPT(AllMapScript)->OnPlayerLeaveAll(map, player);
+
     ASSERT(map);
     ASSERT(player);
 
@@ -856,10 +864,17 @@ CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
 
 void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
 {
+	FOREACH_SCRIPT(AllCreatureScript)->OnAllCreatureUpdate(creature, diff);
+
     ASSERT(creature);
 
     GET_SCRIPT(CreatureScript, creature->GetScriptId(), tmpscript);
     tmpscript->OnUpdate(creature, diff);
+}
+
+void ScriptMgr::Creature_SelectLevel(const CreatureInfo *cinfo, Creature* creature)
+{
+	FOREACH_SCRIPT(AllCreatureScript)->Creature_SelectLevel(cinfo, creature);
 }
 
 bool ScriptMgr::OnGossipHello(Player* player, GameObject* go)
@@ -1187,6 +1202,22 @@ void ScriptMgr::OnShutdown()
     FOREACH_SCRIPT(WorldScript)->OnShutdown();
 }
 
+void ScriptMgr::SetInitialWorldSettings()
+{
+	FOREACH_SCRIPT(WorldScript)->SetInitialWorldSettings();
+}
+
+float ScriptMgr::VAS_Script_Hooks()
+{
+	float VAS_Script_Hook_Version = 1.03f;
+
+	sLog.outString("----------------------------------------------------");
+	sLog.outString("  Powered by {VAS} Script Hooks v%4.2f",VAS_Script_Hook_Version); 
+	sLog.outString("----------------------------------------------------");
+
+	return VAS_Script_Hook_Version;
+}
+
 bool ScriptMgr::OnCriteriaCheck(AchievementCriteriaData const* data, Player* source, Unit* target)
 {
     ASSERT(source);
@@ -1415,6 +1446,30 @@ void ScriptMgr::OnGroupDisband(Group* group)
     FOREACH_SCRIPT(GroupScript)->OnDisband(group);
 }
 
+//Called From Unit::DealDamage
+uint32 ScriptMgr::DealDamage(Unit* AttackerUnit, Unit *pVictim, uint32 damage, DamageEffectType damagetype)
+{
+	FOR_SCRIPTS_RET(UnitScript, itr, end, damage)
+		damage = itr->second->DealDamage(AttackerUnit, pVictim, damage, damagetype);
+	return damage;
+}
+
+void ScriptMgr::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 damage, SpellEntry const *spellInfo, WeaponAttackType attackType, bool crit)
+{
+	FOREACH_SCRIPT(UnitScript)->CalculateSpellDamageTaken(damageInfo, damage, spellInfo, attackType, crit);
+}
+
+void ScriptMgr::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType)
+{
+	FOREACH_SCRIPT(UnitScript)->CalculateMeleeDamage(pVictim, damage, damageInfo, attackType);
+}
+
+UnitScript::UnitScript(const char* name)
+: ScriptObject(name)
+{
+	ScriptMgr::ScriptRegistry<UnitScript>::AddScript(thi);
+}
+
 SpellScriptLoader::SpellScriptLoader(const char* name)
     : ScriptObject(name)
 {
@@ -1437,6 +1492,12 @@ FormulaScript::FormulaScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<FormulaScript>::AddScript(this);
+}
+
+AllMapScript::AllMapScript(const char* name)
+	: ScriptObject(name)]
+{
+	ScriptMgr::ScriptRegistry<AllMapScript>::AddScript(this);
 }
 
 WorldMapScript::WorldMapScript(const char* name, uint32 mapId)
@@ -1470,6 +1531,12 @@ ItemScript::ItemScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<ItemScript>::AddScript(this);
+}
+
+AllCreatureScript::AllCreatureScript(const char* name)
+: ScriptObject(name)
+{
+	ScriptMgr::ScriptRegistry<AllCreatureScript>::AddScript(this);
 }
 
 CreatureScript::CreatureScript(const char* name)
@@ -1577,10 +1644,12 @@ template class ScriptRegistry<SpellScriptLoader>;
 template class ScriptRegistry<ServerScript>;
 template class ScriptRegistry<WorldScript>;
 template class ScriptRegistry<FormulaScript>;
+template class ScriptRegistry<AllMapScript>;
 template class ScriptRegistry<WorldMapScript>;
 template class ScriptRegistry<InstanceMapScript>;
 template class ScriptRegistry<BattlegroundMapScript>;
 template class ScriptRegistry<ItemScript>;
+template class ScriptRegistry<AllCreatureScript>;
 template class ScriptRegistry<CreatureScript>;
 template class ScriptRegistry<GameObjectScript>;
 template class ScriptRegistry<AreaTriggerScript>;
@@ -1597,6 +1666,7 @@ template class ScriptRegistry<AchievementCriteriaScript>;
 template class ScriptRegistry<PlayerScript>;
 template class ScriptRegistry<GuildScript>;
 template class ScriptRegistry<GroupScript>;
+template class ScriptRegistry<UnitScript>;
 
 // Undefine utility macros.
 #undef GET_SCRIPT_RET
