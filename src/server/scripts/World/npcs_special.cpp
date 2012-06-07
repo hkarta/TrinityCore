@@ -46,6 +46,8 @@ EndContentData */
 #include "ScriptedEscortAI.h"
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
+#include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
 #include "World.h"
 
 /*########
@@ -3037,7 +3039,7 @@ public:
                 location1[0] = 4092.784424; location1[1] = 2977.997314; location1[2] = 355.467529;
 				location2[0] = 4097.934082; location2[1] = 2981.281738; location2[2] = 355.250275;
 				location3[0] = 4099.158691; location3[1] = 2982.938965; location3[2] = 355.221832;
-				voidLocation[0] = 4088.663574; voidLocation[1] = 2979.556885; voidLocation[2] = 362.896576;
+				voidLocation[0] = 4088.385986; voidLocation[1] = 2979.247070; voidLocation[2] = 355.427826;
 				ResetTimer = REPEAT;
 				DespawnTimer = WORKTIME;
 				working = false;
@@ -3098,8 +3100,151 @@ public:
     }
 };
 
+class custom_taxi_top : public CreatureScript
+{
+    public:
+
+        custom_taxi_top()
+            : CreatureScript("custom_taxi_top")
+        {
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Duel zona", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sbohem", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+
+            player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
+
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        {
+            player->PlayerTalkClass->ClearMenus();
+			if (action == GOSSIP_ACTION_INFO_DEF+1)
+            {
+				player->ActivateTaxiPathTo(1979);
+            }         
+			else if (action == GOSSIP_ACTION_INFO_DEF+2)
+            {
+                player->CLOSE_GOSSIP_MENU();
+            }
+
+            return true;
+        }
+};
+
+class custom_taxi_duel : public CreatureScript
+{
+    public:
+
+        custom_taxi_duel()
+            : CreatureScript("custom_taxi_duel")
+        {
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Obchod", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Cviciste", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sbohem", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+
+            player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
+
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        {
+            player->PlayerTalkClass->ClearMenus();
+			if (action == GOSSIP_ACTION_INFO_DEF+1)
+            {
+				player->ActivateTaxiPathTo(1980);
+            }     
+			else if (action == GOSSIP_ACTION_INFO_DEF+3)
+            {
+				player->ActivateTaxiPathTo(1981);
+            }   
+			else if (action == GOSSIP_ACTION_INFO_DEF+2)
+            {
+                player->CLOSE_GOSSIP_MENU();
+            }
+
+            return true;
+        }
+};
+
+class SpellUsed
+{
+public:
+	SpellUsed(SpellInfo *spell, uint32 damage)
+	{
+		this->spell = spell;
+		this->damage = damage;
+	}
+
+	SpellInfo * spell;
+	int amount;
+	uint32 damage;
+};
+
+class custom_ranged_damagemeter_controller : public GameObjectScript
+{
+public:
+    custom_ranged_damagemeter_controller() : GameObjectScript("custom_ranged_damagemeter_controller") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {   
+
+        return false;
+    }
+};
+
+class custom_ranged_damagemeter : public CreatureScript
+{
+    public:
+
+        custom_ranged_damagemeter()
+            : CreatureScript("custom_ranged_damagemeter")
+        {
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Obchod", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "Cviciste", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sbohem", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+
+            player->PlayerTalkClass->SendGossipMenu(907, creature->GetGUID());
+
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        {
+            player->PlayerTalkClass->ClearMenus();
+			if (action == GOSSIP_ACTION_INFO_DEF+1)
+            {
+				player->ActivateTaxiPathTo(1980);
+            }     
+			else if (action == GOSSIP_ACTION_INFO_DEF+3)
+            {
+				player->ActivateTaxiPathTo(1981);
+            }   
+			else if (action == GOSSIP_ACTION_INFO_DEF+2)
+            {
+                player->CLOSE_GOSSIP_MENU();
+            }
+
+            return true;
+        }
+};
+
 void AddSC_npcs_special()
 {
+	new custom_taxi_duel();
+	new custom_taxi_top();
 	new visual_minecart_resuply();
     new npc_air_force_bots();
     new npc_lunaclaw_spirit();
@@ -3131,4 +3276,138 @@ void AddSC_npcs_special()
     new npc_earth_elemental();
     new npc_firework();
     new npc_spring_rabbit();
-}
+	new custom_ranged_damagemeter_controller();
+	new custom_ranged_damagemeter();
+	new npc_matchmakerrating();
+};
+
+
+class npc_matchmakerrating : public CreatureScript
+{
+    public:
+        npc_matchmakerrating() : CreatureScript("npc_matchmakerrating") { }
+
+		uint16* GetMmr(Player *player)
+		{
+			uint16 *mmr = new uint16[3];
+			for(int x = 0; x < 3; x++)
+			{
+				if(ArenaTeam *twos = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(x)))
+					mmr[x] = twos->GetMember(player->GetGUID())->MatchMakerRating;
+				else
+					mmr[x] = 0;
+			}
+			return mmr;
+		}
+
+		bool ChangeMmr(Player *player, int slot, int value)
+		{
+			if(ArenaTeam *team = sArenaTeamMgr->GetArenaTeamById(player->GetArenaTeamId(slot)))
+			{
+				ArenaTeamMember *member = team->GetMember(player->GetGUID());
+				member->MatchMakerRating = value;
+				member->ModifyMatchmakerRating(value - (int)member->MatchMakerRating, slot);
+				team->SaveToDB();
+				return true;
+			}
+			return false;
+		}
+
+        bool OnGossipHello(Player *player, Creature *_creature)
+		{
+			uint16 *mmr = GetMmr(player);
+
+			if(mmr[0] > 0)
+			{
+				player->ADD_GOSSIP_ITEM(0, "Reset 2v2 MMR (2000G)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+				if(mmr[0] > 2100)
+					player->ADD_GOSSIP_ITEM(0, "Lower 2v2 MMR to 2100", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+			}
+
+			if(mmr[1] > 0)
+			{
+				player->ADD_GOSSIP_ITEM(0, "Reset 3v3 MMR (2500G)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+				if(mmr[1] > 2100)
+					player->ADD_GOSSIP_ITEM(0, "Lower 3v3 MMR to 2000", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+			}
+
+			if(mmr[2] > 0)
+			{
+				player->ADD_GOSSIP_ITEM(0, "Reset 5v5 MMR (3000G)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+				if(mmr[1] > 2100)
+					player->ADD_GOSSIP_ITEM(0, "Lower 5v5 MMR to 1900", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+			}
+
+			player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Bye", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+7);
+            
+			player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
+			return true;
+		}
+
+        bool OnGossipSelect(Player *player, Creature *_creature, uint32 sender, uint32 action)
+        {
+            if (action < GOSSIP_ACTION_INFO_DEF + 7)
+            {
+				uint16 *mmr = GetMmr(player);
+				switch(action - GOSSIP_ACTION_INFO_DEF)
+				{
+					case 1:
+						if(mmr[0] > 0 && player->GetMoney() >= 20000000)
+						{
+							if(ChangeMmr(player, 0, 1500))
+							{
+								player->ModifyMoney(-20000000);
+								player->SaveToDB();
+							}
+						}
+						break;
+					case 2:
+						if(mmr[0] > 2100)
+						{
+							if(ChangeMmr(player, 0, 2100))
+								player->SaveToDB();
+						}
+						break;
+					case 3:
+						if(mmr[1] > 0 && player->GetMoney() >= 25000000)
+						{
+							if(ChangeMmr(player, 1, 1500))
+							{
+								player->ModifyMoney(-25000000);
+								player->SaveToDB();
+							}
+						}
+						break;
+					case 4:
+						if(mmr[1] > 2000)
+						{
+							if(ChangeMmr(player, 1, 2000))
+								player->SaveToDB();
+						}
+						break;
+					case 5:
+						if(mmr[2] > 0 && player->GetMoney() >= 30000000)
+						{
+							if(ChangeMmr(player, 2, 1500))
+							{
+								player->ModifyMoney(-30000000);
+								player->SaveToDB();
+							}
+						}
+						break;
+					case 6:
+						if(mmr[2] > 1900)
+						{
+							if(ChangeMmr(player, 2, 1900))
+								player->SaveToDB();
+						}
+						break;
+					default:
+						break;
+				}
+			}
+
+			player->CLOSE_GOSSIP_MENU();
+			return true;
+		}
+};
