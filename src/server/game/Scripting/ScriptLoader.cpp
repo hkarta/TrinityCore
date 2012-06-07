@@ -17,6 +17,9 @@
 
 #include "ScriptLoader.h"
 
+//VAS.AutoBalance
+void AddSC_VAS_AutoBalance();
+
 //examples
 void AddSC_example_creature();
 void AddSC_example_escort();
@@ -1236,7 +1239,8 @@ void AddCustomScripts()
 {
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
-    //TeleNPC2
-    AddSC_npc_teleport();
+	AddSC_VAS_AutoBalance();
+  //TeleNPC2
+  AddSC_npc_teleport();
 #endif
 }
