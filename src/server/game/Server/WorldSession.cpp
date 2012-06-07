@@ -442,7 +442,7 @@ void WorldSession::LogoutPlayer(bool Save)
         return;
     }
 
-    if (_player->IsMounted()) _player->Unmount();
+    if (_player->IsMounted()) _player->RemoveAurasByType(SPELL_AURA_MOUNTED); // inmount
 
      // in case it has a minion, kill it
     if(_player->HaveBot())

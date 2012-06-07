@@ -2134,7 +2134,7 @@ void PlayerbotAI::GetCombatOrders()
     if(thingToAttack->GetTypeId() != TYPEID_PLAYER)
     {
         //add thingToAttack to loot list
-        CreatureTemplate const *creatureInfo = ((Creature *)thingToAttack)->GetCreatureInfo();
+        CreatureTemplate const *creatureInfo = ((Creature *)thingToAttack)->GetCreatureTemplate();
         if(creatureInfo && creatureInfo->lootid) m_lootCreature.push_back(thingToAttack->GetGUID());
     }
 
@@ -2168,7 +2168,7 @@ void PlayerbotAI::DoNextCombatManeuver()
 
     if(GetClassAI())
     {
-        if(m_bot->HasUnitState(UNIT_STAT_CASTING))
+        if(m_bot->HasUnitState(UNIT_STATE_CASTING))
         {
             return;
         }
@@ -2521,7 +2521,7 @@ bool PlayerbotAI::CanCast(const SpellEntry * pSpellInfo, Unit *target, bool cast
 
     if (!m_bot->isAlive()) return false;
     if (m_bot->HasSpellCooldown(spellId)) return false;
-    if (m_bot->HasUnitState(UNIT_STAT_CASTING)) return false;
+    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) return false;
     if (m_bot->IsMounted()) return false;
 
     //cast existing aura over again?
@@ -3358,35 +3358,35 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
             if (name.empty())
                 continue;
             //out << qData->m_status << " ";
-            if (qData->m_status == QUEST_STATUS_NONE)
+            if (qData->Status == QUEST_STATUS_NONE)
             {
                 //out << "Quest " << " |cffffffff|Hquest:" << questId << "|h[" << name << "]|h|r" << " ";
                 //out << " no status" << "\n";
                 continue;
             }
-            else if (qData->m_status == QUEST_STATUS_COMPLETE)
+            else if (qData->Status == QUEST_STATUS_COMPLETE)
             {
                 out << "Quest " << " |cffffffff|Hquest:" << questId << "|h[" << name << "]|h|r" << " ";
                 out << " complete" << "\n";
             }
-            else if (qData->m_status == QUEST_STATUS_UNAVAILABLE)
+            else if (qData->Status == QUEST_STATUS_UNAVAILABLE)
             {
                 //out << "Quest " << " |cffffffff|Hquest:" << questId << "|h[" << name << "]|h|r" << " ";
                 //out << " unavailable" << "\n";
                 continue;
             }
-            else if (qData->m_status == QUEST_STATUS_INCOMPLETE)
+            else if (qData->Status == QUEST_STATUS_INCOMPLETE)
             {
                 out << "Quest " << " |cffffffff|Hquest:" << questId << "|h[" << name << "]|h|r" << " ";
                 out << " incomplete" << "\n";
             }
-            else if (qData->m_status == QUEST_STATUS_AVAILABLE)
+            else if (qData->Status == QUEST_STATUS_AVAILABLE)
             {
                 //out << "Quest " << " |cffffffff|Hquest:" << questId << "|h[" << name << "]|h|r" << " ";
                 //out << " available" << "\n";
                 continue;
             }
-            else if (qData->m_status == QUEST_STATUS_FAILED)
+            else if (qData->Status == QUEST_STATUS_FAILED)
             {
                 out << "Quest " << " |cffffffff|Hquest:" << questId << "|h[" << name << "]|h|r" << " ";
                 out << " failed" << "\n";
@@ -3424,7 +3424,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
              return;
          }
 
-         CreatureTemplate const *creatureInfo = creature->GetCreatureInfo();
+         CreatureTemplate const *creatureInfo = creature->GetCreatureTemplate();
 
          if (!creatureInfo)
          {
@@ -3555,7 +3555,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
              return;
          }
 
-         CreatureTemplate const *creatureInfo = creature->GetCreatureInfo();
+         CreatureTemplate const *creatureInfo = creature->GetCreatureTemplate();
 
          if (!creatureInfo)
          {
@@ -3974,7 +3974,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
                 {
                     for (uint8 rewardIdx=0; !wasRewarded && rewardIdx < pQuest->GetRewChoiceItemsCount(); ++rewardIdx)
                     {
-                        ItemTemplate const * const pRewardItem = sObjectMgr->GetItemTemplate(pQuest->RewChoiceItemId[rewardIdx]);
+                        ItemTemplate const * const pRewardItem = sObjectMgr->GetItemTemplate(pQuest->RewardChoiceItemId[rewardIdx]);
                         if (itemId == pRewardItem->ItemId)
                         {
                             m_bot->RewardQuest(pQuest, rewardIdx, pNpc, false);
@@ -4198,13 +4198,13 @@ void PlayerbotAI::SetQuestNeedItems()
         QuestStatusData *qData = &iter->second;
 
         //only check quest if it is incomplete
-        if(qData->m_status != QUEST_STATUS_INCOMPLETE) continue;
+        if(qData->Status != QUEST_STATUS_INCOMPLETE) continue;
 
         //check for items we not have enough of
         for(uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
         {
-            if(!qInfo->ReqItemCount[i] || (qInfo->ReqItemCount[i]-qData->m_itemcount[i]) <= 0) continue;
-            m_needItemList[qInfo->ReqItemId[i]] = (qInfo->ReqItemCount[i]-qData->m_itemcount[i]);
+            if(!qInfo->RequiredItemCount[i] || (qInfo->RequiredItemCount[i]-qData->ItemCount[i]) <= 0) continue;
+            m_needItemList[qInfo->RequiredItemId[i]] = (qInfo->RequiredItemCount[i]-qData->ItemCount[i]);
         }
     }
 }//end SetQuestNeedItems
@@ -4290,7 +4290,7 @@ void PlayerbotAI::TurnInQuests( WorldObject *pNpc )
                     else if (pQuest->GetRewChoiceItemsCount() == 1)
                     {
                         int rewardIdx = 0;
-                        ItemTemplate const *pRewardItem = sObjectMgr->GetItemTemplate(pQuest->RewChoiceItemId[rewardIdx]);
+                        ItemTemplate const *pRewardItem = sObjectMgr->GetItemTemplate(pQuest->RewardChoiceItemId[rewardIdx]);
                         std::string itemName = pRewardItem->Name1;
                         m_bot->GetPlayerbotAI()->ItemLocalization(itemName, pRewardItem->ItemId);
                         if (m_bot->CanRewardQuest(pQuest, rewardIdx, false))
@@ -4321,7 +4321,7 @@ void PlayerbotAI::TurnInQuests( WorldObject *pNpc )
                             << "|h[" << questTitle << "]|h|r? ";
                         for (uint8 i=0; i < pQuest->GetRewChoiceItemsCount(); ++i)
                         {
-                            ItemTemplate const * const pRewardItem = sObjectMgr->GetItemTemplate(pQuest->RewChoiceItemId[i]);
+                            ItemTemplate const * const pRewardItem = sObjectMgr->GetItemTemplate(pQuest->RewardChoiceItemId[i]);
                             std::string itemName = pRewardItem->Name1;
                             m_bot->GetPlayerbotAI()->ItemLocalization(itemName, pRewardItem->ItemId);
                             out << "|cffffffff|Hitem:" << pRewardItem->ItemId << ":0:0:0:0:0:0:0" << "|h[" << itemName << "]|h|r";

@@ -215,7 +215,7 @@ void PlayerbotDruidAI::DoNextCombatManeuver(Unit *pTarget)
     #pragma endregion
 
     // If there's a cast stop
-    if (m_bot->HasUnitState(UNIT_STAT_CASTING)) return;
+    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) return;
     // Return to normal form from non combat forms
     if (ai->GetForm() == FORM_NONE || ai->GetForm() == FORM_CAT || ai->GetForm() == FORM_TREE || ai->GetForm() == FORM_MOONKIN || ai->GetForm() == FORM_DIREBEAR || ai->GetForm() == FORM_BEAR )  { } //Those are valid incombat auras
     else if (ai->GetForm() != FORM_NONE && ChangeForm(1)) { } //return to caster form
@@ -462,7 +462,7 @@ void PlayerbotDruidAI::DoNonCombatActions()
     if (!m_bot || !ai || m_bot->isDead()) { return; }
 
     //If Casting or Eating/Drinking return
-    if (m_bot->HasUnitState(UNIT_STAT_CASTING)) { return; }
+    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
     if (m_bot->getStandState() == UNIT_STAND_STATE_SIT) { return; }
 
     //buff and heal raid

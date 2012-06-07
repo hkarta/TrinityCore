@@ -350,7 +350,7 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
     //Do not try to go behind if ranged and creature is not boss like
     if (bDist > MELEE_RANGE && followTarget->GetTypeId() != TYPEID_PLAYER)
     {
-        const CreatureTemplate *creatureInfo = ((Creature*) followTarget)->GetCreatureInfo();
+        const CreatureTemplate *creatureInfo = ((Creature*) followTarget)->GetCreatureTemplate();
         if (!creatureInfo || creatureInfo->rank != 3) { omitAngle = true; }
     }
 
@@ -440,30 +440,33 @@ uint8 PlayerbotClassAI::GetHealthPercentRaid(Player *gPlayer, uint8 &countNeedHe
 {
     uint8 validMemberCount=0;
     uint16 totalHPPercent=0;
-    std::list<Unit*> unitList;
-    gPlayer->GetRaidMember(unitList,30);
-    if(!unitList.empty()){
-      for (std::list<Unit*>::iterator itr = unitList.begin() ; itr!=unitList.end();++itr) {
-        //Player *tPlayer = GetPlayerBot()->GetObjPlayer((*itr)->GetGUID());
-        Unit *tPlayer = ObjectAccessor::FindPlayer((*itr)->GetGUID());
-        if(tPlayer == NULL) continue;
-        if(tPlayer->isDead()) continue;
-        if(GetPlayerBot()->GetAreaId() != tPlayer->GetAreaId()) continue;
-        //if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
-        if(GetPlayerBot()->GetDistance(tPlayer) > 30) continue;
-        uint8 fndHPPercent =  tPlayer->GetHealth()*100 / tPlayer->GetMaxHealth();
-        totalHPPercent+=fndHPPercent;
-        validMemberCount++;
-        if (fndHPPercent < 100) countNeedHealing++;
+	if(gPlayer->GetGroup()->isRaidGroup())
+	{
+		Player* tPlayer;
+		for (Group::member_citerator citr = gPlayer->GetGroup()->GetMemberSlots().begin(); citr != gPlayer->GetGroup()->GetMemberSlots().end(); ++citr)
+		{
+			tPlayer = ObjectAccessor::FindPlayer(citr->guid);
+			if (!tPlayer)
+				continue;
+			//Player *tPlayer = GetPlayerBot()->GetObjPlayer((*itr)->GetGUID());
+			if(tPlayer == NULL) continue;
+			if(tPlayer->isDead()) continue;
+			if(GetPlayerBot()->GetAreaId() != tPlayer->GetAreaId()) continue;
+			//if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
+			if(GetPlayerBot()->GetDistance(tPlayer) > 30) continue;
+			uint8 fndHPPercent =  tPlayer->GetHealth()*100 / tPlayer->GetMaxHealth();
+			totalHPPercent+=fndHPPercent;
+			validMemberCount++;
+			if (fndHPPercent < 100) countNeedHealing++;
 
-        //const std::string myname = GetPlayerBot()->GetName();
-        //const std::string hisname = tPlayer->GetName();
-        //sLog->outDebug(LOG_FILTER_NETWORKIO, "me = %s, checked= %s %u [%u / %u]", myname.c_str(), hisname.c_str(), fndHPPercent, tPlayer->GetHealth(), tPlayer->GetMaxHealth());
+			//const std::string myname = GetPlayerBot()->GetName();
+			//const std::string hisname = tPlayer->GetName();
+			//sLog->outDebug(LOG_FILTER_NETWORKIO, "me = %s, checked= %s %u [%u / %u]", myname.c_str(), hisname.c_str(), fndHPPercent, tPlayer->GetHealth(), tPlayer->GetMaxHealth());
 
-      }
-    }
+		}
+	}
     if (validMemberCount == 0) return 100;
-    return totalHPPercent / validMemberCount;
+		return totalHPPercent / validMemberCount;
 }
 
 Unit *PlayerbotClassAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
@@ -518,29 +521,31 @@ Unit *PlayerbotClassAI::FindMainTankInRaid(Player *gPlayer)
     // if could not find tank try assuming
     // Assume the one with highest health is the main tank
     uint32 maxhpfound=0;
-    std::list<Unit*> unitList;
-    gPlayer->GetRaidMember(unitList,30);
-    if (!unitList.empty()){
-      for (std::list<Unit*>::iterator itr = unitList.begin() ; itr!=unitList.end();++itr) {
-        //Player *tPlayer = GetPlayerBot()->GetObjPlayer((*itr)->GetGUID());
-        Unit *tPlayer = ObjectAccessor::FindPlayer((*itr)->GetGUID());
-        if (tPlayer == NULL) continue;
-        if (tPlayer->isDead()) continue;
-        if (GetPlayerBot()->GetAreaId() != tPlayer->GetAreaId()) continue;
-        //if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
-        if (GetPlayerBot()->GetDistance(tPlayer) > 50) continue;
-        if (tPlayer->GetMaxHealth() > maxhpfound) { maxhpfound = tPlayer->GetMaxHealth(); pPlayer=tPlayer; }
-        // Also check pets
-        if ( (tPlayer->getClass() == (uint8) CLASS_HUNTER || tPlayer->getClass() == (uint8) CLASS_WARLOCK) && IS_PET_GUID(tPlayer->GetPetGUID()) )
-        {
-            Pet* tpet = ObjectAccessor::GetPet(*tPlayer, tPlayer->GetPetGUID());
-            if (!tpet || !tpet->IsInWorld() || !tpet->isDead()) continue;
-            if (tpet->GetArmor() > tPlayer->GetArmor()) //Probably a tanking capable pet..
-            {
-                if (tpet->GetMaxHealth() > maxhpfound) { maxhpfound = tpet->GetMaxHealth(); pPlayer=tpet; }
-                else if (tPlayer->GetGUID() == pPlayer->GetGUID()) {pPlayer = tpet;} //set pet as tank instead of owner
-            }
-        }
+    if(gPlayer->GetGroup()->isRaidGroup())
+	{
+		Player* tPlayer;
+		for (Group::member_citerator citr = gPlayer->GetGroup()->GetMemberSlots().begin(); citr != gPlayer->GetGroup()->GetMemberSlots().end(); ++citr)
+		{
+			tPlayer = ObjectAccessor::FindPlayer(citr->guid);
+			if (!tPlayer)
+				continue;
+			if (tPlayer == NULL) continue;
+			if (tPlayer->isDead()) continue;
+			if (GetPlayerBot()->GetAreaId() != tPlayer->GetAreaId()) continue;
+			//if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
+			if (GetPlayerBot()->GetDistance(tPlayer) > 50) continue;
+			if (tPlayer->GetMaxHealth() > maxhpfound) { maxhpfound = tPlayer->GetMaxHealth(); pPlayer=tPlayer; }
+			// Also check pets
+			if ( (tPlayer->getClass() == (uint8) CLASS_HUNTER || tPlayer->getClass() == (uint8) CLASS_WARLOCK) && IS_PET_GUID(tPlayer->GetPetGUID()) )
+			{
+				Pet* tpet = ObjectAccessor::GetPet(*tPlayer, tPlayer->GetPetGUID());
+				if (!tpet || !tpet->IsInWorld() || !tpet->isDead()) continue;
+				if (tpet->GetArmor() > tPlayer->GetArmor()) //Probably a tanking capable pet..
+				{
+					if (tpet->GetMaxHealth() > maxhpfound) { maxhpfound = tpet->GetMaxHealth(); pPlayer=tpet; }
+					else if (tPlayer->GetGUID() == pPlayer->GetGUID()) {pPlayer = tpet;} //set pet as tank instead of owner
+				}
+			}
       }
     }
 

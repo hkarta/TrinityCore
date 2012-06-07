@@ -127,7 +127,7 @@ void PlayerbotRogueAI::DoNextCombatManeuver(Unit *pTarget)
     TakePosition(pTarget);
 
     // If there's a cast stop
-    if (m_bot->HasUnitState(UNIT_STAT_CASTING)) { return; }
+    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
 
     // wait until we actually reach our target b4 we actually do anything
     /*if (GetPlayerBot()->GetDistance(pTarget)>10.0 &&
@@ -230,7 +230,7 @@ void PlayerbotRogueAI::DoNonCombatActions()
     if (!m_bot || !ai || m_bot->isDead()) { return; }
 
     //If Casting or Eating/Drinking return
-    if (m_bot->HasUnitState(UNIT_STAT_CASTING)) { return; }
+    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
     if (m_bot->getStandState() == UNIT_STAND_STATE_SIT) { return; }
 
     //Buff Up

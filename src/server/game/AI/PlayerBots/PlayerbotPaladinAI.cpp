@@ -199,7 +199,7 @@ void PlayerbotPaladinAI::DoNextCombatManeuver(Unit *pTarget)
     else TakePosition(pTarget,m_role);
 
     // If there's a cast stop
-    if(m_bot->HasUnitState(UNIT_STAT_CASTING)) return;
+    if(m_bot->HasUnitState(UNIT_STATE_CASTING)) return;
 
     Unit *target = DoSelectLowestHpFriendly(40, 1000);
     switch(m_role)
@@ -360,7 +360,7 @@ void PlayerbotPaladinAI::DoNonCombatActions()
     if (!m_bot || !ai || m_bot->isDead()) { return; }
 
     //If Casting or Eating/Drinking return
-    if (m_bot->HasUnitState(UNIT_STAT_CASTING)) { return; }
+    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
     if (m_bot->getStandState() == UNIT_STAND_STATE_SIT) { return; }
 
     //buff and heal raid

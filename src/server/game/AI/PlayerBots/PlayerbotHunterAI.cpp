@@ -242,7 +242,7 @@ void PlayerbotHunterAI::DoNextCombatManeuver(Unit *pTarget)
     #pragma endregion
 
     // If there's a cast stop
-    if(m_bot->HasUnitState(UNIT_STAT_CASTING)) return;
+    if(m_bot->HasUnitState(UNIT_STATE_CASTING)) return;
 
     // Cast CC breakers if any match found  (does not work yet)
     // uint32 ccSpells[4] = { R_ESCAPE_ARTIST, R_EVERY_MAN_FOR_HIMSELF, R_WILL_OF_FORSAKEN, R_STONEFORM };
@@ -428,7 +428,7 @@ void PlayerbotHunterAI::DoNonCombatActions()
     if (!m_bot || !ai || m_bot->isDead()) { return; }
 
     //If Casting or Eating/Drinking return
-    if (m_bot->HasUnitState(UNIT_STAT_CASTING)) { return; }
+    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
     if (m_bot->getStandState() == UNIT_STAND_STATE_SIT) { return; }
 
     // buff group

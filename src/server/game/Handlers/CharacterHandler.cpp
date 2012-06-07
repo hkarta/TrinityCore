@@ -211,7 +211,7 @@ class CharacterHandler
 {
 
     public:
-        void HandleCharEnumCallback(QueryResult result, uint32 account)
+        void HandleCharEnumCallback(PreparedQueryResult result, uint32 account)
         {
             WorldSession * session = sWorld->FindSession(account);
             if (!session)

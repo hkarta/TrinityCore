@@ -7489,8 +7489,8 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool pvpt
         {
             Player* victim = uVictim->ToPlayer();
 
-            if(pVictim->IsPlayerbot() && (!sWorld->getBoolConfig(CONFIG_HONOR_FROM_PLAYERBOTS) ||
-                pVictim->GetPlayerbotAI()->GetClassAI()->GetMaster() == this)) //Killing your own playerbots is not honorable!
+            if(victim->IsPlayerbot() && (!sWorld->getBoolConfig(CONFIG_HONOR_FROM_PLAYERBOTS) ||
+                victim->GetPlayerbotAI()->GetClassAI()->GetMaster() == this)) //Killing your own playerbots is not honorable!
                 return false;
 
 
