@@ -31,6 +31,7 @@ EndScriptData */
 #include "Map.h"
 
 
+
  float VAS_version = 1.04f;
  int VAS_Sub_version = 10;
  int Creature_Update_Timer = 60;
@@ -135,16 +136,16 @@ class VAS_AutoBalance_WorldScript : public WorldScript
 		sLog->outString("  Powered by {VAS} AutoBalance v%4.2f.%u ",VAS_version,VAS_Sub_version); 
 		sLog->outString("----------------------------------------------------");
 
-		VasDebug = sConfig->GetIntDefault("VAS.AutoBalance.Debug",1);
-		DebugByID = sConfig->GetIntDefault("VAS.AutoBalance.DebugByID",0);
-		Creature_Update_Timer = sConfig->GetFloatDefault("VAS.AutoBalance.Creature.Update.Timer",60);
-		AutoInstance = sConfig->GetIntDefault("VAS.AutoBalance.AutoInstance",1);
-		PlayerChangeNotify = sConfig->GetIntDefault("VAS.AutoBalance.PlayerChangeNotify",1);
-		Config_xPlayer = sConfig->GetFloatDefault("VAS.AutoBalance.XPlayer",1.0f);
-		Min_D_Mod = sConfig->GetFloatDefault("Min.D.Mod",0.10f);
-		Min_HP_Mod = sConfig->GetFloatDefault("Min.HP.Mod",0.20f);
-		VAS_Group_Modifer = sConfig->GetFloatDefault("VAS.Group.Modifer",1.0f);
-		VAS_Damage_Modifer = sConfig->GetFloatDefault("VAS.Damage.Modifer",1.0f);
+		VasDebug = sWorld->getIntConfig(VAS_VasDebug);
+		DebugByID = sWorld->getIntConfig(VAS_DebugByID);
+		Creature_Update_Timer = sWorld->getFloatConfig(VAS_Creature_Update_Timer);
+		AutoInstance = sWorld->getIntConfig(VAS_AutoInstance);
+		PlayerChangeNotify = sWorld->getIntConfig(VAS_PlayerChangeNotify);
+		Config_xPlayer = sWorld->getFloatConfig(VAS_Config_xPlayer);
+		Min_D_Mod = sWorld->getFloatConfig(VAS_Min_D_Mod);
+		Min_HP_Mod = sWorld->getFloatConfig(VAS_Min_HP_Mod);
+		VAS_Group_Modifer = sWorld->getFloatConfig(VAS_VAS_Group_Modifer);
+		VAS_Damage_Modifer = sWorld->getFloatConfig(VAS_VAS_Damage_Modifer);
 
 		if (VAS_Hook_Version_Installed >= VAS_Script_Hook_VersionNeeded)
 		{
@@ -193,7 +194,7 @@ class VAS_AutoBalance_WorldScript : public WorldScript
 				sLog->outString("  Creature_Update_Timer reset back to 5.  Should be lower that that!");
 			}
 
-			VAS_AutoBalance_Color = sConfig->GetStringDefault("VAS.AutoBalance.Color", "cffFF8000");
+			VAS_AutoBalance_Color = sWorld->GetVASColor();
 			sLog->outString("  VAS.AutoBalance.Color = %s", VAS_AutoBalance_Color.c_str());
 
 		}
@@ -577,7 +578,7 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 			return;
 	}
 
-	CreatureInfo const *cinfo = creature->GetCreatureInfo();
+	CreatureTemplate const *cinfo = creature->GetCreatureTemplate();
 	int VASEntry = cinfo->Entry;
 
 	uint8 level = creature->getLevel();
@@ -596,35 +597,35 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 	Min_HP_Mod = 0.30f;
 	//VAS_Group_Modifer = 1.0f;
 	//VAS_Damage_Modifer = 1.0f;
-	char *const VASName = cinfo->Name;
+	std::string VASName = cinfo->Name;
 
 		//   VAS SOLO  - By MobID			
-		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.40.Name", ""),VASEntry) && ( (40-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sWorld->GetVAS40(),VASEntry) && ( (40-Xplayer) > 0 ))			
 			{VAS_Modifer =40;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
 				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.40.Name",VasMapID);			
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.25.Name", ""),VASEntry) && ( (25-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sWorld->GetVAS25(),VASEntry) && ( (25-Xplayer) > 0 ))			
 			{VAS_Modifer = 25;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
 				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.25.Name",VasMapID);		
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.20.Name", ""),VASEntry) && ( (20-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sWorld->GetVAS20(),VASEntry) && ( (20-Xplayer) > 0 ))			
 			{VAS_Modifer = 20;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
 				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.20.Name",VasMapID);	
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.10.Name", ""),VASEntry) && ( (10-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sWorld->GetVAS10(),VASEntry) && ( (10-Xplayer) > 0 ))			
 			{VAS_Modifer = 10;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
 				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.10.Name",VasMapID);				
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.5.Name", ""),VASEntry) && ( (5-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sWorld->GetVAS5(),VASEntry) && ( (5-Xplayer) > 0 ))			
 			{VAS_Modifer = 5;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
 				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.5.Name",VasMapID);				
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.2.Name", ""),VASEntry) && ( (2-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sWorld->GetVAS2(),VASEntry) && ( (2-Xplayer) > 0 ))			
 			{VAS_Modifer = 2;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
 				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.2.Name",VasMapID);				
