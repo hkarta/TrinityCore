@@ -3233,7 +3233,7 @@ VAS.Group.Modifier = 1.0
 #        Default:     1.0
 #        NOTE: This is a final modification on damage before it's applied.
 
-VAS.Damage.Modifier
+VAS.Damage.Modifier = 1.0
 
 #
 #     VAS.AutoBalance.XX.Name
