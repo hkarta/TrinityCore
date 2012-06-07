@@ -1040,7 +1040,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
     damageInfo->damage = damage;
 
 	//Hook For CalculateSpellDamageTaken
-	sScriptMgr.CalculateSpellDamageTaken(damageInfo, damage, spellInfo, attackType, crit);
+	sScriptMgr->CalculateSpellDamageTaken(damageInfo, damage, spellInfo, attackType, crit);
 }
 
 void Unit::DealSpellDamage(SpellNonMeleeDamage* damageInfo, bool durabilityLoss)
@@ -1274,7 +1274,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
         damageInfo->damage = 0;
 
 	//Hook For CalculateMeleeDamage
-	sScriptMgr.CalculateMeleeDamage(pVictim, damage, damageInfo, attackType);
+	sScriptMgr->CalculateMeleeDamage(pVictim, damage, damageInfo, attackType);
 }
 
 void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)

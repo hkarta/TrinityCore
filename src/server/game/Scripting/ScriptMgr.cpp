@@ -1211,9 +1211,9 @@ float ScriptMgr::VAS_Script_Hooks()
 {
 	float VAS_Script_Hook_Version = 1.03f;
 
-	sLog.outString("----------------------------------------------------");
-	sLog.outString("  Powered by {VAS} Script Hooks v%4.2f",VAS_Script_Hook_Version); 
-	sLog.outString("----------------------------------------------------");
+	sLog->outString("----------------------------------------------------");
+	sLog->outString("  Powered by {VAS} Script Hooks v%4.2f",VAS_Script_Hook_Version); 
+	sLog->outString("----------------------------------------------------");
 
 	return VAS_Script_Hook_Version;
 }
@@ -1467,7 +1467,7 @@ void ScriptMgr::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInf
 UnitScript::UnitScript(const char* name)
 : ScriptObject(name)
 {
-	ScriptMgr::ScriptRegistry<UnitScript>::AddScript(thi);
+	ScriptMgr::ScriptRegistry<UnitScript>::AddScript(this);
 }
 
 SpellScriptLoader::SpellScriptLoader(const char* name)
@@ -1495,7 +1495,7 @@ FormulaScript::FormulaScript(const char* name)
 }
 
 AllMapScript::AllMapScript(const char* name)
-	: ScriptObject(name)]
+	: ScriptObject(name)
 {
 	ScriptMgr::ScriptRegistry<AllMapScript>::AddScript(this);
 }

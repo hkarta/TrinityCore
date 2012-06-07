@@ -113,7 +113,7 @@ class VAS_AutoBalance_WorldScript : public WorldScript
 			return;
 		
 		if (VasDebug >= 3)
-			sLog.outString("### VAS_AutoBalance_WorldScript - OnConfigLoad"); 
+			sLog->outString("### VAS_AutoBalance_WorldScript - OnConfigLoad"); 
 	}
 
 	void OnStartup()
@@ -122,85 +122,85 @@ class VAS_AutoBalance_WorldScript : public WorldScript
 			return;
 
 		if (VasDebug >= 3)
-			sLog.outString("### VAS_AutoBalance_WorldScript - OnStartup" ); 
+			sLog->outString("### VAS_AutoBalance_WorldScript - OnStartup" ); 
 	}
 
 	void SetInitialWorldSettings()
 	{	
 
 		// Added so you can not compile without needed VAS_Script_Hooks!
-		VAS_Hook_Version_Installed = sScriptMgr.VAS_Script_Hooks();
+		VAS_Hook_Version_Installed = sScriptMgr->VAS_Script_Hooks();
 
-		sLog.outString("----------------------------------------------------");
-		sLog.outString("  Powered by {VAS} AutoBalance v%4.2f.%u ",VAS_version,VAS_Sub_version); 
-		sLog.outString("----------------------------------------------------");
+		sLog->outString("----------------------------------------------------");
+		sLog->outString("  Powered by {VAS} AutoBalance v%4.2f.%u ",VAS_version,VAS_Sub_version); 
+		sLog->outString("----------------------------------------------------");
 
-		VasDebug = sConfig.GetIntDefault("VAS.AutoBalance.Debug",1);
-		DebugByID = sConfig.GetIntDefault("VAS.AutoBalance.DebugByID",0);
-		Creature_Update_Timer = sConfig.GetFloatDefault("VAS.AutoBalance.Creature.Update.Timer",60);
-		AutoInstance = sConfig.GetIntDefault("VAS.AutoBalance.AutoInstance",1);
-		PlayerChangeNotify = sConfig.GetIntDefault("VAS.AutoBalance.PlayerChangeNotify",1);
-		Config_xPlayer = sConfig.GetFloatDefault("VAS.AutoBalance.XPlayer",1.0f);
-		Min_D_Mod = sConfig.GetFloatDefault("Min.D.Mod",0.10f);
-		Min_HP_Mod = sConfig.GetFloatDefault("Min.HP.Mod",0.20f);
-		VAS_Group_Modifer = sConfig.GetFloatDefault("VAS.Group.Modifer",1.0f);
-		VAS_Damage_Modifer = sConfig.GetFloatDefault("VAS.Damage.Modifer",1.0f);
+		VasDebug = sConfig->GetIntDefault("VAS.AutoBalance.Debug",1);
+		DebugByID = sConfig->GetIntDefault("VAS.AutoBalance.DebugByID",0);
+		Creature_Update_Timer = sConfig->GetFloatDefault("VAS.AutoBalance.Creature.Update.Timer",60);
+		AutoInstance = sConfig->GetIntDefault("VAS.AutoBalance.AutoInstance",1);
+		PlayerChangeNotify = sConfig->GetIntDefault("VAS.AutoBalance.PlayerChangeNotify",1);
+		Config_xPlayer = sConfig->GetFloatDefault("VAS.AutoBalance.XPlayer",1.0f);
+		Min_D_Mod = sConfig->GetFloatDefault("Min.D.Mod",0.10f);
+		Min_HP_Mod = sConfig->GetFloatDefault("Min.HP.Mod",0.20f);
+		VAS_Group_Modifer = sConfig->GetFloatDefault("VAS.Group.Modifer",1.0f);
+		VAS_Damage_Modifer = sConfig->GetFloatDefault("VAS.Damage.Modifer",1.0f);
 
 		if (VAS_Hook_Version_Installed >= VAS_Script_Hook_VersionNeeded)
 		{
-			sLog.outString("  VAS_Script_Hooks v%4.2f Found",VAS_Hook_Version_Installed);
+			sLog->outString("  VAS_Script_Hooks v%4.2f Found",VAS_Hook_Version_Installed);
 		}
 		else
 		{
-			sLog.outString("  VAS_Script_Hooks v%4.2f Found",VAS_Hook_Version_Installed);
-			sLog.outString("  This Mod needs %4.2f+ to run correctly!",VAS_Script_Hook_VersionNeeded);
+			sLog->outString("  VAS_Script_Hooks v%4.2f Found",VAS_Hook_Version_Installed);
+			sLog->outString("  This Mod needs %4.2f+ to run correctly!",VAS_Script_Hook_VersionNeeded);
 			Config_xPlayer = 0;
 		}
 
 		if (Config_xPlayer >= 1)
 		{
-			sLog.outString("  xPlayer = %4.1f ", Config_xPlayer);
-			sLog.outString("  AutoInstance = %u ", AutoInstance);
-			sLog.outString("  PlayerChangeNotify = %u ", PlayerChangeNotify);
+			sLog->outString("  xPlayer = %4.1f ", Config_xPlayer);
+			sLog->outString("  AutoInstance = %u ", AutoInstance);
+			sLog->outString("  PlayerChangeNotify = %u ", PlayerChangeNotify);
 
-			sLog.outString("  Min.D.Mod = %4.2f ", Min_D_Mod);
-			sLog.outString("  Min.HP.Mod = %4.2f ", Min_HP_Mod);
-			sLog.outString("  VAS.Group.Modifer = %4.2f ", VAS_Group_Modifer);
-			sLog.outString("  VAS.Damage.Modifer = %4.2f ", VAS_Damage_Modifer);
+			sLog->outString("  Min.D.Mod = %4.2f ", Min_D_Mod);
+			sLog->outString("  Min.HP.Mod = %4.2f ", Min_HP_Mod);
+			sLog->outString("  VAS.Group.Modifer = %4.2f ", VAS_Group_Modifer);
+			sLog->outString("  VAS.Damage.Modifer = %4.2f ", VAS_Damage_Modifer);
 
-			sLog.outString("  VasDebug   =  %u ", VasDebug);
+			sLog->outString("  VasDebug   =  %u ", VasDebug);
 
 			// VasDebug From 0 to 4
 			if (VasDebug <= 0)
 			{	
 				VasDebug = 0;
-				sLog.outString("  VasDebug reset back to 0.  Set from 0 to 4");
+				sLog->outString("  VasDebug reset back to 0.  Set from 0 to 4");
 			}
 
 			if (VasDebug >= 5)
 			{	
 				VasDebug = 4;
-				sLog.outString("  VasDebug reset back to 3.  Set from 0 to 4");
+				sLog->outString("  VasDebug reset back to 3.  Set from 0 to 4");
 			}
 
-			sLog.outString("  DebugByID   =  %u", DebugByID);
-			sLog.outString("  Creature_Update_Timer   =  %u", Creature_Update_Timer);
+			sLog->outString("  DebugByID   =  %u", DebugByID);
+			sLog->outString("  Creature_Update_Timer   =  %u", Creature_Update_Timer);
 			
 			// Do not let Creature_Update_Timer go below 5 sec's
 			if (Creature_Update_Timer <= 4)
 			{	
 				Creature_Update_Timer = 5;
-				sLog.outString("  Creature_Update_Timer reset back to 5.  Should be lower that that!");
+				sLog->outString("  Creature_Update_Timer reset back to 5.  Should be lower that that!");
 			}
 
-			VAS_AutoBalance_Color = sConfig.GetStringDefault("VAS.AutoBalance.Color", "cffFF8000");
-			sLog.outString("  VAS.AutoBalance.Color = %s", VAS_AutoBalance_Color.c_str());
+			VAS_AutoBalance_Color = sConfig->GetStringDefault("VAS.AutoBalance.Color", "cffFF8000");
+			sLog->outString("  VAS.AutoBalance.Color = %s", VAS_AutoBalance_Color.c_str());
 
 		}
 		else
-			sLog.outString("  VAS Auto-Balance is Disabled  - xPlayer is set to 0 \n");
+			sLog->outString("  VAS Auto-Balance is Disabled  - xPlayer is set to 0 \n");
 
-		sLog.outString("----------------------------------------------------\n");
+		sLog->outString("----------------------------------------------------\n");
 	}
 
 };
@@ -220,7 +220,7 @@ class VAS_AutoBalance_PlayerScript : public PlayerScript
 			return;
 
 		if (VasDebug >= 3)
-			sLog.outString("### VAS_AutoBalance_PlayerScript - OnLogin Player=%s", Player->GetName()); 
+			sLog->outString("### VAS_AutoBalance_PlayerScript - OnLogin Player=%s", Player->GetName()); 
 
 		ChatHandler chH = ChatHandler(Player);
 		if (Config_xPlayer >= 1)
@@ -254,10 +254,10 @@ class VAS_AutoBalance_UnitScript : public UnitScript
 			if (AttackerUnit->GetTypeId() != TYPEID_PLAYER) 
 			{
 				if (VasDebug >= 3)
-					sLog.outString("### VAS_AutoBalance_UnitScript - VAS_Unit_DealDamage Attacker=%s Victim=%s Start Damage=%u",AttackerUnit->GetName(),pVictim->GetName(),damage);
+					sLog->outString("### VAS_AutoBalance_UnitScript - VAS_Unit_DealDamage Attacker=%s Victim=%s Start Damage=%u",AttackerUnit->GetName(),pVictim->GetName(),damage);
 				damage = VAS_Modifer_DealDamage(AttackerUnit,damage);
 				if (VasDebug >= 3)
-					sLog.outString("### VAS_AutoBalance_UnitScript - VAS_Unit_DealDamage Attacker=%s Victim=%s End Damage=%u",AttackerUnit->GetName(),pVictim->GetName(),damage);
+					sLog->outString("### VAS_AutoBalance_UnitScript - VAS_Unit_DealDamage Attacker=%s Victim=%s End Damage=%u",AttackerUnit->GetName(),pVictim->GetName(),damage);
 			}
 			return damage;
 	}
@@ -271,7 +271,7 @@ class VAS_AutoBalance_UnitScript : public UnitScript
 			if (damageInfo->attacker->GetTypeId() != TYPEID_PLAYER) 
 			{
 				if (VasDebug >= 3)
-					sLog.outString("### VAS_AutoBalance_UnitScript - CalculateSpellDamageTaken Attacker=%s Victim=%s Start Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
+					sLog->outString("### VAS_AutoBalance_UnitScript - CalculateSpellDamageTaken Attacker=%s Victim=%s Start Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
 
 				if (damageInfo->attacker->isHunterPet() || damageInfo->attacker->isPet() || damageInfo->attacker->isSummon() || damageInfo->attacker->IsControlledByPlayer())
 					return;
@@ -283,7 +283,7 @@ class VAS_AutoBalance_UnitScript : public UnitScript
 				damageInfo->damage *= damagemod;
 
 				if (VasDebug >= 3)
-					sLog.outString("### VAS_AutoBalance_UnitScript - CalculateSpellDamageTaken Attacker=%s Victim=%s End Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
+					sLog->outString("### VAS_AutoBalance_UnitScript - CalculateSpellDamageTaken Attacker=%s Victim=%s End Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
 			}
 			return;
 	}
@@ -297,7 +297,7 @@ class VAS_AutoBalance_UnitScript : public UnitScript
 			if (damageInfo->attacker->GetTypeId() != TYPEID_PLAYER) 
 			{
 				if (VasDebug >= 3)
-					sLog.outString("### VAS_AutoBalance_UnitScript - CalculateMeleeDamage Attacker=%s Victim=%s Start Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
+					sLog->outString("### VAS_AutoBalance_UnitScript - CalculateMeleeDamage Attacker=%s Victim=%s Start Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
 
 				if (damageInfo->attacker->isHunterPet() || damageInfo->attacker->isPet() || damageInfo->attacker->isSummon() || damageInfo->attacker->IsControlledByPlayer())
 					return;
@@ -309,7 +309,7 @@ class VAS_AutoBalance_UnitScript : public UnitScript
 				damageInfo->damage *= damagemod;
 
 				if (VasDebug >= 3)
-					sLog.outString("### VAS_AutoBalance_UnitScript - CalculateMeleeDamage Attacker=%s Victim=%s End Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
+					sLog->outString("### VAS_AutoBalance_UnitScript - CalculateMeleeDamage Attacker=%s Victim=%s End Damage=%u",damageInfo->attacker->GetName(),damageInfo->target->GetName(),damageInfo->damage);
 			}
 			return;
 	}
@@ -400,23 +400,23 @@ class VAS_AutoBalance_AllMapScript : public AllMapScript
 		sMapDifficulty="N/A";
 		}
 
-		uint32 maxPlayers = ((InstanceMap*)sMapMgr.FindMap(player->GetMapId(), player->GetInstanceId()))->GetMaxPlayers();
+		uint32 maxPlayers = ((InstanceMap*)sMapMgr->FindMap(player->GetMapId(), player->GetInstanceId()))->GetMaxPlayers();
 
 		if (VasDebug >= 2)
 		{
-			sLog.outString("----------------------------------------------------");
-			sLog.outString("## VAS_AutoBalance_AllMapScript - OnPlayerEnterAll");  
-			sLog.outString("## For InsatanceID %u",map->GetInstanceId()); 
-			sLog.outString("## IsDungeon= %u",map->GetEntry()->IsDungeon()); 
-			sLog.outString("## For Map %u",VasMapID); 
-			sLog.outString("## PlayersInMap %u",VAS_PlayersInMap);
-			sLog.outString("## MapDifficulty %s",sMapDifficulty.c_str());
-			sLog.outString("## pDifficulty %u",uint32(player->GetDifficulty(player->GetMap()->IsHeroic())));
-			sLog.outString("## pGetDungeonDifficulty %u",uint32(player->GetDungeonDifficulty()));
-			sLog.outString("## pGetRaidDifficulty %u",uint32(player->GetRaidDifficulty()));
-			sLog.outString("## maxPlayers %u",maxPlayers);
-			sLog.outString("## IsHeroic=%s IsRaid=%s IsRegularDifficulty=%s IsRaidOrHeroicDungeon=%s IsNonRaidDungeon=%s",BoolToString(IsHeroic),BoolToString(IsRaid),BoolToString(IsRegularDifficulty),BoolToString(IsRaidOrHeroicDungeon),BoolToString(IsNonRaidDungeon));
-			sLog.outString("----------------------------------------------------\n");
+			sLog->outString("----------------------------------------------------");
+			sLog->outString("## VAS_AutoBalance_AllMapScript - OnPlayerEnterAll");  
+			sLog->outString("## For InsatanceID %u",map->GetInstanceId()); 
+			sLog->outString("## IsDungeon= %u",map->GetEntry()->IsDungeon()); 
+			sLog->outString("## For Map %u",VasMapID); 
+			sLog->outString("## PlayersInMap %u",VAS_PlayersInMap);
+			sLog->outString("## MapDifficulty %s",sMapDifficulty.c_str());
+			sLog->outString("## pDifficulty %u",uint32(player->GetDifficulty(player->GetMap()->IsHeroic())));
+			sLog->outString("## pGetDungeonDifficulty %u",uint32(player->GetDungeonDifficulty()));
+			sLog->outString("## pGetRaidDifficulty %u",uint32(player->GetRaidDifficulty()));
+			sLog->outString("## maxPlayers %u",maxPlayers);
+			sLog->outString("## IsHeroic=%s IsRaid=%s IsRegularDifficulty=%s IsRaidOrHeroicDungeon=%s IsNonRaidDungeon=%s",BoolToString(IsHeroic),BoolToString(IsRaid),BoolToString(IsRegularDifficulty),BoolToString(IsRaidOrHeroicDungeon),BoolToString(IsNonRaidDungeon));
+			sLog->outString("----------------------------------------------------\n");
 		}
 
 		if (PlayerChangeNotify >= 1)
@@ -440,7 +440,7 @@ class VAS_AutoBalance_AllMapScript : public AllMapScript
 			return;
 
 		if (VasDebug >= 3)
-			sLog.outString("#### VAS_AutoBalance_AllMapScript - OnPlayerLeaveAll map=%s player=%S", map->GetMapName(),player->GetName()); 
+			sLog->outString("#### VAS_AutoBalance_AllMapScript - OnPlayerLeaveAll map=%s player=%S", map->GetMapName(),player->GetName()); 
 
 		int VasMapID = player->GetMapId();
 		int VAS_PlayersInMap = map->GetPlayersCountExceptGMs();
@@ -455,13 +455,13 @@ class VAS_AutoBalance_AllMapScript : public AllMapScript
 
 			if (VasDebug >= 2)
 			{
-				sLog.outString("----------------------------------------------------");
-				sLog.outString("## VAS_AutoBalance_AllMapScript - OnPlayerLeaveAll");  
-				sLog.outString("## For InsatanceID %u",map->GetInstanceId()); 
-				sLog.outString("## IsDungeon= %u",map->GetEntry()->IsDungeon()); 
-				sLog.outString("## For Map %u",VasMapID); 
-				sLog.outString("## PlayersInMap %u",VAS_PlayersInMap);
-				sLog.outString("----------------------------------------------------\n");
+				sLog->outString("----------------------------------------------------");
+				sLog->outString("## VAS_AutoBalance_AllMapScript - OnPlayerLeaveAll");  
+				sLog->outString("## For InsatanceID %u",map->GetInstanceId()); 
+				sLog->outString("## IsDungeon= %u",map->GetEntry()->IsDungeon()); 
+				sLog->outString("## For Map %u",VasMapID); 
+				sLog->outString("## PlayersInMap %u",VAS_PlayersInMap);
+				sLog->outString("----------------------------------------------------\n");
 			}
 	
 			if (PlayerChangeNotify >= 1)
@@ -494,7 +494,7 @@ class VAS_AutoBalance_WorldMapScript : public WorldMapScript
 			return;
 
 		if (VasDebug >= 3)
-			sLog.outString("### VAS_AutoBalance_WorldMapScript - OnPlayerEnter Map=%s player=%s",map->GetMapName(),player->GetName()); 
+			sLog->outString("### VAS_AutoBalance_WorldMapScript - OnPlayerEnter Map=%s player=%s",map->GetMapName(),player->GetName()); 
 	}
 
 	void OnPlayerLeave(Map* map, Player* player)
@@ -503,7 +503,7 @@ class VAS_AutoBalance_WorldMapScript : public WorldMapScript
 			return;
 
 		if (VasDebug >= 3)
-			sLog.outString("### VAS_AutoBalance_WorldMapScript - OnPlayerLeave Map=%s player=%s",map->GetMapName(),player->GetName()); 
+			sLog->outString("### VAS_AutoBalance_WorldMapScript - OnPlayerLeave Map=%s player=%s",map->GetMapName(),player->GetName()); 
 	}
 };
 
@@ -526,7 +526,7 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 		{
 			VAS_Modifer_Health_Mana(creature);
 			if (VasDebug >= 4)
-				sLog.outString("### VAS_AutoBalance_VASScript - VAS_Creature_SelectLevel InstanceID=%u   Creature=%s",creature->GetInstanceId(),cinfo->Name);
+				sLog->outString("### VAS_AutoBalance_VASScript - VAS_Creature_SelectLevel InstanceID=%u   Creature=%s",creature->GetInstanceId(),cinfo->Name);
 		}
 	}
 
@@ -581,7 +581,7 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 	int VASEntry = cinfo->Entry;
 
 	uint8 level = creature->getLevel();
-    CreatureBaseStats const* stats = sObjectMgr.GetCreatureBaseStats(level, cinfo->unit_class);
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cinfo->unit_class);
 	
 	float healthmod = 1.0f;
     uint32 basehp = stats->GenerateHealth(cinfo);
@@ -599,62 +599,62 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 	char *const VASName = cinfo->Name;
 
 		//   VAS SOLO  - By MobID			
-		if (VAS_AutoBalance_CheckID(sConfig.GetStringDefault("VAS.AutoBalance.40.Name", ""),VASEntry) && ( (40-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.40.Name", ""),VASEntry) && ( (40-Xplayer) > 0 ))			
 			{VAS_Modifer =40;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.40.Name",VasMapID);			
+				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.40.Name",VasMapID);			
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig.GetStringDefault("VAS.AutoBalance.25.Name", ""),VASEntry) && ( (25-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.25.Name", ""),VASEntry) && ( (25-Xplayer) > 0 ))			
 			{VAS_Modifer = 25;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.25.Name",VasMapID);		
+				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.25.Name",VasMapID);		
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig.GetStringDefault("VAS.AutoBalance.20.Name", ""),VASEntry) && ( (20-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.20.Name", ""),VASEntry) && ( (20-Xplayer) > 0 ))			
 			{VAS_Modifer = 20;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.20.Name",VasMapID);	
+				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.20.Name",VasMapID);	
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig.GetStringDefault("VAS.AutoBalance.10.Name", ""),VASEntry) && ( (10-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.10.Name", ""),VASEntry) && ( (10-Xplayer) > 0 ))			
 			{VAS_Modifer = 10;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.10.Name",VasMapID);				
+				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.10.Name",VasMapID);				
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig.GetStringDefault("VAS.AutoBalance.5.Name", ""),VASEntry) && ( (5-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.5.Name", ""),VASEntry) && ( (5-Xplayer) > 0 ))			
 			{VAS_Modifer = 5;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.5.Name",VasMapID);				
+				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.5.Name",VasMapID);				
 			VAS_Changed = true;}
-		if (VAS_AutoBalance_CheckID(sConfig.GetStringDefault("VAS.AutoBalance.2.Name", ""),VASEntry) && ( (2-Xplayer) > 0 ))			
+		if (VAS_AutoBalance_CheckID(sConfig->GetStringDefault("VAS.AutoBalance.2.Name", ""),VASEntry) && ( (2-Xplayer) > 0 ))			
 			{VAS_Modifer = 2;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.2.Name",VasMapID);				
+				sLog->outString("### VAS-AutoBalance - NPC ID=%u Found in VAS-AutoBalance.2.Name",VasMapID);				
 			VAS_Changed = true;}
 			
 		//   VAS SOLO  - Map 0,1 and 530 ( World Mobs )				
 		if ((VasMapID == 0 || VasMapID == 1 || VasMapID == 530 ) && (basehp*healthmod) > 200001)
 			{VAS_Modifer = 40;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - Map 0,1,530 and HP > 200000 setting to 40 group");				
+				sLog->outString("### VAS-AutoBalance - Map 0,1,530 and HP > 200000 setting to 40 group");				
 			VAS_Changed = true;}		
 		if ((VasMapID == 0 || VasMapID == 1 || VasMapID == 530 ) && (basehp*healthmod) > 140001 && (basehp*healthmod) <= 200000)
 			{VAS_Modifer = 25;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - Map 0,1,530 and HP > 140001 & < 200000 setting to 25 group");			
+				sLog->outString("### VAS-AutoBalance - Map 0,1,530 and HP > 140001 & < 200000 setting to 25 group");			
 			VAS_Changed = true;}					
 		if ((VasMapID == 0 || VasMapID == 1 || VasMapID == 530 ) && (basehp*healthmod) > 100001 && (basehp*healthmod) <= 140000)
 			{VAS_Modifer = 20;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - Map 0,1,530 and HP > 100001 & < 140000 setting to 20 group");			
+				sLog->outString("### VAS-AutoBalance - Map 0,1,530 and HP > 100001 & < 140000 setting to 20 group");			
 			VAS_Changed = true;}			
 		if ((VasMapID == 0 || VasMapID == 1 || VasMapID == 530 ) && (basehp*healthmod) > 40001 && (basehp*healthmod) <= 100000)
 			{VAS_Modifer = 10;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - Map 0,1,530 and HP > 40001 & < 100000 setting to 10 group");				
+				sLog->outString("### VAS-AutoBalance - Map 0,1,530 and HP > 40001 & < 100000 setting to 10 group");				
 			VAS_Changed = true;}
 		if ((VasMapID == 0 || VasMapID == 1 || VasMapID == 530 ) && (basehp*healthmod) > 20001 && (basehp*healthmod) <= 40000)
 			{VAS_Modifer = 5;
 			if ((VasDebug >= 3) && (DebugByID == VASEntry))
-				sLog.outString("### VAS-AutoBalance - Map 0,1,530 and HP > 20001 & < 40000 setting to 5 group");				
+				sLog->outString("### VAS-AutoBalance - Map 0,1,530 and HP > 20001 & < 40000 setting to 5 group");				
 			VAS_Changed = true;}
 
 	//   VAS SOLO  - Everything else!	
@@ -680,7 +680,7 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 			VAS_Modifer = 10;
 
 		if ((VasDebug >= 3) && (DebugByID == VASEntry))
-			sLog.outString("### VAS-AutoBalance - Not Found in Maps or by ID setting Modifer to %f by Base HP",VAS_Modifer);	
+			sLog->outString("### VAS-AutoBalance - Not Found in Maps or by ID setting Modifer to %f by Base HP",VAS_Modifer);	
 		}
 
 		bool IsDungeon = creature->GetMap()->IsDungeon();
@@ -696,7 +696,7 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 
 		if (IsDungeon)
 		{
-			VAS_Modifer = ((InstanceMap*)sMapMgr.FindMap(creature->GetMapId(), creature->GetInstanceId()))->GetMaxPlayers();
+			VAS_Modifer = ((InstanceMap*)sMapMgr->FindMap(creature->GetMapId(), creature->GetInstanceId()))->GetMaxPlayers();
 			MaxPlayers = VAS_Modifer;
 
 			switch(cplayer->GetDungeonDifficulty())
@@ -765,16 +765,16 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 		if (health <= 0)
 		{
 		if ((VasDebug >= 1) )
-			sLog.outString("# ERROR VAS-AutoBalance - Mob=%s Health %u <=0 setting to 1",health,VASName);
+			sLog->outString("# ERROR VAS-AutoBalance - Mob=%s Health %u <=0 setting to 1",health,VASName);
 				health =1;	
 		}
 	
 		if ((VasDebug >= 2) && (DebugByID == VASEntry))
 			if ( VASbasehp != health)
 				{
-					sLog.outString("## VAS-AutoBalance MobID=%u VasMapID=%u VASName=%s  GUID=%u  PlayersInCreaturesInstance=%u",VASEntry,VasMapID, VASName,creature->GetGUID(),PlayersInCreaturesInstance);
-					sLog.outString("## VAS-AutoBalance sMapDifficulty=%s Health=%u / %u Xplayer=%4.2f   healthmod=%4.2f / %4.2f  VAS_Modifer=%4.2f  VAS_Group_Modifer=%4.2f",sMapDifficulty.c_str(),VASbasehp,health,Xplayer,VAShealthmod,healthmod,VAS_Modifer,VAS_Group_Modifer);
-					sLog.outString("## VAS-AutoBalance maxPlayers=%u IsHeroic=%s IsRaid=%s IsRegularDifficulty=%s IsRaidOrHeroicDungeon=%s IsNonRaidDungeon=%s",MaxPlayers,BoolToString(IsHeroic),BoolToString(IsRaid),BoolToString(IsRegularDifficulty),BoolToString(IsRaidOrHeroicDungeon),BoolToString(IsNonRaidDungeon));
+					sLog->outString("## VAS-AutoBalance MobID=%u VasMapID=%u VASName=%s  GUID=%u  PlayersInCreaturesInstance=%u",VASEntry,VasMapID, VASName,creature->GetGUID(),PlayersInCreaturesInstance);
+					sLog->outString("## VAS-AutoBalance sMapDifficulty=%s Health=%u / %u Xplayer=%4.2f   healthmod=%4.2f / %4.2f  VAS_Modifer=%4.2f  VAS_Group_Modifer=%4.2f",sMapDifficulty.c_str(),VASbasehp,health,Xplayer,VAShealthmod,healthmod,VAS_Modifer,VAS_Group_Modifer);
+					sLog->outString("## VAS-AutoBalance maxPlayers=%u IsHeroic=%s IsRaid=%s IsRegularDifficulty=%s IsRaidOrHeroicDungeon=%s IsNonRaidDungeon=%s",MaxPlayers,BoolToString(IsHeroic),BoolToString(IsRaid),BoolToString(IsRegularDifficulty),BoolToString(IsRaidOrHeroicDungeon),BoolToString(IsNonRaidDungeon));
 				}
 	
     creature->SetCreateHealth(health);
@@ -791,7 +791,7 @@ class VAS_AutoBalance_AllCreatureScript : public AllCreatureScript
 		mana = ((mana/VAS_Modifer) * Xplayer);	
 		if ((VasDebug >= 2) && (DebugByID == VASEntry))
 			if ( VASbasehp != health)
-				sLog.outString("## VAS-AutoBalance mana %u / %u",vasmana,mana);
+				sLog->outString("## VAS-AutoBalance mana %u / %u",vasmana,mana);
 		}
 		
     creature->SetCreateMana(mana);

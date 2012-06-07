@@ -373,7 +373,7 @@ class AllMapScript : public ScriptObject
 
 		// Called when a player leave any Map
 		virtual void OnPlayerLeaveAll(Map* /*map*/, Player* /*player*/) { }
-}
+};
 
 class WorldMapScript : public ScriptObject, public MapScript<Map>
 {
@@ -480,7 +480,7 @@ class AllCreatureScript : public ScriptObject
 
 		// Called from End of Creature SelectLevel.
 		virtual void Creature_SelectLevel(const CreatureInfo* /*cinfo*/, Creature* /*creature*/) { }
-}
+};
 
 class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
 {
