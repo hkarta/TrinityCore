@@ -259,7 +259,7 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
     if (faceTarget == NULL) { faceTarget = followTarget; }
     if (bRole == BOT_ROLE_NONE) { bRole = ( (m_role == BOT_ROLE_NONE) ? BOT_ROLE_DPS_MELEE : m_role);  }
     //Default values
-    Unit *pVictim = followTarget->getVictim();Log
+    Unit *pVictim = followTarget->getVictim();
 
 
     if (pVictim && pVictim->GetGUID() == m_bot->GetGUID()) //if target is attacking me
