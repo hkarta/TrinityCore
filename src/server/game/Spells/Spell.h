@@ -481,6 +481,7 @@ class Spell
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
+		WorldLocation* destTarget; // should be protected, just test
     protected:
         bool HasGlobalCooldown() const;
         void TriggerGlobalCooldown();
@@ -533,7 +534,6 @@ class Spell
         Unit* unitTarget;
         Item* itemTarget;
         GameObject* gameObjTarget;
-        WorldLocation* destTarget;
         int32 damage;
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers

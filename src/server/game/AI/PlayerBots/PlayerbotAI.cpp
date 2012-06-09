@@ -234,22 +234,27 @@ uint32 PlayerbotAI::getSpellIdExact(const char *args, bool includePassive, bool 
     uint32 foundSpellId = (uint32) 0;
     bool foundMatchUsesNoReagents = false;
 
-    for(PlayerSpellMap::iterator itr = m_bot->GetSpellMap().begin(); itr != m_bot->GetSpellMap().end(); ++itr)
+	//if(m_bot->GetSpell
+
+   /* for(PlayerSpellMap::iterator itr = m_bot->GetSpellMap().begin(); itr != m_bot->GetSpellMap().end(); ++itr)
     {
         uint32 spellId = itr->first;
+		sLog->outString(, "ID: %u", spellId);
         if(itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled || ( !includePassive && SPELL_ATTR0_PASSIVE)) continue;
         const SpellEntry *pSpellInfo = sSpellStore.LookupEntry(spellId);
         if(!pSpellInfo) continue;
         if(pSpellInfo->Effect[0] == SPELL_EFFECT_LEARN_SPELL) continue; //This is a learn spell
-
+		sLog->outString(, "Real name %s, tested name %s.", pSpellInfo->SpellName[loc], namepart.c_str());
         const std::string name = pSpellInfo->SpellName[loc];
-        if(name.empty()) continue;
+		if(name.empty()) { continue; }
         if(strcmp(name.c_str(),namepart.c_str())) continue;
         if(pSpellInfo->Reagent[0] <=  0 && !foundMatchUsesNoReagents){ foundSpellId = spellId; foundMatchUsesNoReagents = true; }
         else if(spellId > foundSpellId) { foundSpellId = spellId; }
-    }
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "PBot Class %u - Found in Search - [%u/%s]", m_bot->getClass(), foundSpellId, namepart.c_str());
-    if (foundSpellId > 70000) { sLog->outDebug(LOG_FILTER_NETWORKIO, "CRITICAL: PBot Class %u - Weird Spell in Search - [%u/%s]", m_bot->getClass(), foundSpellId, namepart.c_str()); }
+    }*/
+	foundSpellId = m_bot->GetSpellName(namepart, loc, includePassive);
+
+    //sLog->outString("[PlayerbotAI]PBot Class %u - Found in Search - [%u/%s]", m_bot->getClass(), foundSpellId, namepart.c_str());
+    if (foundSpellId > 70000) { sLog->outString("[PlayerbotAI]CRITICAL: PBot Class %u - Weird Spell in Search - [%u/%s]", m_bot->getClass(), foundSpellId, namepart.c_str()); }
     return foundSpellId;
 }
 
@@ -1196,12 +1201,12 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket &packet)
 
         case SMSG_SPELL_DELAYED:
         {
-            //sLog->outDebug(LOG_FILTER_NETWORKIO, "Bot [%u] SMSG_SPELL_DELAYED",m_bot->GetGUIDLow());
+            //sLog->outString(, "Bot [%u] SMSG_SPELL_DELAYED",m_bot->GetGUIDLow());
             WorldPacket p(packet);
             //uint64 casterGuid = extractGuid(p); //somehow the caster guid is corrupt
             //if(casterGuid != m_bot->GetGUID()) return;
             //uint32 delayTime; p >> delayTime;
-            //sLog->outDebug(LOG_FILTER_NETWORKIO, "Bot [%u] caster [%u] Spell Delayed [%u]",m_bot->GetGUIDLow(), casterGuid, delayTime);
+            //sLog->outString(, "Bot [%u] caster [%u] Spell Delayed [%u]",m_bot->GetGUIDLow(), casterGuid, delayTime);
             //m_ignoreAIUpdatesUntilTime +=  ((((float)delayTime) / 1000.0f ) + 0.1f) * CLOCKS_PER_SEC;
             if(m_CurrentlyCastingSpellId > 0)
             {
@@ -2049,7 +2054,7 @@ Unit *PlayerbotAI::getNextTarget(Unit *victim)
 //based on its class / level / etc
 void PlayerbotAI::GetCombatOrders()
 {
-    if(m_bot->isDead() || isLooting) return;
+	if(m_bot->isDead() || isLooting) { return; }
     Unit *thingToAttack=0;
 
     // check raid targets icons
@@ -2061,7 +2066,6 @@ void PlayerbotAI::GetCombatOrders()
         {
             thingToAttack = ObjectAccessor::GetUnit(*m_master, targetGUID);
             if (!thingToAttack || thingToAttack->isDead() || !m_bot->IsHostileTo(thingToAttack)) thingToAttack=0;
-//else sLog->outError ("%s is attacking %s", m_bot->GetName(), thingToAttack->GetName());
         }
     }
 
@@ -2151,27 +2155,25 @@ void PlayerbotAI::DoNextCombatManeuver()
     //if current order doesn't make sense anymore
     //clear our orders so we can get orders in next update
     if((!pTarget || pTarget->isDead() || !pTarget->IsInWorld() ||
-        !m_bot->IsHostileTo(pTarget) || pTarget->IsPolymorphed() || m_bot->isDead()
-        || ( !m_master->isInCombat() && !m_bot->isInCombat() && !pTarget->isInCombat()) // The mob probably is in evade mode, stop combat..
+        pTarget->IsPolymorphed() || m_bot->isDead()
+        || ( !m_master->isInCombat() && !m_bot->isInCombat() && !pTarget->isInCombat() && !m_master->duel) // The mob probably is in evade mode, stop combat..
         //|| pTarget->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE)
         ) &&
         !m_bot->GetPlayerbotAI()->GetClassAI()->isPulling() )
     {
-        m_combatOrder = ORDERS_NONE;
-        m_bot->SetSelection(0);
-        m_bot->GetMotionMaster()->Clear(true);
-        m_bot->InterruptNonMeleeSpells(true);
-//sLog->outError ("current target doesn't make sense so following");
-        Follow(*m_master);
+
+		m_combatOrder = ORDERS_NONE;
+		m_bot->SetSelection(0);
+		m_bot->GetMotionMaster()->Clear(true);
+		m_bot->InterruptNonMeleeSpells(true);
+		Follow(*m_master);
         return;
     }
 
     if(GetClassAI())
     {
         if(m_bot->HasUnitState(UNIT_STATE_CASTING))
-        {
             return;
-        }
 
         GetClassAI()->DoNextCombatManeuver(pTarget);
     }
@@ -2191,6 +2193,9 @@ void PlayerbotAI::UpdateAI(const uint32 p_time)
     time_t currentTime = time(0);
     uint32 currentClock = getMSTime();
     m_bot->UpdateZone(m_bot->GetZoneId(), m_bot->GetAreaId());
+
+	if(m_bot->GetMapId() != m_master->GetMapId() || m_bot->GetDistance(m_master->GetPositionX(), m_master->GetPositionY(), m_master->GetPositionZ()) > 100)
+		m_bot->TeleportTo(m_master->GetMapId(), m_master->GetPositionX(), m_master->GetPositionY(), m_master->GetPositionZ(), m_master->GetOrientation());
 
     if (m_playerBotsFly==0 && m_master->isInFlight())
     {
@@ -2249,7 +2254,6 @@ void PlayerbotAI::UpdateAI(const uint32 p_time)
     //make sure any actions that cast a spell set a proper m_ignoreAIUpdatesUntilTime!
     Spell *const pSpell = GetCurrentSpell();
     if(pSpell && !(pSpell->IsChannelActive() || pSpell->IsAutoRepeat())) InterruptCurrentCastingSpell();
-
     //direct cast command from master
     else if(m_spellIdCommand != 0)
     {
@@ -2287,10 +2291,16 @@ void PlayerbotAI::UpdateAI(const uint32 p_time)
 
     //are we sitting, if so feast if possible
 /* TESTING */    if(m_bot->getStandState() == UNIT_STAND_STATE_SIT) {
-/* TESTING */sLog->outError ("%s - sitting so feast", m_bot->GetName());
+/* TESTING */
 //
 /* TESTING */    }
 
+	if(!m_bot->isInCombat())
+	{
+		m_bot->SetHealth(m_bot->GetMaxHealth());
+		if(m_bot->getPowerType() == POWER_MANA)
+			m_bot->SetPower(POWER_MANA, m_bot->GetMaxPower(POWER_MANA));
+	}
     //if commanded to follow master and not already following master then follow master
     if(!m_bot->isInCombat() && m_IsFollowingMaster && m_bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
     {
@@ -2319,7 +2329,7 @@ void PlayerbotAI::UpdateAI(const uint32 p_time)
     //try to catch if he is falling through the world.  This happens
     //when zoning in/out of an instance
     if(m_IsFollowingMaster && m_bot->GetMapId() != m_master->GetMapId() ||
-    //m_bot->GetZoneId() != m_master->GetZoneId() ||
+    m_bot->GetZoneId() != m_master->GetZoneId() ||
     (abs(abs(m_bot->GetPositionX()) - abs(m_master->GetPositionX())) > 90) ||
     (abs(abs(m_bot->GetPositionY()) - abs(m_master->GetPositionY())) > 90) ||
     (abs(abs(m_bot->GetPositionZ()) - abs(m_master->GetPositionZ())) > 50))
@@ -2407,7 +2417,7 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit *target, bool checkFirst, bool 
     const SpellEntry * pSpellInfo = sSpellStore.LookupEntry(spellId);
     if (!pSpellInfo)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "CRITICAL: PBot Class %u - Non-existing Spell in Cast - [%u]", m_bot->getClass(), spellId);
+        sLog->outString("[PlayerbotAI]CRITICAL: PBot Class %u - Non-existing Spell in Cast - [%u]", m_bot->getClass(), spellId);
         std::stringstream ss;
         ss << "Missing spell entry in CastSpell - ";
         ss << spellId;
@@ -2466,9 +2476,8 @@ bool PlayerbotAI::CastSpell(const SpellEntry * pSpellInfo, Unit *target, bool ch
     if (psCastTime - GCD > -0.3f) GCD = 0.3f; //Global cooldown won't be an issiue for casts (0.3 secs is for safe next cast)
     else { GCD -= psCastTime; } //Remaining GCD after cast..
     //float psRecoveryTime = GetSpellRecoveryTime(pSpellInfo) / 1000;
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "Bot [%u] Start Spell [%u] Cast Time [%f]", m_bot->GetGUIDLow(), pSpellInfo->Id, psCastTime);
     m_CurrentlyCastingSpellId = spellId;
-    //SetIgnoreUpdateTime(psCastTime + GCD);
+
     SetIgnoreUpdateTime(psCastTime > GCD ? psCastTime : GCD);
     return true;
 }
@@ -2481,7 +2490,7 @@ bool PlayerbotAI::CanCast(uint32 spellId, Unit *target, bool castExistingAura, b
     const SpellEntry * pSpellInfo = sSpellStore.LookupEntry(spellId);
     if (!pSpellInfo)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "CRITICAL: PBot Class %u - Non-existing Spell in Cast - [%u]", m_bot->getClass(), spellId);
+        sLog->outString("[PlayerbotAI]CRITICAL: PBot Class %u - Non-existing Spell in Cast - [%u]", m_bot->getClass(), spellId);
         std::stringstream ss;
         ss << "Missing spell entry in CastSpell - ";
         ss << spellId;
@@ -2496,7 +2505,7 @@ bool PlayerbotAI::CanCast(const SpellEntry * pSpellInfo, Unit *target, bool cast
 {
     if (!pSpellInfo)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "CRITICAL: PBot Class %u - Non-existing Spell in CastCheck - Direct SpellEntry", m_bot->getClass());
+        sLog->outString("[PlayerbotAI]CRITICAL: PBot Class %u - Non-existing Spell in CastCheck - Direct SpellEntry", m_bot->getClass());
         TellMaster("Missing spell entry in CastSpell");
         SetIgnoreUpdateTime(1);
         return false;
@@ -2531,7 +2540,7 @@ bool PlayerbotAI::CanCast(const SpellEntry * pSpellInfo, Unit *target, bool cast
     if (!skipEquipStanceCheck)
     {
         uint32 formMask = (GetForm() ? 1 << (GetPlayerBot()->GetShapeshiftForm() - 1) : 0);
-        //sLog->outDebug(LOG_FILTER_NETWORKIO, "DEBUG: Spell [%u] - Form [%X] - Need Form [%X] - Not Form [%X]", pSpellInfo->Id, formMask, pSpellInfo->Stances, pSpellInfo->StancesNot );
+        //sLog->outString("[PlayerbotAI]DEBUG: Spell [%u] - Form [%X] - Need Form [%X] - Not Form [%X]", pSpellInfo->Id, formMask, pSpellInfo->Stances, pSpellInfo->StancesNot );
         if (pSpellInfo->Stances & formMask) { return true; }
         if (pSpellInfo->StancesNot && pSpellInfo->StancesNot & formMask) { return false; }
         //if (!m_bot->HasItemFitToSpellRequirements(pSpellInfo)) return false;
@@ -2784,7 +2793,7 @@ bool PlayerbotAI::HasPick()
             {
                 Field *fields = result->Fetch();
                 uint32 tc = fields[0].GetUInt32();
-                // sLog->outDebug(LOG_FILTER_NETWORKIO, "HasPick %u",tc);
+                sLog->outString("[PlayerbotAI]HasPick %u",tc);
                 if(tc ==  165 || tc == 167) // pick = 165, hammer = 162 or hammer pick = 167
                     return true;
             }
@@ -2794,7 +2803,7 @@ bool PlayerbotAI::HasPick()
     // list out items in backpack
     for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; slot++)
     {
-        // sLog->outDebug(LOG_FILTER_NETWORKIO, "[%s's]backpack slot = %u",m_bot->GetName(),slot); // 23 to 38 = 16
+        sLog->outString("[PlayerbotAI][%s's]backpack slot = %u",m_bot->GetName(),slot); // 23 to 38 = 16
         Item* const pItem = m_bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot); // 255, 23 to 38
         if (pItem)
         {
@@ -2806,7 +2815,7 @@ bool PlayerbotAI::HasPick()
             {
                 Field *fields = result->Fetch();
                 uint32 tc = fields[0].GetUInt32();
-                // sLog->outDebug(LOG_FILTER_NETWORKIO, "HasPick %u",tc);
+                sLog->outString("[PlayerbotAI]HasPick %u",tc);
                 if(tc ==  165 || tc == 167) // pick = 165, hammer = 162 or hammer pick = 167
                     return true;
             }
@@ -2821,7 +2830,7 @@ bool PlayerbotAI::HasPick()
         {
             for (uint8 slot = 0; slot < pBag->GetBagSize(); ++slot)
             {
-                // sLog->outDebug(LOG_FILTER_NETWORKIO, "[%s's]bag[%u] slot = %u",m_bot->GetName(),bag,slot); // 1 to bagsize = ?
+                sLog->outString("[PlayerbotAI][%s's]bag[%u] slot = %u",m_bot->GetName(),bag,slot); // 1 to bagsize = ?
                 Item* const pItem = m_bot->GetItemByPos(bag, slot); // 20 to 23, 1 to bagsize
                 if (pItem)
                 {
@@ -2836,7 +2845,7 @@ bool PlayerbotAI::HasPick()
 
                         Field *fields = result->Fetch();
                         uint32 tc = fields[0].GetUInt32();
-                        // sLog->outDebug(LOG_FILTER_NETWORKIO, "HasPick %u",tc);
+                        sLog->outString("[PlayerbotAI]HasPick %u",tc);
                         if(tc ==  165 || tc == 167)
                             return true;
                     }
@@ -2927,7 +2936,7 @@ void PlayerbotAI::EquipItem(Item &item)
 // 'Will not be traded' slot.
 bool PlayerbotAI::TradeItem(const Item& item, int8 slot)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "[PlayerbotAI::TradeItem]: slot=%d, hasTrader=%d, itemInTrade=%d, itemTradeable=%d",
+    sLog->outString("[PlayerbotAI::TradeItem]: slot=%d, hasTrader=%d, itemInTrade=%d, itemTradeable=%d",
         slot,
         (m_bot->GetTrader()?1:0),
         (item.IsInTrade()?1:0),
@@ -3280,7 +3289,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
 
         // try and get quest ID by name
         if (questId == 0)
-            questId = getQuestId(questStr.c_str(), 0);
+            questId = getQuestId(questStr.c_str(), 1);
         std::ostringstream out;
         out << "Quest " << questId << " " << questStr.c_str();
 
@@ -3755,7 +3764,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
      int mapid;
      if (extractGOinfo(text, guid, entry, mapid, x, y, z))
      {
-         sLog->outDebug(LOG_FILTER_NETWORKIO, "find: guid : %u entry : %u x : (%f) y : (%f) z : (%f) mapid : %d",guid, entry, x, y, z, mapid);
+         sLog->outString("[PlayerbotAI]find: guid : %u entry : %u x : (%f) y : (%f) z : (%f) mapid : %d",guid, entry, x, y, z, mapid);
          m_lootCurrent = MAKE_NEW_GUID(guid, entry, HIGHGUID_GAMEOBJECT);
          GameObject *go = m_bot->GetMap()->GetGameObject(m_lootCurrent);
          if (!go)
@@ -3777,7 +3786,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
          Loot *loot = &go->loot;
          uint32 lootNum = loot->GetMaxSlotInLootFor( m_bot );
 
-         sLog->outDebug(LOG_FILTER_NETWORKIO, "[PlayerbotAI]: GetGOType %u - %s looting: '%s' got %d items", go->GetGoType(), m_bot->GetName(), go->GetGOInfo()->name, loot->GetMaxSlotInLootFor( m_bot ));
+         sLog->outString("[PlayerbotAI]: GetGOType %u - %s looting: '%s' got %d items", go->GetGoType(), m_bot->GetName(), go->GetGOInfo()->name, loot->GetMaxSlotInLootFor( m_bot ));
          for ( uint32 l=0; l<lootNum; l++ )
          {
              QuestItem *qitem=0, *ffaitem=0, *conditem=0;
@@ -3787,7 +3796,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
 
              if ( !qitem && item->is_blocked )
              {
-                 m_bot->SendLootRelease( m_lootCurrent );
+                 //m_bot->SendLootRelease( m_lootCurrent );
                  continue;
              }
 
@@ -3875,12 +3884,12 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
              }
          }
          // release loot
-         m_bot->GetSession()->DoLootRelease( m_lootCurrent );
-
+         //m_bot->GetSession()->DoLootRelease( m_lootCurrent );
+		 //m_bot->SendLootRelease(0);
          // clear movement target, take next target on next update
          m_bot->GetMotionMaster()->Clear();
          m_bot->GetMotionMaster()->MoveIdle();
-         sLog->outDebug(LOG_FILTER_NETWORKIO, "[PlayerbotAI]: %s looted target 0x%08X", m_bot->GetName(), m_lootCurrent );
+         sLog->outString("[PlayerbotAI]: %s looted target 0x%08X", m_bot->GetName(), m_lootCurrent );
          SetQuestNeedItems();
      }
      else
@@ -4006,12 +4015,16 @@ void PlayerbotAI::AddLootGUID(uint64 guid) {
     m_lootCreature.push_back(guid);
 }
 
+void PlayerbotAI::RemoveLootGUID(uint64 guid) {
+    m_lootCreature.remove(guid);
+}
+
 bool PlayerbotAI::DoLoot()
 {
     if(!m_lootCurrent && m_lootCreature.empty())
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "[PlayerbotAI]: %s reset loot list / go back to idle", m_bot->GetName());
-//        SetQuestNeedItems();
+        sLog->outString("[PlayerbotAI]: %s reset loot list / go back to idle", m_bot->GetName());
+        //SetQuestNeedItems();//was disabled
         isLooting = false;
         return false;
     }
@@ -4048,7 +4061,7 @@ bool PlayerbotAI::DoLoot()
             return false; //not dead yet
         }
 
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "[PlayerbotAI]: %s got loot target 0x%08X", m_bot->GetName(), m_lootCurrent);
+        sLog->outString("[PlayerbotAI]: %s got loot target 0x%08X", m_bot->GetName(), m_lootCurrent);
         Position pos;
 
         WorldObject *object;
@@ -4114,7 +4127,7 @@ bool PlayerbotAI::DoLoot()
                 if(!item) continue;
                 if(!qitem && item->is_blocked)
                 {
-                    m_bot->SendLootRelease(m_bot->GetLootGUID());
+                    //m_bot->SendLootRelease(m_bot->GetLootGUID());
                     continue;
                 }
 
@@ -4156,14 +4169,17 @@ bool PlayerbotAI::DoLoot()
             }
             //release loot
             if(uint64 lguid = m_bot->GetLootGUID() && m_bot->GetSession())
+			{
                 m_bot->GetSession()->DoLootRelease(lguid);
+			}
             else if(!m_bot->GetSession())
-                sLog->outDebug(LOG_FILTER_NETWORKIO, "[PlayerbotAI]: %s has no session. Cannot releaseloot!", m_bot->GetName());
+                sLog->outString("[PlayerbotAI]: %s has no session. Cannot releaseloot!", m_bot->GetName());
 
             //clear movement target, take next target on next update
             m_bot->GetMotionMaster()->Clear();
             m_bot->GetMotionMaster()->MoveIdle();
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "[PlayerbotAI]: %s looted target 0x%08X", m_bot->GetName(), m_lootCurrent);
+            sLog->outString("[PlayerbotAI]: %s looted target 0x%08X", m_bot->GetName(), m_lootCurrent);
+			RemoveLootGUID(m_lootCurrent);
             m_lootCurrent = 0;
             m_ignoreAIUpdatesUntilTime = time(0);
             isLooting = false;

@@ -3548,6 +3548,28 @@ void Player::InitStatsForLevel(bool reapplyMods)
         pet->SynchronizeLevelWithOwner();
 }
 
+uint32 Player::GetSpellName(std::string namepart, int loc, bool includePassive)
+{
+	uint32 found = 0;
+	bool foundMatchUsesNoReagents = false;
+
+	for(PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    {
+        uint32 spellId = itr->first;
+		if(itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled) { continue; }
+        const SpellEntry *pSpellInfo = sSpellStore.LookupEntry(spellId);
+		if(!pSpellInfo) { continue; }
+		if(pSpellInfo->Effect[0] == SPELL_EFFECT_LEARN_SPELL) { continue; } //This is a learn spell
+        const std::string name = pSpellInfo->SpellName[loc];
+		if(name.empty()) {continue; }
+		if(strcmp(name.c_str(),namepart.c_str())) { continue; }
+        if(pSpellInfo->Reagent[0] <=  0 && !foundMatchUsesNoReagents){ found = spellId; foundMatchUsesNoReagents = true; }
+        else if(spellId > found) { found = spellId; }
+    }
+	
+	return found;
+}
+
 void Player::SendInitialSpells()
 {
     time_t curTime = time(NULL);
@@ -7090,6 +7112,13 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
         GetSession()->SendCancelTrade();
 
     CheckAreaExploreAndOutdoor();
+
+	for(PlayerBotMap::const_iterator itr = m_session->GetPlayerBotsBegin(); itr != m_session->GetPlayerBotsEnd(); ++itr)
+    {
+            Player *const botPlayer = itr->second;
+			if(botPlayer->GetMapId() != this->GetMapId() || botPlayer->GetDistance(this->GetPositionX(), this->GetPositionY(), this->GetPositionZ()) > 100)
+				botPlayer->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), this->GetPositionZ(), this->GetOrientation());
+	}
 
     return true;
 }

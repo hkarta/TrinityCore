@@ -192,6 +192,7 @@ public:
     void SetStartO(float o) { m_startO = o; };
 
     void AddLootGUID(uint64 guid);
+	void RemoveLootGUID(uint64 guid);
     void SetCombatOrder (CombatOrderType orders);
 
 private:

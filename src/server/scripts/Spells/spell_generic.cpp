@@ -1664,6 +1664,71 @@ class spell_gen_gadgetzan_transporter_backfire : public SpellScriptLoader
         }
 };
 
+class spell_bot_move : public SpellScriptLoader
+{
+    public:
+        spell_bot_move() : SpellScriptLoader("spell_bot_move") { }
+
+        class spell_bot_move_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_bot_move_SpellScript)
+
+            bool Validate(SpellInfo const* /*SpellEntry*/)
+            {
+               /* if (!sSpellMgr->GetSpellInfo(SPELL_TRANSPORTER_MALFUNCTION_POLYMORPH) || !sSpellMgr->GetSpellInfo(SPELL_TRANSPORTER_EVIL_TWIN)
+                    || !sSpellMgr->GetSpellInfo(SPELL_TRANSPORTER_MALFUNCTION_MISS))
+                    return false;*/
+                return true;
+            }
+
+            void HandleDummy()
+            {
+                Unit* caster = GetCaster();
+				//sLog->outString("Target spell is cast.");
+				if(Player *player = caster->ToPlayer())
+				{
+					//sLog->outString("   Caster is player.");
+					if(Player* target = player->GetSelectedPlayer())
+					{
+						//sLog->outString("        Target is player.");
+						if(target == player->GetSession()->GetPlayerBot(target->GetGUID()))
+						{
+							//
+							//sLog->outString("            Target is bot.");
+							WorldLocation *dest = this->GetSpell()->destTarget;
+							//target->GetMotionMaster()->Clear();
+							target->GetMotionMaster()->MovePoint(0, dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ());
+						}
+						else
+						{
+							//sLog->outString("            Target is not bot.");
+						}
+					}
+					else
+					{
+						//sLog->outString("        Target is not player.");
+						//SendSysMessage(LANG_TARGET_NOT_BOT);
+					}
+				}
+				else
+				{
+					//sLog->outString("   Caster is not player.");
+					//SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+				}
+            }
+
+            void Register()
+            {
+				OnCast += SpellCastFn(spell_bot_move_SpellScript::HandleDummy);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_bot_move_SpellScript();
+        }
+};
+
 enum GnomishTransporter
 {
     SPELL_TRANSPORTER_SUCCESS                   = 23441,
@@ -2801,4 +2866,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_despawn_self();
     new spell_gen_touch_the_nightmare();
     new spell_gen_dream_funnel();
+	new spell_bot_move();
 }

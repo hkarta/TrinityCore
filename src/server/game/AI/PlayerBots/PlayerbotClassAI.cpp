@@ -176,45 +176,6 @@ bool PlayerbotClassAI::castSelfCCBreakers (uint32 castList[])
     uint32 dispelSpell = 0;
     Player *dTarget = GetPlayerBot();
 
-
-            /* dispelSpell = (uint32) R_ESCAPE_ARTIST; // this is script effect,
-            Unit::AuraMap const& auras = dTarget->GetOwnedAuras();
-            for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); itr++)
-            {
-                Aura * aura = itr->second;
-                AuraApplication * aurApp = aura->GetApplicationOfTarget(dTarget->GetGUID());
-                if (!aurApp)
-                    continue;
-
-                if ( ( aura->GetSpellInfo()->Mechanic == MECHANIC_SNARE ) || ( aura->GetSpellInfo()->Mechanic == MECHANIC_ROOT ) )
-                {
-                    if(aura->GetSpellInfo()->Dispel == DISPEL_MAGIC)
-                    {
-                        bool positive = aurApp->IsPositive() ? (!(aura->GetSpellInfo()->AttributesEx & SPELL_ATTR0_UNK7)) : false;
-
-                        // do not remove positive auras if friendly target
-                        //               negative auras if non-friendly target
-                        if(positive == dTarget->IsFriendlyTo(caster))
-                            continue;
-                    }
-                    return castSpell(dispelSpell, dTarget);
-                }
-            }
-            return false;  */
-
-        // racial abilities
-    /*  if( GetPlayerBot()->getRace() == RACE_BLOODELF && !pTarget->HasAura( ARCANE_TORRENT,0 ) && castSpell( ARCANE_TORRENT,pTarget ) ) {
-         //GetPlayerBot()->Say("Arcane Torrent!", LANG_UNIVERSAL);
-    } else if( GetPlayerBot()->getRace() == RACE_HUMAN && (GetPlayerBot()->HasUnitState( UNIT_STAT_STUNNED ) || GetPlayerBot()->HasAuraType( SPELL_AURA_MOD_FEAR ) || GetPlayerBot()->HasAuraType( SPELL_AURA_MOD_DECREASE_SPEED ) || GetPlayerBot()->HasAuraType( SPELL_AURA_MOD_CHARM )) && castSpell( EVERY_MAN_FOR_HIMSELF, GetPlayerBot() ) ) {
-        //GetPlayerBot()->Say("EVERY MAN FOR HIMSELF!", LANG_UNIVERSAL);
-    } else if( GetPlayerBot()->getRace() == RACE_UNDEAD_PLAYER && (GetPlayerBot()->HasAuraType( SPELL_AURA_MOD_FEAR ) || GetPlayerBot()->HasAuraType( SPELL_AURA_MOD_CHARM )) && castSpell( WILL_OF_THE_FORSAKEN, GetPlayerBot() ) ) {
-       // GetPlayerBot()->Say("WILL OF THE FORSAKEN!", LANG_UNIVERSAL);
-    } else if( GetPlayerBot()->getRace() == RACE_DWARF && GetPlayerBot()->HasAuraState( AURA_STATE_DEADLY_POISON ) && castSpell( STONEFORM, GetPlayerBot() ) ) {
-        //GetPlayerBot()->Say("STONEFORM!", LANG_UNIVERSAL);
-    } else if( GetPlayerBot()->getRace() == RACE_GNOME && (GetPlayerBot()->HasUnitState( UNIT_STAT_STUNNED ) || GetPlayerBot()->HasAuraType( SPELL_AURA_MOD_DECREASE_SPEED )) && castSpell( ESCAPE_ARTIST, GetPlayerBot() ) ) {
-       // GetPlayerBot()->Say("ESCAPE ARTIST!", LANG_UNIVERSAL);
-    } */
-
     for (uint8 j = 0; j <  sizeof (castList); j++)
     {
         dispelSpell = castList[j];
@@ -222,14 +183,6 @@ bool PlayerbotClassAI::castSelfCCBreakers (uint32 castList[])
         SpellInfo const *dSpell = sSpellMgr->GetSpellInfo(dispelSpell);
         if (!dSpell) continue;
 
-       /*for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS ; ++i)
-        {
-            if (dSpell->Effect[i] != (uint32)SPELL_EFFECT_DISPEL && dSpell->Effect[i] != (uint32)SPELL_EFFECT_APPLY_AURA) continue;
-            if (dSpell->Effect[i] == (uint32)SPELL_EFFECT_APPLY_AURA && (
-                (dSpell->EffectApplyAuraName[i] != (uint32) SPELL_AURA_MECHANIC_IMMUNITY) ||
-                (dSpell->EffectApplyAuraName[i] != (uint32) SPELL_AURA_DISPEL_IMMUNITY)
-                )) continue;
-*/
             Unit::AuraMap const& auras = dTarget->GetOwnedAuras();
             for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); itr++)
             {
@@ -237,19 +190,12 @@ bool PlayerbotClassAI::castSelfCCBreakers (uint32 castList[])
                 AuraApplication * aurApp = aura->GetApplicationOfTarget(dTarget->GetGUID());
                 if (!aurApp) continue;
 
-               /* if (aura->GetSpellInfo() && (
-                    (dSpell->Effect[i] == (uint32)SPELL_EFFECT_DISPEL  && ((1<<aura->GetSpellInfo()->Dispel) & GetDispelMask(DispelType(dSpell->EffectMiscValue[i]))) )
-                    || (dSpell->EffectApplyAuraName[i] == (uint32) SPELL_AURA_MECHANIC_IMMUNITY && ( GetAllSpellMechanicMask(aura->GetSpellInfo()) & ( 1 << dSpell->EffectMiscValue[i]) ) )
-                    || (dSpell->EffectApplyAuraName[i] == (uint32) SPELL_AURA_DISPEL_IMMUNITY && ( (1<<aura->GetSpellInfo()->Dispel) & GetDispelMask(DispelType(dSpell->EffectMiscValue[i])) ) )
-                    ) )
-                {*/
                     if(aura->GetSpellInfo()->Dispel == DISPEL_MAGIC)
                     {
                         bool positive = aurApp->IsPositive() ? (!(aura->GetSpellInfo()->AttributesEx & SPELL_ATTR0_HIDDEN_CLIENTSIDE)) : false;
                         if(positive)continue;
                     }
                     return CastSpell(dispelSpell, dTarget, false);
-                //}
             }
         }return false;
     }
@@ -269,8 +215,7 @@ bool PlayerbotClassAI::DoSupportRaid(Player *gPlayer, float radius, bool dResurr
         }
         if (raidHPPercent < 60 ) needHeal = true;
     }
-    //std::list<Unit*> unitList;
-    //gPlayer->GetRaidMember(unitList,30);
+
     Group *pGroup = gPlayer->GetGroup();
     if (!pGroup) return false;
     for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
@@ -305,22 +250,25 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
     bool doFollow = true;
     bool omitAngle = false;
     bool angleIsAutoSet = false;
+	bDist = NULL;
     if (!bAngle) angleIsAutoSet = true;
     if (bAngle < 0) bAngle += 2 * M_PI;
     //if (bAngle > 2 * M_PI) bAngle -= 2 * M_PI; //Do not send values higher than 2 PI, lower than -2 PI
     bool rval = false;
-    if (followTarget == NULL) { followTarget = GetMaster(); if (followTarget == NULL) { return false; } }
+	if (followTarget == NULL) { followTarget = GetMaster(); if (followTarget == NULL) { return false; }  }
     if (faceTarget == NULL) { faceTarget = followTarget; }
     if (bRole == BOT_ROLE_NONE) { bRole = ( (m_role == BOT_ROLE_NONE) ? BOT_ROLE_DPS_MELEE : m_role);  }
     //Default values
-    Unit *pVictim = followTarget->getVictim();
+    Unit *pVictim = followTarget->getVictim();Log
+
+
     if (pVictim && pVictim->GetGUID() == m_bot->GetGUID()) //if target is attacking me
     {
         if (bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE)
         {
             //Move to target
             if (!bDist || bDist > 0.7f) bDist = 0.7f;
-            if (bMinDist < 0 || bMinDist > 1) bMinDist = 0;
+            if (bMinDist < 0 || bMinDist > 1) bMinDist = 0.2f;
             if (bMaxDist <= 0 || bMaxDist > MELEE_RANGE) bMaxDist = MELEE_RANGE;
             bAngle = 0;
         }
@@ -333,19 +281,19 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
         {
             case BOT_ROLE_TANK:
             case BOT_ROLE_OFFTANK:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0; bMaxDist = MELEE_RANGE; bAngle = 0;}
+                if (!bDist) { bDist = 0.7f; bMinDist = 0.2f; bMaxDist = MELEE_RANGE; bAngle = 0;}
                 break;
             case BOT_ROLE_HEALER:
             case BOT_ROLE_SUPPORT:
-                if (!bDist) { bDist = urand(12, 14); bMinDist = 10; bMaxDist = 18; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 4, 13); bMinDist = MELEE_RANGE + 3; bMaxDist = 14; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             case BOT_ROLE_DPS_RANGED:
-                if (!bDist) { bDist = urand(18, 24); bMinDist = 10;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 4, 13); bMinDist = MELEE_RANGE + 3;  bMaxDist = 14; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             default:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0.1f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = 0.7f; bMinDist = 0.2f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
-        }
+        }            
     }
     //Do not try to go behind if ranged and creature is not boss like
     if (bDist > MELEE_RANGE && followTarget->GetTypeId() != TYPEID_PLAYER)
@@ -358,21 +306,65 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
     if (doFollow)
     {
         float curDist = m_bot->GetDistance(followTarget);
-        if (m_pulling ||
-            (!m_bot->isMoving() &&
-            ((curDist > bMaxDist || curDist < bMinDist)  //Outside range boundries
-            || (!omitAngle && ((!followTarget->HasInArc(M_PI,m_bot)) ^ (bAngle > 0.5f * M_PI && bAngle < 1.5f * M_PI)))) )//is at right position front/behind?
+        if (m_pulling ||			 //Outside range boundries
+			(!m_bot->isMoving() && ((curDist > bMaxDist || curDist < bMinDist) || (!omitAngle && ((!followTarget->HasInArc(M_PI,m_bot)) ^ (bAngle > 0.5f * M_PI && bAngle < 1.5f * M_PI)))) )//is at right position front/behind?
             )
         {
-            //m_bot->GetMotionMaster()->Clear();
+			Position posBot;
+			Position posTarget;
+            m_bot->GetPosition(&posBot);
+			followTarget->GetPosition(&posTarget);
             //sLog->outError("Bot[%u] is moving, curDist[%f], bDist[%f], bminDist[%f], bMaxDist[%f], bAngle[%f], InFront[%u]", m_bot->GetGUIDLow(), curDist, bDist,bMinDist, bMaxDist, bAngle, followTarget->HasInArc(M_PI,m_bot));
-            if (angleIsAutoSet && omitAngle) { m_bot->GetMotionMaster()->MoveChase(followTarget, bDist); }
-            else { m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle); }
+			if (angleIsAutoSet && omitAngle) 
+			{ 
+				m_bot->GetMotionMaster()->Clear();
+				if(curDist < bMinDist)
+				{
+					m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
+					m_bot->GetMotionMaster()->MovePoint(0, posBot);
+				}
+				else if(curDist < bDist)
+				{
+					uint32 rnd = urand(0,10);
+					if(rnd % 2 == 0)
+					{
+						m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
+						m_bot->GetMotionMaster()->MovePoint(0, posBot);
+					}
+					else
+						m_bot->GetMotionMaster()->MoveChase(followTarget, bDist); 
+				}
+				else
+					m_bot->GetMotionMaster()->MoveChase(followTarget, bDist); 
+			}
+			else // todo, calc right angle
+			{ 
+				m_bot->GetMotionMaster()->Clear();
+				if(curDist < bMinDist)
+				{
+					m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
+					m_bot->GetMotionMaster()->MovePoint(0, posBot);
+				}
+				else if(curDist < bDist)
+				{
+					uint32 rnd = urand(0,10);
+					if(rnd % 2 == 0)
+					{
+						m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
+						m_bot->GetMotionMaster()->MovePoint(0, posBot);
+					}
+					else
+						m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle); 
+				}
+				else
+					m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle); 
+			}
+			
             rval |= true;
         }
     }
-    //Face your faceTarget
-    if (!m_bot->HasInArc(M_PI/16, faceTarget) && !m_bot->isMoving() ) { m_bot->SetFacingToObject(faceTarget); rval |= true; }
+    //Face your faceTarget    16
+	if (!m_bot->isMoving() ) {  m_bot->SetOrientation(m_bot->GetAngle(faceTarget)); rval |= true; }//m_bot->SetFacingToObject(faceTarget); rval |= true; }
     return rval;
 }
 

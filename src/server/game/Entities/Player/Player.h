@@ -1070,7 +1070,7 @@ class Player : public Unit, public GridObject<Player>
         ~Player();
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
-
+		uint32 Player::GetSpellName(std::string name, int loc, bool includePassive);
         static UpdateMask updateVisualBits;
         static void InitVisibleBits();
 

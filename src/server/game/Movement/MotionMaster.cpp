@@ -243,7 +243,7 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
     //_owner->ClearUnitState(UNIT_STATE_FOLLOW);
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
-        sLog->outStaticDebug("Player (GUID: %u) chase to %s (GUID: %u)",
+        sLog->outString("Player (GUID: %u) chase to %s (GUID: %u)",
             _owner->GetGUIDLow(),
             target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature",
             target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : target->ToCreature()->GetDBTableGUIDLow());
@@ -251,7 +251,7 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
     }
     else
     {
-        sLog->outStaticDebug("Creature (Entry: %u GUID: %u) chase to %s (GUID: %u)",
+        sLog->outString("Creature (Entry: %u GUID: %u) chase to %s (GUID: %u)",
             _owner->GetEntry(), _owner->GetGUIDLow(),
             target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature",
             target->GetTypeId() == TYPEID_PLAYER ? target->GetGUIDLow() : target->ToCreature()->GetDBTableGUIDLow());

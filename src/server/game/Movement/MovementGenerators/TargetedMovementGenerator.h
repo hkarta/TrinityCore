@@ -86,6 +86,8 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
         void _reachTarget(T &);
 };
 
+
+
 template<class T>
 class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >
 {

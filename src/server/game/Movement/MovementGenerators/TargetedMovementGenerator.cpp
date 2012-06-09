@@ -38,6 +38,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
         return;
 
     float x, y, z;
+
     //! Following block of code deleted by MrSmite in issue 4891
     //! Code kept for learning and diagnostical purposes
 //
@@ -51,17 +52,20 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 //     else
     if (!i_offset)
     {
+		
         if (i_target->IsWithinMeleeRange(&owner))
-            return;
+		{  return; }
 
         // to nearest random contact position
+
         i_target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
     }
     else
     {
         if (i_target->IsWithinDistInMap(&owner, i_offset + 1.0f))
-            return;
+		{  return; }
         // to at i_offset distance from target and i_angle from target facing
+
         i_target->GetClosePoint(x, y, z, owner.GetObjectSize(), i_offset, i_angle);
     }
 
