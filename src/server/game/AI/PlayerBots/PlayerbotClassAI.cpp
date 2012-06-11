@@ -256,11 +256,18 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
     //if (bAngle > 2 * M_PI) bAngle -= 2 * M_PI; //Do not send values higher than 2 PI, lower than -2 PI
     bool rval = false;
 	if (followTarget == NULL) { followTarget = GetMaster(); if (followTarget == NULL) { return false; }  }
-    if (faceTarget == NULL) { faceTarget = followTarget; }
+    //if (faceTarget == NULL) { faceTarget = followTarget; }
     if (bRole == BOT_ROLE_NONE) { bRole = ( (m_role == BOT_ROLE_NONE) ? BOT_ROLE_DPS_MELEE : m_role);  }
     //Default values
     Unit *pVictim = followTarget->getVictim();
+	/*if(followTarget == GetMaster() && followTarget->isInCombat())
+	{
+		if(Unit *target = GetMaster()->GetSelectedUnit())
+			if(m_bot->IsValidAttackTarget(target))
+				followTarget = target;
+	}*/
 
+	faceTarget = followTarget;
 
     if (pVictim && pVictim->GetGUID() == m_bot->GetGUID()) //if target is attacking me
     {
@@ -302,69 +309,48 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
         if (!creatureInfo || creatureInfo->rank != 3) { omitAngle = true; }
     }
 
+	Position posBot;
+	Position posTarget;
+    m_bot->GetPosition(&posBot);
+	followTarget->GetPosition(&posTarget);
+	float directWayOut = atan2(posBot.GetPositionY() - posTarget.GetPositionY(), posBot.GetPositionX() - posTarget.GetPositionX());
+
     //Move
     if (doFollow)
     {
+
         float curDist = m_bot->GetDistance(followTarget);
         if (m_pulling ||			 //Outside range boundries
 			(!m_bot->isMoving() && ((curDist > bMaxDist || curDist < bMinDist) || (!omitAngle && ((!followTarget->HasInArc(M_PI,m_bot)) ^ (bAngle > 0.5f * M_PI && bAngle < 1.5f * M_PI)))) )//is at right position front/behind?
             )
         {
-			Position posBot;
-			Position posTarget;
-            m_bot->GetPosition(&posBot);
-			followTarget->GetPosition(&posTarget);
             //sLog->outError("Bot[%u] is moving, curDist[%f], bDist[%f], bminDist[%f], bMaxDist[%f], bAngle[%f], InFront[%u]", m_bot->GetGUIDLow(), curDist, bDist,bMinDist, bMaxDist, bAngle, followTarget->HasInArc(M_PI,m_bot));
-			if (angleIsAutoSet && omitAngle) 
-			{ 
-				m_bot->GetMotionMaster()->Clear();
-				if(curDist < bMinDist)
+			m_bot->GetMotionMaster()->Clear();
+			if(curDist < bMinDist)
+			{
+				if(angleIsAutoSet && omitAngle)
 				{
-					m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
+					m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, directWayOut);
 					m_bot->GetMotionMaster()->MovePoint(0, posBot);
-				}
-				else if(curDist < bDist)
-				{
-					uint32 rnd = urand(0,10);
-					if(rnd % 2 == 0)
-					{
-						m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
-						m_bot->GetMotionMaster()->MovePoint(0, posBot);
-					}
-					else
-						m_bot->GetMotionMaster()->MoveChase(followTarget, bDist); 
 				}
 				else
-					m_bot->GetMotionMaster()->MoveChase(followTarget, bDist); 
+				{
+
+				}
 			}
-			else // todo, calc right angle
-			{ 
-				m_bot->GetMotionMaster()->Clear();
-				if(curDist < bMinDist)
-				{
-					m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
-					m_bot->GetMotionMaster()->MovePoint(0, posBot);
-				}
-				else if(curDist < bDist)
-				{
-					uint32 rnd = urand(0,10);
-					if(rnd % 2 == 0)
-					{
-						m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, posBot.GetAngle(&posTarget));
-						m_bot->GetMotionMaster()->MovePoint(0, posBot);
-					}
-					else
-						m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle); 
-				}
+			else
+			{
+				if(angleIsAutoSet && omitAngle)
+					m_bot->GetMotionMaster()->MoveChase(followTarget, bDist); 
 				else
 					m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle); 
 			}
+		}
 			
-            rval |= true;
-        }
+        rval |= true;
     }
     //Face your faceTarget    16
-	if (!m_bot->isMoving() ) {  m_bot->SetOrientation(m_bot->GetAngle(faceTarget)); rval |= true; }//m_bot->SetFacingToObject(faceTarget); rval |= true; }
+	if (!m_bot->isMoving() ) {  m_bot->SetFacingToObject(followTarget); rval |= true; }
     return rval;
 }
 
