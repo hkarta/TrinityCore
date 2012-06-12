@@ -3796,7 +3796,7 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
 
              if ( !qitem && item->is_blocked )
              {
-                 //m_bot->SendLootRelease( m_lootCurrent );
+                 m_bot->SendLootRelease( m_lootCurrent );
                  continue;
              }
 
@@ -3884,8 +3884,8 @@ void PlayerbotAI::HandleCommand(const std::string &text, Player &fromPlayer)
              }
          }
          // release loot
-         //m_bot->GetSession()->DoLootRelease( m_lootCurrent );
-		 //m_bot->SendLootRelease(0);
+         m_bot->GetSession()->DoLootRelease( m_lootCurrent );
+		 m_bot->SendLootRelease(0);
          // clear movement target, take next target on next update
          m_bot->GetMotionMaster()->Clear();
          m_bot->GetMotionMaster()->MoveIdle();

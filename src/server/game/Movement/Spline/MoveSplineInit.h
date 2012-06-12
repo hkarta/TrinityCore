@@ -175,9 +175,10 @@ namespace Movement
         }
         else
         {
-            args.path_Idx_offset = 0;
-            args.path.resize(2);
-            args.path[1] = dest;
+			args.path_Idx_offset = 0;
+			args.path.resize(2);
+			TransportPathTransform transform(unit, args.TransformForTransport);
+			args.path[1] = transform(dest);
         }
      }
 

@@ -91,6 +91,8 @@ class PlayerbotClassAI
         // Called when the main tank is set from raid ui
         void SetMainTank (Unit *tank);
 
+		void SetInFront(const Unit *obj);
+
         //Finds the possible MainTank in Raid including Hunter/Warlock pets.. Makes the assumption based on - max maxHealth..
         Unit *FindMainTankInRaid(Player *gPlayer);
 
