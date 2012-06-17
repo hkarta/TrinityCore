@@ -161,26 +161,9 @@ namespace Movement
 
     inline void MoveSplineInit::MoveTo(float x, float y, float z, bool generatePath, bool forceDestination)
     {
-        Vector3 v(x, y, z);
+        Vector3 v(x , y, z);
         MoveTo(v, generatePath, forceDestination);
     }
-
-	inline void MoveSplineInit::MoveTo(const Vector3& dest, bool generatePath, bool forceDestination)
-     {
-        if (generatePath)
-        {
-            PathFinderMovementGenerator path(&unit);
-            path.calculate(dest.x, dest.y, dest.z, forceDestination);
-            MovebyPath(path.getPath());
-        }
-        else
-        {
-			args.path_Idx_offset = 0;
-			args.path.resize(2);
-			TransportPathTransform transform(unit, args.TransformForTransport);
-			args.path[1] = transform(dest);
-        }
-     }
 
     inline void MoveSplineInit::SetParabolic(float amplitude, float time_shift)
     {

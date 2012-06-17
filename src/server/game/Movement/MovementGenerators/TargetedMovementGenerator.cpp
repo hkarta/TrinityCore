@@ -67,7 +67,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 
     D::_addUnitStateMove(owner);
     i_targetReached = false;
-    i_recalculateTravel = true;
+    i_recalculateTravel = false;
 
     Movement::MoveSplineInit init(owner);
     init.MovebyPath(i_path->getPath());
@@ -76,17 +76,15 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 }
 
 template<>
-void TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::UpdateFinalDistance(float fDistance)
+void TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::UpdateFinalDistance(float /*fDistance*/)
 {
-    i_offset = fDistance;
-    i_recalculateTravel = true;
+    // nothing to do for Player
 }
 
 template<>
-void TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::UpdateFinalDistance(float fDistance)
+void TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::UpdateFinalDistance(float /*fDistance*/)
 {
-    i_offset = fDistance;
-    i_recalculateTravel = true;
+    // nothing to do for Player
 }
 
 template<>
@@ -140,11 +138,6 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
 
         float allowedDist = owner.GetObjectSize() + MELEE_RANGE - 0.5f;
         G3D::Vector3 dest = owner.movespline->FinalDestination();
-	
-		if (!i_offset)
-			allowedDist += MELEE_RANGE;
-		else
-			allowedDist += i_offset;
 
         bool targetMoved = false;
         if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsFlying())
@@ -153,7 +146,7 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
             targetMoved = !i_target->IsWithinDist2d(dest.x, dest.y, allowedDist);
 
         if (targetMoved)
-			 _setTargetLocation(owner);
+            _setTargetLocation(owner);
     }
 
     if (owner.movespline->Finalized())

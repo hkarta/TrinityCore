@@ -131,8 +131,7 @@ namespace Movement
     void MoveSplineInit::SetFacing(const Unit * target)
     {
         args.flags.EnableFacingTarget();
-        //args.facing.target = target->GetObjectGuid().GetRawValue();
-        args.facing.target = target->GetUInt64Value(OBJECT_FIELD_GUID);
+        args.facing.target = target->GetGUID();
     }
 
     void MoveSplineInit::SetFacing(float angle)
@@ -149,13 +148,22 @@ namespace Movement
         args.flags.EnableFacingAngle();
     }
 
-  /*  void MoveSplineInit::MoveTo(Vector3 const& dest)
+    void MoveSplineInit::MoveTo(Vector3 const& dest, bool generatePath, bool forceDestination)
     {
-        args.path_Idx_offset = 0;
-        args.path.resize(2);
-        TransportPathTransform transform(unit, args.TransformForTransport);
-        args.path[1] = transform(dest);
-    }*/
+        if (generatePath)
+        {
+            PathFinderMovementGenerator path(&unit);
+            path.calculate(dest.x, dest.y, dest.z, forceDestination);
+            MovebyPath(path.getPath());
+        }
+        else
+        {
+            args.path_Idx_offset = 0;
+            args.path.resize(2);
+            TransportPathTransform transform(unit, args.TransformForTransport);
+            args.path[1] = transform(dest);
+        }
+    }
 
     Vector3 TransportPathTransform::operator()(Vector3 input)
     {
