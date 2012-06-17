@@ -45,7 +45,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
             return;
 
         // to nearest random contact position
-        i_target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
+        i_target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f); // -0.5f
     }
     else
     {
