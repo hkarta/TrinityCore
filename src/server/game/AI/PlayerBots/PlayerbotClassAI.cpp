@@ -278,17 +278,17 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
         {
             case BOT_ROLE_TANK:
             case BOT_ROLE_OFFTANK:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0; bMaxDist = MELEE_RANGE - 0.5f; bAngle = 0;}
+                if (!bDist) { bDist = 0.7f; bMinDist = 0; bMaxDist = MELEE_RANGE; bAngle = 0;}
                 break;
             case BOT_ROLE_HEALER:
             case BOT_ROLE_SUPPORT:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 2, 10); bMinDist = MELEE_RANGE + 1; bMaxDist = 20; bAngle = ((urand(0,1) * 90 ) + urand(120,150)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 2, 10); bMinDist = MELEE_RANGE + 1; bMaxDist = 20; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             case BOT_ROLE_DPS_RANGED:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 2, 10); bMinDist = MELEE_RANGE + 1;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(120,150)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 2, 10); bMinDist = MELEE_RANGE + 1;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             default:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0.1f; bMaxDist = MELEE_RANGE - 0.5f; bAngle = ((urand(0,1) * 90 ) + urand(130,140)) * M_PI / 180; }
+                if (!bDist) { bDist = 0.7f; bMinDist = 0.1f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
         }
     }
@@ -314,7 +314,11 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
 				float x, y, z;
 				if (angleIsAutoSet && omitAngle) 
 				{ 
-					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, m_bot->GetOrientation() - M_PI);
+					float angle = m_bot->GetAngle(followTarget);
+					/*if(!followTarget->HasInArc(M_PI,m_bot))
+						angle -= M_PI;*/
+
+					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, angle);
 					m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);
 				}
 				else 
@@ -327,132 +331,23 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
         }
     }
 
-    //Face your faceTarget
-    if (!m_bot->isMoving() && !m_bot->HasUnitState(UNIT_STATE_CASTING) && !m_bot->HasInArc(M_PI/16, faceTarget)) 
+    if (!m_bot->isMoving() && !m_bot->HasUnitState(UNIT_STATE_CASTING) && !m_bot->HasInArc(M_PI/16, followTarget)) 
 	{ 
-		if (angleIsAutoSet && omitAngle) 
-			m_bot->GetMotionMaster()->MoveChase(followTarget, bDist);
-		else
-			m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle);
+		float angle = m_bot->GetAngle(followTarget);
+		if (!angleIsAutoSet && !omitAngle) 
+			angle = bAngle;
 
-		m_bot->SetOrientation(m_bot->GetAngle(followTarget));
+		m_bot->SetOrientation(angle);
+		
+		// FUCKING TRINITYCORE SHOULD HAVE FUCKING DOCUMENTATION. SPENT THREE FUCKING DAYS ON THIS FUCKING HEARTHBEATMESSAGE, FIGURING WHY BOTS DO NOT ROTATE THEMSELF!!! GRRR!!!
+		WorldPacket data; 
+		m_bot->BuildHeartBeatMsg(&data);
+		m_bot->SendMessageToSet(&data, true);
+
 		rval |= true; 
 	}
     return rval;
 }
-
-void PlayerbotClassAI::SetInFront(const Unit *obj)
-{
-    m_bot->SetInFront(obj);
-    m_bot->SendUpdateToPlayer(m_master);
-}
-/*{
-    bool doFollow = true;
-    bool omitAngle = false;
-    bool angleIsAutoSet = false;
-	bDist = NULL;
-    if (!bAngle) angleIsAutoSet = true;
-    if (bAngle < 0) bAngle += 2 * M_PI;
-    //if (bAngle > 2 * M_PI) bAngle -= 2 * M_PI; //Do not send values higher than 2 PI, lower than -2 PI
-    bool rval = false;
-	if (followTarget == NULL) { followTarget = GetMaster(); if (followTarget == NULL) { return false; }  }
-    //if (faceTarget == NULL) { faceTarget = followTarget; }
-    if (bRole == BOT_ROLE_NONE) { bRole = ( (m_role == BOT_ROLE_NONE) ? BOT_ROLE_DPS_MELEE : m_role);  }
-    //Default values
-    Unit *pVictim = followTarget->getVictim();
-	/*if(followTarget == GetMaster() && followTarget->isInCombat())
-	{
-		if(Unit *target = GetMaster()->GetSelectedUnit())
-			if(m_bot->IsValidAttackTarget(target))
-				followTarget = target;
-	}
-
-	faceTarget = followTarget;
-
-    if (pVictim && pVictim->GetGUID() == m_bot->GetGUID()) //if target is attacking me
-    {
-        if (bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE)
-        {
-            //Move to target
-            if (!bDist || bDist > 0.7f) bDist = 0.7f;
-            if (bMinDist < 0 || bMinDist > 1) bMinDist = 0.2f;
-            if (bMaxDist <= 0 || bMaxDist > MELEE_RANGE) bMaxDist = MELEE_RANGE;
-            bAngle = 0;
-        }
-        else {doFollow = false;} //Do not move, creature will come
-    }
-    else
-    {
-        // calculating distance to follow
-        switch (bRole)
-        {
-            case BOT_ROLE_TANK:
-            case BOT_ROLE_OFFTANK:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0.2f; bMaxDist = MELEE_RANGE; bAngle = 0;}
-                break;
-            case BOT_ROLE_HEALER:
-            case BOT_ROLE_SUPPORT:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 4, 13); bMinDist = MELEE_RANGE + 3; bMaxDist = 14; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
-                break;
-            case BOT_ROLE_DPS_RANGED:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 4, 13); bMinDist = MELEE_RANGE + 3;  bMaxDist = 14; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
-                break;
-            default:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0.2f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
-                break;
-        }            
-    }
-    //Do not try to go behind if ranged and creature is not boss like
-    if (bDist > MELEE_RANGE && followTarget->GetTypeId() != TYPEID_PLAYER)
-    {
-        const CreatureTemplate *creatureInfo = ((Creature*) followTarget)->GetCreatureTemplate();
-        if (!creatureInfo || creatureInfo->rank != 3) { omitAngle = true; }
-    }
-
-	Position posBot;
-	Position posTarget;
-    m_bot->GetPosition(&posBot);
-	followTarget->GetPosition(&posTarget);
-	float directWayOut = atan2(posBot.GetPositionY() - posTarget.GetPositionY(), posBot.GetPositionX() - posTarget.GetPositionX());
-
-    //Move
-    if (doFollow)
-    {
-
-        float curDist = m_bot->GetDistance(followTarget);
-        if (m_pulling ||			 //Outside range boundries
-			(!m_bot->isMoving() && ((curDist > bMaxDist || curDist < bMinDist) || (!omitAngle && ((!followTarget->HasInArc(M_PI,m_bot)) ^ (bAngle > 0.5f * M_PI && bAngle < 1.5f * M_PI)))) )//is at right position front/behind?
-            )
-        {
-            //sLog->outError("Bot[%u] is moving, curDist[%f], bDist[%f], bminDist[%f], bMaxDist[%f], bAngle[%f], InFront[%u]", m_bot->GetGUIDLow(), curDist, bDist,bMinDist, bMaxDist, bAngle, followTarget->HasInArc(M_PI,m_bot));
-			m_bot->GetMotionMaster()->Clear();
-			if(curDist < bMinDist)
-			{
-				if(angleIsAutoSet && omitAngle)
-				{
-					m_bot->MovePositionToFirstCollision(posBot, bDist - curDist, directWayOut);
-					m_bot->GetMotionMaster()->MovePoint(0, posBot);
-				}
-				else
-				{
-
-				}
-			}
-			else
-			{
-				if(angleIsAutoSet && omitAngle)
-					m_bot->GetMotionMaster()->MoveChase(followTarget, bDist); 
-				else
-					m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle); 
-			}
-		}
-			
-        rval |= true;
-    }
-    //Face your faceTarget    16
-	if (!m_bot->isMoving() ) {  m_bot->SetFacingToObject(followTarget); rval |= true; }
-    return rval;
-}*/
 
 uint8 PlayerbotClassAI::GetThreatPercent(Unit *pTarget, Unit *pFrom)
 {
