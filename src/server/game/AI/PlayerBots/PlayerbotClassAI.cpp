@@ -282,10 +282,10 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
                 break;
             case BOT_ROLE_HEALER:
             case BOT_ROLE_SUPPORT:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 2, 10); bMinDist = MELEE_RANGE + 1; bMaxDist = 20; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 5, 10); bMinDist = MELEE_RANGE + 4; bMaxDist = 20; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             case BOT_ROLE_DPS_RANGED:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 2, 10); bMinDist = MELEE_RANGE + 1;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 5, 10); bMinDist = MELEE_RANGE + 4;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             default:
                 if (!bDist) { bDist = 0.7f; bMinDist = 0.1f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
