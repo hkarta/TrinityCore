@@ -301,9 +301,9 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
 
 	float x, y, z;
     //Move
+	float curDist = m_bot->GetDistance(followTarget);
     if (doFollow && !m_bot->HasUnitState(UNIT_STATE_CASTING))
     {
-        float curDist = m_bot->GetDistance(followTarget);
         if (m_pulling ||
             (!m_bot->isMoving() &&
             ((curDist > bMaxDist || curDist < bMinDist)  //Outside range boundries
@@ -348,9 +348,19 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
 		m_bot->SetOrientation(angle);
 
 		// FUCKING TRINITYCORE SHOULD HAVE FUCKING DOCUMENTATION. SPENT THREE FUCKING DAYS ON THIS FUCKING HEARTHBEATMESSAGE, FIGURING WHY BOTS DO NOT ROTATE THEMSELF!!! GRRR!!!
-		WorldPacket data; 
-		m_bot->BuildHeartBeatMsg(&data);
-		m_bot->SendMessageToSet(&data, true);
+		if(curDist > MELEE_RANGE)
+		{	// Casters seem to rotate with MoveChase correctly
+			if (angleIsAutoSet && omitAngle) 
+				m_bot->GetMotionMaster()->MoveChase(followTarget, bDist);
+			else
+				m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle);
+		}
+		else 
+		{	// Melee sends HeartBeat, MoveChase wont rotate them for some reason, casters mess their z coord
+			WorldPacket data; 
+			m_bot->BuildHeartBeatMsg(&data);
+			m_bot->SendMessageToSet(&data, true);
+		}
 		rval |= true; 
 	}
 
