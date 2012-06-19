@@ -14,6 +14,7 @@ Version : 0.40
 */
 
 #include "PlayerbotClassAI.h"
+#include "PlayerbotAI.h"
 #include "Common.h"
 #include "Spell.h"
 #include "Group.h"
@@ -360,6 +361,7 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
 			WorldPacket data; 
 			m_bot->BuildHeartBeatMsg(&data);
 			m_bot->SendMessageToSet(&data, true);
+			//GetAI()->SetIgnoreUpdateTime(1.5);
 		}
 		rval |= true; 
 	}
