@@ -1979,6 +1979,7 @@ class Player : public Unit, public GridObject<Player>
             StopMirrorTimer(BREATH_TIMER);
             StopMirrorTimer(FIRE_TIMER);
         }
+        bool IsMirrorTimerActive(MirrorTimerType type) { return m_MirrorTimer[type] == getMaxTimer(type); }
 
         void SetMovement(PlayerMovementType pType);
 
