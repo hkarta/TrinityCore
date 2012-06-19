@@ -76,15 +76,19 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 }
 
 template<>
-void TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::UpdateFinalDistance(float /*fDistance*/)
+void TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::UpdateFinalDistance(float fDistance)
 {
     // nothing to do for Player
+	i_offset = fDistance;
+    i_recalculateTravel = true;
 }
 
 template<>
-void TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::UpdateFinalDistance(float /*fDistance*/)
+void TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::UpdateFinalDistance(float fDistance)
 {
     // nothing to do for Player
+	i_offset = fDistance;
+    i_recalculateTravel = true;
 }
 
 template<>
@@ -195,9 +199,10 @@ void ChaseMovementGenerator<Creature>::Initialize(Creature &owner)
 template<class T>
 void ChaseMovementGenerator<T>::Finalize(T &owner)
 {
-    owner.ClearUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
+	//Ok, lets hope the creature script calls it manualy
+    /*owner.ClearUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
     if (owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->isPet() && owner.isAlive())
-        owner.GetMotionMaster()->MoveTargetedHome();
+        owner.GetMotionMaster()->MoveTargetedHome();*/
 }
 
 template<class T>

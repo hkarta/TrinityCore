@@ -282,10 +282,10 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
                 break;
             case BOT_ROLE_HEALER:
             case BOT_ROLE_SUPPORT:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 5, 10); bMinDist = MELEE_RANGE + 4; bMaxDist = 20; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 9, 12); bMinDist = MELEE_RANGE + 4; bMaxDist = 20; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             case BOT_ROLE_DPS_RANGED:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 5, 10); bMinDist = MELEE_RANGE + 4;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = urand(MELEE_RANGE + 9, 12); bMinDist = MELEE_RANGE + 4;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             default:
                 if (!bDist) { bDist = 0.7f; bMinDist = 0.1f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
@@ -299,6 +299,7 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
         if (!cInfo || cInfo->rank != 3) { omitAngle = true; }
     }
 
+	float x, y, z;
     //Move
     if (doFollow && !m_bot->HasUnitState(UNIT_STATE_CASTING))
     {
@@ -309,16 +310,26 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
             || (!omitAngle && ((!followTarget->HasInArc(M_PI,m_bot)) ^ (bAngle > 0.5f * M_PI && bAngle < 1.5f * M_PI)))))//is at right position front/behind?
             )
         {
-            //m_bot->GetMotionMaster()->Clear();
-            //sLog.outError("Bot[%u] is moving, curDist[%f], bDist[%f], bminDist[%f], bMaxDist[%f], bAngle[%f], InFront[%u]", m_bot->GetGUIDLow(), curDist, bDist,bMinDist, bMaxDist, bAngle, followTarget->HasInArc(M_PI,m_bot));
-				float x, y, z;
 				if (angleIsAutoSet && omitAngle) 
 				{ 
-					float angle = m_bot->GetAngle(followTarget);
-					/*if(!followTarget->HasInArc(M_PI,m_bot))
-						angle -= M_PI;*/
+					// Extremely hacky "calculation" follows. This is because i have no fucking idea how to calculate it and my every attmpt on solving this matemathicaly failed miserably.
+				/*	float closest = 0;
+					float closestDist = -1;
 
-					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, angle);
+					for(float i = 0; i < 2*M_PI; i+= 0.1f)
+					{
+						followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, i);
+						if(m_bot->GetDistance(x, y, z) < closestDist || closestDist == -1)
+						{
+							closest = i;
+							closestDist = m_bot->GetDistance(x, y, z);
+						}
+					}
+					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, closest);
+
+					m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);*/
+
+					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist);
 					m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);
 				}
 				else 
@@ -334,18 +345,15 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
     if (!m_bot->isMoving() && !m_bot->HasUnitState(UNIT_STATE_CASTING) && !m_bot->HasInArc(M_PI/16, followTarget)) 
 	{ 
 		float angle = m_bot->GetAngle(followTarget);
-		if (!angleIsAutoSet && !omitAngle) 
-			angle = bAngle;
-
 		m_bot->SetOrientation(angle);
-		
+
 		// FUCKING TRINITYCORE SHOULD HAVE FUCKING DOCUMENTATION. SPENT THREE FUCKING DAYS ON THIS FUCKING HEARTHBEATMESSAGE, FIGURING WHY BOTS DO NOT ROTATE THEMSELF!!! GRRR!!!
 		WorldPacket data; 
 		m_bot->BuildHeartBeatMsg(&data);
 		m_bot->SendMessageToSet(&data, true);
-
 		rval |= true; 
 	}
+
     return rval;
 }
 

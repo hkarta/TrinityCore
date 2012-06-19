@@ -2234,7 +2234,7 @@ void PlayerbotAI::UpdateAI(const uint32 p_time)
 
 
     //default updates occur every 1.5 seconds
-    SetIgnoreUpdateTime(1.5);
+    SetIgnoreUpdateTime(0.5);
 
     // prevent cheating
     if (!m_bot->GetGroup())
@@ -3032,8 +3032,6 @@ bool PlayerbotAI::Follow(Player &player)
 
         if(!m_bot->isDead() && !m_bot->IsBeingTeleported() && !player.isDead() &&
             (m_bot->GetMapId() != player.GetMapId()
-            || m_bot->GetZoneId() != player.GetZoneId()
-            || m_bot->GetAreaId() != player.GetAreaId()
             || m_bot->GetPhaseMask() != player.GetPhaseMask())
             || m_bot->GetDistance(player) > 255)
             {
