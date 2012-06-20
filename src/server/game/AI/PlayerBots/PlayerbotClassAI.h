@@ -156,6 +156,8 @@ class PlayerbotClassAI
         Player *m_bot;
         PlayerbotAI *m_ai;
         Unit *mainTank;
+		float bAngle;
+		float bDist;
 
 
 

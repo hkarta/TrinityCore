@@ -248,6 +248,9 @@ bool PlayerbotClassAI::DoSupportRaid(Player *gPlayer, float radius, bool dResurr
 
 bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDist, float bMinDist, float bMaxDist, float bAngle, Unit *faceTarget)
 {
+	if(this->bAngle)
+		bAngle = this->bAngle;
+
 	bool doFollow = true;
     bool omitAngle = false;
     bool angleIsAutoSet = false;
@@ -289,7 +292,7 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
                 if (!bDist) { bDist = urand(MELEE_RANGE + 9, 12); bMinDist = MELEE_RANGE + 4;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
                 break;
             default:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0.1f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
+                if (!bDist) { bDist = 0.7f; bMinDist = 0.0f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(120,150)) * M_PI / 180; }
                 break;
         }
     }
@@ -303,68 +306,57 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
 	float x, y, z;
     //Move
 	float curDist = m_bot->GetDistance(followTarget);
+
     if (doFollow && !m_bot->HasUnitState(UNIT_STATE_CASTING))
     {
         if (m_pulling ||
-            (!m_bot->isMoving() &&
+            (((bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE) || !m_bot->isMoving()) &&
             ((curDist > bMaxDist || curDist < bMinDist)  //Outside range boundries
             || (!omitAngle && ((!followTarget->HasInArc(M_PI,m_bot)) ^ (bAngle > 0.5f * M_PI && bAngle < 1.5f * M_PI)))))//is at right position front/behind?
             )
         {
-				if (angleIsAutoSet && omitAngle) 
-				{ 
-					// Extremely hacky "calculation" follows. This is because i have no fucking idea how to calculate it and my every attmpt on solving this matemathicaly failed miserably.
-				/*	float closest = 0;
-					float closestDist = -1;
+			//GetAI()->SetIgnoreUpdateTime(0.1);
+			sLog->outString("Current distance: %f [%f-%f] allowed", curDist, bMinDist, bMaxDist);
 
-					for(float i = 0; i < 2*M_PI; i+= 0.1f)
-					{
-						followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, i);
-						if(m_bot->GetDistance(x, y, z) < closestDist || closestDist == -1)
-						{
-							closest = i;
-							closestDist = m_bot->GetDistance(x, y, z);
-						}
-					}
-					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, closest);
-
-					m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);*/
-
-					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist);
-					m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);
-				}
-				else 
-				{ 
-					followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, bAngle);
-					m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);
-				}
+			if (angleIsAutoSet && omitAngle)
+				followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist);
+			else 
+				followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, bAngle);
+			
+			m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);
 
             rval |= true;
-        }
+		}
     }
 
     if (!m_bot->isMoving() && !m_bot->HasUnitState(UNIT_STATE_CASTING) && !m_bot->HasInArc(M_PI/16, followTarget)) 
 	{ 
+		//GetAI()->SetIgnoreUpdateTime(0.1);
 		float angle = m_bot->GetAngle(followTarget);
 		m_bot->SetOrientation(angle);
-
-		// FUCKING TRINITYCORE SHOULD HAVE FUCKING DOCUMENTATION. SPENT THREE FUCKING DAYS ON THIS FUCKING HEARTHBEATMESSAGE, FIGURING WHY BOTS DO NOT ROTATE THEMSELF!!! GRRR!!!
-		if(curDist > MELEE_RANGE)
-		{	// Casters seem to rotate with MoveChase correctly
+		sLog->outString("Orientation changed");
+		// FUCKING TRINITYCORE SHOULD HAVE FUCKING DOCUMENTATION. SPENT THREE FUCKING DAYS ON THIS FUCKING HEARTHBEATMESSAGE, FIGURING WHY BOTS DO NOT ROTATE THEMSELF!!! GRRR!!
+		if(curDist < MELEE_RANGE)
+		{	// Melee sends HeartBeat, MoveChase wont rotate them for some reason, casters mess their z coord
+			m_bot->m_positionZ = followTarget->GetPositionZ();
+			WorldPacket data; 
+			m_bot->BuildHeartBeatMsg(&data);
+			m_bot->SendMessageToSet(&data, true);
+		}
+		else
+		{
 			if (angleIsAutoSet && omitAngle) 
 				m_bot->GetMotionMaster()->MoveChase(followTarget, bDist);
 			else
 				m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle);
 		}
-		else 
-		{	// Melee sends HeartBeat, MoveChase wont rotate them for some reason, casters mess their z coord
-			WorldPacket data; 
-			m_bot->BuildHeartBeatMsg(&data);
-			m_bot->SendMessageToSet(&data, true);
-			//GetAI()->SetIgnoreUpdateTime(1.5);
-		}
+
 		rval |= true; 
 	}
+
+	if (bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE)
+		if(m_bot->isInCombat() && !m_bot->isMoving() && m_bot->getAttackTimer(BASE_ATTACK) < 500 && m_bot->getAttackTimer(BASE_ATTACK) > 0 && !m_bot->HasUnitState(UNIT_STATE_CASTING))
+			GetAI()->SetIgnoreUpdateTime(1.5);
 
     return rval;
 }
