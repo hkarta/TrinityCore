@@ -2234,7 +2234,7 @@ void PlayerbotAI::UpdateAI(const uint32 p_time)
 
 
     //default updates occur every 1.5 seconds
-    SetIgnoreUpdateTime(0.5);
+    SetIgnoreUpdateTime(1.5);
 
     // prevent cheating
     if (!m_bot->GetGroup())

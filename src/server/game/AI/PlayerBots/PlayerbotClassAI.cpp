@@ -329,9 +329,12 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
 		}
     }
 
-    if (!m_bot->isMoving() && !m_bot->HasUnitState(UNIT_STATE_CASTING) && !m_bot->HasInArc(M_PI/16, followTarget)) 
+	if(m_bot->isMoving()) // When we are moving, we need to update our ai quite frequently to change destination in case creature moves
+		GetAI()->SetIgnoreUpdateTime(0.1);
+
+    if (!m_bot->isMoving() && !m_bot->HasUnitState(UNIT_STATE_CASTING) && !m_bot->HasInArc(M_PI/16, followTarget)) // And when rotating we need to do this as well, to, well, rotate quickly. :)
 	{ 
-		//GetAI()->SetIgnoreUpdateTime(0.1);
+		GetAI()->SetIgnoreUpdateTime(0.1);
 		float angle = m_bot->GetAngle(followTarget);
 		m_bot->SetOrientation(angle);
 		sLog->outString("Orientation changed");
@@ -354,9 +357,9 @@ bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDi
 		rval |= true; 
 	}
 
-	if (bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE)
+	/*if (bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE)
 		if(m_bot->isInCombat() && !m_bot->isMoving() && m_bot->getAttackTimer(BASE_ATTACK) < 500 && m_bot->getAttackTimer(BASE_ATTACK) > 0 && !m_bot->HasUnitState(UNIT_STATE_CASTING))
-			GetAI()->SetIgnoreUpdateTime(1.5);
+			GetAI()->SetIgnoreUpdateTime(1.5);*/
 
     return rval;
 }
