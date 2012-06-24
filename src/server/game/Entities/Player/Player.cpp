@@ -2643,30 +2643,6 @@ std::list<std::string> *Player::GetCharacterList()
     return names;
 } //end GetCharacterList
 
-//Playerbot mod:
-void Player::SetPlayerbotAI(PlayerbotAI *ai)
-{
-    if(ai == NULL)
-    {
-        sLog->outError("Tried to assign playerbot AI to NULL; this is not supported!");
-        return;
-    }
-    if(GetPlayerbotAI() != NULL)
-    {
-        sLog->outError("Tried to reassign playerbot AI; this is not yet supported!");
-        return;
-    }
-    //assigning bot AI to normal players is not currently supported
-    if(!IsPlayerbot())
-    {
-        sLog->outError("Tried to set playerbot AI for a player that was not a bot.");
-        return;
-    }
-    m_playerbotAI = ai;
-
-    m_SaveOrgLocation = ConfigMgr::GetIntDefault("Bot.SaveOrgLocation", 0);
-}
-
 void Player::RegenerateAll()
 {
     //if (m_regenTimer <= 500)
@@ -16426,8 +16402,6 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
             }
         }
     }
-    //Playerbot mod
-    if(m_playerbotAI != NULL) m_playerbotAI->KilledMonster(entry, guid);
 }
 
 void Player::KilledPlayerCredit()
@@ -19136,18 +19110,6 @@ void Player::SaveToDB(bool create /*=false*/)
 
         if (!IsBeingTeleported())
         {
-         if (IsPlayerbot() && m_SaveOrgLocation == 1)
-         {
-            stmt->setUInt16(index++, (uint16)m_playerbotAI->GetStartMapID());
-            stmt->setUInt32(index++, (uint32)m_playerbotAI->GetStartInstanceID());
-            stmt->setUInt8(index++, m_playerbotAI->GetStartDifficulty());
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartX()));
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartY()));
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartZ()));
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartO()));
-         }
-         else
-         {
             stmt->setUInt16(index++, (uint16)GetMapId());
             stmt->setUInt32(index++, (uint32)GetInstanceId());
             stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
@@ -19155,22 +19117,9 @@ void Player::SaveToDB(bool create /*=false*/)
             stmt->setFloat(index++, finiteAlways(GetPositionY()));
             stmt->setFloat(index++, finiteAlways(GetPositionZ()));
             stmt->setFloat(index++, finiteAlways(GetOrientation()));
-          }
         }
         else
         {
-          if (IsPlayerbot() && m_SaveOrgLocation == 1)
-          {
-            stmt->setUInt16(index++, (uint16)m_playerbotAI->GetStartMapID());
-            stmt->setUInt32(index++, (uint32)m_playerbotAI->GetStartInstanceID());
-            stmt->setUInt8(index++, m_playerbotAI->GetStartDifficulty());
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartX()));
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartY()));
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartZ()));
-            stmt->setFloat(index++, finiteAlways(m_playerbotAI->GetStartO()));
-         }
-         else
-         {
             stmt->setUInt16(index++, (uint16)GetTeleportDest().GetMapId());
             stmt->setUInt32(index++, (uint32)0);
             stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
@@ -19178,7 +19127,6 @@ void Player::SaveToDB(bool create /*=false*/)
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionY()));
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionZ()));
             stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetOrientation()));
-          }
         }
 
         std::ostringstream ss;

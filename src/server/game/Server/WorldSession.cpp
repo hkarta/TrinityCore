@@ -45,6 +45,7 @@
 #include "ScriptMgr.h"
 #include "Transport.h"
 //Playerbot mod
+#include "PlayerbotMgr.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotClassAI.h"
 
@@ -168,8 +169,8 @@ void WorldSession::SendPacket(WorldPacket const* packet)
     //Playerbot mod: send packet to bot AI
     if(GetPlayer() && GetPlayer()->GetPlayerbotAI()) {
             GetPlayer()->GetPlayerbotAI()->HandleBotOutgoingPacket(*packet);
-    } else if(!m_playerBots.empty()) {
-            PlayerbotAI::HandleMasterOutgoingPacket(*packet, *this);
+    } else if(GetPlayer()->GetPlayerbotMgr()) {
+            GetPlayer()->GetPlayerbotMgr()->HandleMasterOutgoingPacket(*packet);
     }
 
     if (!m_Socket)
@@ -303,8 +304,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
                             // Playerbot mod: if this player has bots let the
                             // botAI see the masters packet
-                            if(!m_playerBots.empty())
-                                PlayerbotAI::HandleMasterIncomingPacket(*packet, *this);
+                            if(_player && _player->GetPlayerbotMgr())
+                                GetPlayer()->GetPlayerbotMgr()->HandleMasterIncomingPacket(*packet);
                         }
                         // lag can cause STATUS_LOGGEDIN opcodes to arrive after the player started a transfer
                         break;

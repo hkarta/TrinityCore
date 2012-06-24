@@ -1,69 +1,184 @@
-#ifndef _PLAYERBOTMAGEAI_H
-#define _PLAYERBOTMAGEAI_H
+/*
+* Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+* Copyright (C) 2012 Playerbot Team
+* Copyright (C) 2012 MangosR2
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#ifndef _PlayerbotMageAI_H
+#define _PlayerbotMageAI_H
 
 #include "PlayerbotClassAI.h"
 
 enum
 {
-    SPELL_SCORCH,
-    SPELL_POM,
-    SPELL_ARCANE_POWER,
-    SPELL_FIREBALL,
-    SPELL_MISSILES,
-    SPELL_FROSTBOLT
+    SPELL_FROST,
+    SPELL_FIRE,
+    SPELL_ARCANE
 };
 
+enum MageSpells
+{
+    AMPLIFY_MAGIC_1                 = 1008,
+    ARCANE_BARRAGE_1                = 44425,
+    ARCANE_BLAST_1                  = 30451,
+    ARCANE_BRILLIANCE_1             = 23028,
+    ARCANE_EXPLOSION_1              = 1449,
+    ARCANE_INTELLECT_1              = 1459,
+    ARCANE_MISSILES_1               = 5143,
+    ARCANE_POWER_1                  = 12042,
+    BLAST_WAVE_1                    = 11113,
+    BLINK_1                         = 1953,
+    BLIZZARD_1                      = 10,
+    COLD_SNAP_1                     = 11958,
+    COMBUSTION_1                    = 11129,
+    CONE_OF_COLD_1                  = 120,
+    CONJURE_FOOD_1                  = 587,
+    CONJURE_MANA_GEM_1              = 759,
+    CONJURE_REFRESHMENT_1           = 42955,
+    CONJURE_WATER_1                 = 5504,
+    COUNTERSPELL_1                  = 2139,
+    DALARAN_BRILLIANCE_1            = 61316,
+    DALARAN_INTELLECT_1             = 61024,
+    DAMPEN_MAGIC_1                  = 604,
+    DEEP_FREEZE_1                   = 44572,
+    DRAGONS_BREATH_1                = 31661,
+    EVOCATION_1                     = 12051,
+    FIRE_BLAST_1                    = 2136,
+    FIRE_WARD_1                     = 543,
+    FIREBALL_1                      = 133,
+    FLAMESTRIKE_1                   = 2120,
+    FOCUS_MAGIC_1                   = 54646,
+    FROST_ARMOR_1                   = 168,
+    FROST_NOVA_1                    = 122,
+    FROST_WARD_1                    = 6143,
+    FROSTBOLT_1                     = 116,
+    FROSTFIRE_BOLT_1                = 44614,
+    ICE_ARMOR_1                     = 7302,
+    ICE_BARRIER_1                   = 11426,
+    ICE_BLOCK_1                     = 45438,
+    ICE_LANCE_1                     = 30455,
+    ICY_VEINS_1                     = 12472,
+    INVISIBILITY_1                  = 66,
+    LIVING_BOMB_1                   = 44457,
+    MAGE_ARMOR_1                    = 6117,
+    MANA_SHIELD_1                   = 1463,
+    MIRROR_IMAGE_1                  = 55342,
+    MOLTEN_ARMOR_1                  = 30482,
+    PRESENCE_OF_MIND_1              = 12043,
+    PYROBLAST_1                     = 11366,
+    REMOVE_CURSE_MAGE_1             = 475,
+    RITUAL_OF_REFRESHMENT_1         = 43987,
+    SCORCH_1                        = 2948,
+    SHOOT_2                                          = 5019,
+    SLOW_1                          = 31589,
+    SLOW_FALL_1                     = 130,
+    SPELLSTEAL_1                    = 30449,
+    SUMMON_WATER_ELEMENTAL_1        = 31687
+};
 //class Player;
 
 class PlayerbotMageAI : PlayerbotClassAI
 {
-    public:
-        PlayerbotMageAI(Player *const master, Player *const bot, PlayerbotAI *const ai);
-        virtual ~PlayerbotMageAI();
+public:
+    PlayerbotMageAI(Player * const master, Player * const bot, PlayerbotAI * const ai);
+    virtual ~PlayerbotMageAI();
 
-        virtual void LoadSpells();
+    // all combat actions go here
+    bool DoFirstCombatManeuver(Unit*);
+    bool DoNextCombatManeuver(Unit*);
 
-        //all combat actions go here
-        void DoNextCombatManeuver(Unit *);
+    // all non combat actions go here, ex buffs, heals, rezzes
+    void DoNonCombatActions();
 
-        //all non combat actions go here, ex buffs, heals, rezzes
-        void DoNonCombatActions();
+    // buff a specific player, usually a real PC who is not in group
+    bool BuffPlayer(Player *target);
 
-        //buff a specific player, usually a real PC who is not in group
-        bool BuffPlayer(Unit *target);
+private:
+    bool CastSpell(uint32 nextAction, Unit *pTarget = NULL) { return CastSpellWand(nextAction, pTarget, SHOOT); }
 
-        //Cures the target
-        bool CureTarget(Unit *target);
+    // ARCANE
+    uint32 ARCANE_MISSILES,
+           ARCANE_EXPLOSION,
+           COUNTERSPELL,
+           SLOW,
+           ARCANE_BARRAGE,
+           ARCANE_BLAST,
+           MIRROR_IMAGE,
+           ARCANE_POWER;
+    // ranged
+    uint32 SHOOT;
 
-        typedef std::set<Unit *> AttackerSet;
-    private:
-        //arcane
-        uint32 ARCANE_MISSILES, ARCANE_EXPLOSION, ARCANE_BLAST, ARCANE_BARRAGE;
+    // FIRE
+    uint32 FIREBALL,
+           FIRE_BLAST,
+           FLAMESTRIKE,
+           SCORCH,
+           PYROBLAST,
+           BLAST_WAVE,
+           COMBUSTION,
+           DRAGONS_BREATH,
+           LIVING_BOMB,
+           FROSTFIRE_BOLT,
+           FIRE_WARD;
 
-        //fire
-        uint32 FIREBALL, FROSTFIRE_BOLT, FIRE_BLAST, FLAMESTRIKE, BLAST_WAVE, SCORCH, PYROBLAST, LIVING_BOMB;
+    // FROST
+    uint32 DEEP_FREEZE,
+           FROSTBOLT,
+           FROST_NOVA,
+           BLIZZARD,
+           ICY_VEINS,
+           CONE_OF_COLD,
+           ICE_BARRIER,
+           SUMMON_WATER_ELEMENTAL,
+           ICE_LANCE,
+           FROST_WARD,
+           ICE_BLOCK,
+           COLD_SNAP;
 
-        //cold
-        uint32 FROSTBOLT, FROST_NOVA, ICE_LANCE, BLIZZARD, CONE_OF_COLD, WATER_ELEMENTAL;
+    // buffs
+    uint32 FROST_ARMOR,
+           ICE_ARMOR,
+           MAGE_ARMOR,
+           MOLTEN_ARMOR,
+           ARCANE_INTELLECT,
+           ARCANE_BRILLIANCE,
+           DALARAN_INTELLECT,
+           DALARAN_BRILLIANCE,
+           MANA_SHIELD,
+           DAMPEN_MAGIC,
+           AMPLIFY_MAGIC;
 
-        // buffs
-        uint32 FROST_ARMOR, ICE_ARMOR, MAGE_ARMOR, MOLTEN_ARMOR, FIRE_WARD, FROST_WARD, MANA_SHIELD, ICE_BARRIER, POM, FOCUS_MAGIC, ARCANE_POWER, COMBUSTION, ICY_VEINS,
-            ARCANE_INTELLECT, ARCANE_BRILLIANCE, DALARAN_INTELLECT, DALARAN_BRILLIANCE, DAMPEN_MAGIC, AMPLIFY_MAGIC;
+    // first aid
+    uint32 RECENTLY_BANDAGED;
 
-        //CC
-        uint32 POLYMORPH, DRAGONS_BREATH, DEEP_FREEZE;
+    // racial
+    uint32 ARCANE_TORRENT,
+           GIFT_OF_THE_NAARU,
+           STONEFORM,
+           ESCAPE_ARTIST,
+           EVERY_MAN_FOR_HIMSELF,
+           SHADOWMELD,
+           BLOOD_FURY,
+           WAR_STOMP,
+           BERSERKING,
+           WILL_OF_THE_FORSAKEN;
 
-        //other
-        uint32 CONJURE_REFRESHMENT, CONJURE_WATER, CONJURE_FOOD, CONJURE_MANA_GEM, MIRROR_IMAGE, BLINK, ICE_BLOCK, INVISIBILITY, EVOCATION, REMOVE_CURSE, COUNTER_SPELL, SLOW, SHOOT;
-
-        //special
-        uint32 P_BRAIN_FREEZE, P_FIRESTARTER, P_HOT_STREAK, P_ARCANE_BLAST, P_MISSILE_BARRAGE, P_FINGERS_OF_FROST, IMP_SCORCH;
-
-
-        uint32 TALENT_ARCANE, TALENT_FIRE, TALENT_FROST;
-
+    uint32 CONJURE_WATER,
+           CONJURE_FOOD;
 };
-
-
 
 #endif

@@ -47,6 +47,7 @@
 // Playerbot mod
 #include "Config.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotMgr.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -1054,6 +1055,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 //HandlePlayerLoginCallback in that it sets up the bot's
 //world session and also stores the pointer to the bot player
 //in the master's world session m_playerBots map
+
+
 void WorldSession::HandlePlayerBotLogin(SQLQueryHolder *holder)
 {
     if(!holder) return;
@@ -1124,7 +1127,8 @@ void WorldSession::HandlePlayerBotLogin(SQLQueryHolder *holder)
     }
 
     //give the bot some AI, object is owned by the player class
-    PlayerbotAI *ai = new PlayerbotAI(masterSession->GetPlayer(), botPlayer);
+    /*
+	PlayerbotAI *ai = new PlayerbotAI(masterSession->GetPlayer(), botPlayer);
     botPlayer->SetPlayerbotAI(ai);
 
     ai->SetStartDifficulty(botPlayer->GetDungeonDifficulty());
@@ -1136,9 +1140,10 @@ void WorldSession::HandlePlayerBotLogin(SQLQueryHolder *holder)
     ai->SetStartX(botPlayer->GetPositionX());
     ai->SetStartY(botPlayer->GetPositionY());
     ai->SetStartZ(botPlayer->GetPositionZ());
+	*/
 
     //tell the world session that they now manage this new bot
-    (masterSession->m_playerBots)[guid] = botPlayer;
+    masterSession->GetPlayer()->GetPlayerbotMgr()->OnBotLogin(botSession->GetPlayer());
 
     //if bot is in a group and master is not in group then
     //have bot leave their group
@@ -1147,6 +1152,7 @@ void WorldSession::HandlePlayerBotLogin(SQLQueryHolder *holder)
         masterSession->GetPlayer()->GetGroup()->IsMember(guid) == false))
         botPlayer->RemoveFromGroup();
 }
+
 
 void WorldSession::HandleSetFactionAtWar(WorldPacket & recv_data)
 {
@@ -1335,15 +1341,6 @@ void WorldSession::AddPlayerBot(uint64 playerGuid)
     ChatHandler chH = ChatHandler(GetPlayer());
 
     //check if max playerbots are exceeded
-   uint8 count = 0;
-    uint8 m_MaxPlayerbots = ConfigMgr::GetFloatDefault("Bot.MaxPlayerbots", 9);
-    for(PlayerBotMap::const_iterator itr = GetPlayerBotsBegin(); itr != GetPlayerBotsEnd(); ++itr) ++count;
-
-    if(count >= m_MaxPlayerbots)
-    {
-        chH.PSendSysMessage("You have reached the maximum number (%d) of Player Bots allowed.", m_MaxPlayerbots);
-        return;
-    }
 
     LoginQueryHolder *holder = new LoginQueryHolder(GetAccountId(), playerGuid);
 

@@ -57,6 +57,7 @@ class UpdateMask;
 
 //Playerbot mod
 class PlayerbotAI;
+class PlayerbotMgr;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -1803,6 +1804,8 @@ class Player : public Unit, public GridObject<Player>
 
         /** todo: -maybe move UpdateDuelFlag+DuelComplete to independent DuelHandler.. **/
         DuelInfo* duel;
+		bool IsInDuelWith(Player const* player) const { return duel && duel->opponent == player && duel->startTime != 0; }
+		bool IsInDuel(Player const* player) const { return duel && (duel->opponent == player || duel->initiator == player) && duel->startTime != 0; }
         void UpdateDuelFlag(time_t currTime);
         void CheckDuelDistance(time_t currTime);
         void DuelComplete(DuelCompleteType type);
@@ -2542,9 +2545,14 @@ class Player : public Unit, public GridObject<Player>
         void SetTitle(CharTitlesEntry const* title, bool lost = false);
 
         //Playerbot mod:
-        void SetPlayerbotAI(PlayerbotAI *ai);
-        PlayerbotAI *GetPlayerbotAI(){ return m_playerbotAI; }
+        void SetPlayerbotAI(PlayerbotAI* ai) { assert(!m_playerbotAI && !m_playerbotMgr); m_playerbotAI=ai; }
+        PlayerbotAI* GetPlayerbotAI() { return m_playerbotAI; }
+        void SetPlayerbotMgr(PlayerbotMgr* mgr) { assert(!m_playerbotAI && !m_playerbotMgr); m_playerbotMgr=mgr; }
+        PlayerbotMgr* GetPlayerbotMgr() { return m_playerbotMgr; }
+        void SetBotDeathTimer() { m_deathTimer = 0; }
         bool IsPlayerbot(){ return(GetSession()->GetRemoteAddress() == "bot"); }
+
+		uint32 GetSpec();
 
         //bool isActiveObject() const { return true; }
         bool canSeeSpellClickOn(Creature const* creature) const;
@@ -2604,6 +2612,13 @@ class Player : public Unit, public GridObject<Player>
                 return modelData->CollisionHeight;
             }
         }
+
+		void skill(std::list<uint32>& m_spellsToLearn);
+		void MakeTalentGlyphLink(std::ostringstream &out);
+		bool getNextQuestId(const std::string& pString, unsigned int& pStartPos, unsigned int& pId);
+		void chompAndTrim(std::string& str);
+		bool requiredQuests(const char* pQuestIdString);
+		void UpdateMail();
 
     protected:
         // Gamemaster whisper whitelist
@@ -2872,7 +2887,6 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         /***                     BOT SYSTEM                    ***/
         /*********************************************************/
-
         Creature *m_bot;
         uint8 m_bot_class;
         uint8 m_bot_race;
@@ -2932,6 +2946,7 @@ class Player : public Unit, public GridObject<Player>
 
         // Playerbot mod
         PlayerbotAI *m_playerbotAI;
+		PlayerbotMgr *m_playerbotMgr;
 
         uint32 m_lastFallTime;
         float  m_lastFallZ;

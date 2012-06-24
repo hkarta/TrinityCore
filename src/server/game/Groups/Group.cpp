@@ -36,8 +36,8 @@
 #include "LFGMgr.h"
 //Playerbot mod
 #include "Config.h"
-#include "PlayerbotAI.h"
-#include "PlayerbotClassAI.h"
+#include "AI/PlayerBots/PlayerbotMgr.h"
+#include "AI/PlayerBots/PlayerbotClassAI.h"
 
 Roll::Roll(uint64 _guid, LootItem const& li) : itemGUID(_guid), itemid(li.itemid),
 itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix), itemCount(li.count),
@@ -456,24 +456,11 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
 
         if(player)
         {
-            //Log out any Playerbots by the player
-            WorldSession *session = player->GetSession();
-
-            //save the map of playerbots first because if the map gets altered when
-            //a playerbot logs out which will corrupt the for loop
-            PlayerBotMap m_playerBots;
-            for(PlayerBotMap::const_iterator itr = session->GetPlayerBotsBegin(); itr != session->GetPlayerBotsEnd(); ++itr)
-            {
-                Player *bot = itr->second;
-                (m_playerBots)[itr->first] = bot;
-            }
-
-            //now log out any playerbots it may have
-            for(PlayerBotMap::const_iterator itr2 = m_playerBots.begin(); itr2 != m_playerBots.end(); ++itr2)
-            {
-                Player *bot = itr2->second;
-                session->LogoutPlayerBot(bot->GetGUID(),true);
-            }
+			if (!sWorld->getBoolConfig(PlayerbotAI_DisableBots))
+			{
+				if (player->GetPlayerbotMgr())
+					player->GetPlayerbotMgr()->RemoveAllBotsFromGroup();
+			}
         }
     }
 
@@ -2183,25 +2170,6 @@ void Group::SetGroupMemberFlag(uint64 guid, bool apply, GroupMemberFlags flag)
     stmt->setUInt32(1, GUID_LOPART(guid));
 
     CharacterDatabase.Execute(stmt);
-
-    Player *pPlayer = ObjectAccessor::FindPlayer(guid);
-    if (pPlayer->GetPlayerbotAI()!=NULL) {
-        if (apply) {
-            pPlayer->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);        // if pBot is maintank, acknowledge it
-        } else {
-            pPlayer->HandleEmoteCommand(EMOTE_ONESHOT_CRY);
-        }
-    }
-    // tell all the bots who is the main tank now
-    if (apply)
-        for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
-        {
-            Player* tPlayer = itr->getSource();
-            PlayerbotAI *ai = tPlayer->GetPlayerbotAI();
-            ai->GetClassAI();
-            if (tPlayer->IsPlayerbot())
-                tPlayer->GetPlayerbotAI()->GetClassAI()->SetMainTank(ObjectAccessor::FindPlayer(guid));
-        }
 
     // Broadcast the changes to the group
     SendUpdate();

@@ -1,589 +1,88 @@
 /*
-Name :    PlayerbotClassAI.cpp
-Notes:    Does not really work with peldor's own classbot AIs
-        Contains many improvements and hacks to overcome some difficulites
-Known
-Problems:    - Contains hardcoded values,  for an example check group heal, individual heal decision
-            - ai->getSpellIdExact func, *although works more accurately* is probably slower and hackish
-            - FindMainTankRaid func, includes a db query making it a resource hog
-            - canCast func, does not check for every possible problem, can cause AI stuck.. Should be inside PlayerbotAI class
-            - castSpell func is redundant and should be placed in PlayerbotAI class, sets private variable m_ai->m_CurrentlyCastingSpellId which is made public as a hack..
-
-Authors : SwaLLoweD
-Version : 0.40
+* Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+* Copyright (C) 2012 Playerbot Team
+* Copyright (C) 2012 MangosR2
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 #include "PlayerbotClassAI.h"
-#include "PlayerbotAI.h"
 #include "Common.h"
-#include "Spell.h"
-#include "Group.h"
 
-PlayerbotClassAI::PlayerbotClassAI(Player *const master, Player *const bot, PlayerbotAI *const ai): m_master(master), m_bot(bot), m_ai(ai), rezSpamTimer(0)
+PlayerbotClassAI::PlayerbotClassAI(Player* const master, Player* const bot, PlayerbotAI* const ai) : m_master(master), m_bot(bot), m_ai(ai) {}
+PlayerbotClassAI::~PlayerbotClassAI() {}
+
+bool PlayerbotClassAI::DoFirstCombatManeuver(Unit *)
 {
-    threatThreshold = 75;            // Threat % threshold for dps to lower tps
-    offensiveSpellThreshold = 70;    // Mana % threshold for healers to use offensive spells
-
-    // first aid
-    RECENTLY_BANDAGED = 11196; // first aid check
-
-    // RACIALS
-    R_ARCANE_TORRENT = ai->getSpellIdExact("Arcane Torrent");
-    R_BERSERKING = ai->getSpellIdExact("Berserking");
-    R_BLOOD_FURY = ai->getSpellIdExact("Blood Fury");
-    R_CANNIBALIZE = ai->getSpellIdExact("Cannibalize");
-    R_ESCAPE_ARTIST = ai->getSpellIdExact("Escape Artist");
-    R_EVERY_MAN_FOR_HIMSELF = ai->getSpellIdExact("Every Man for Himself");
-    R_GIFT_OF_NAARU = ai->getSpellIdExact("Gift of the Naaru");
-    R_SHADOWMELD = ai->getSpellIdExact("Shadowmeld");
-    R_STONEFORM = ai->getSpellIdExact("Stoneform");
-    R_WAR_STOMP = ai->getSpellIdExact("War Stomp");
-    R_WILL_OF_FORSAKEN = ai->getSpellIdExact("Will of the Forsaken");
-
-    mainTank = NULL;
-    m_pulling = false;
-}
-PlayerbotClassAI::~PlayerbotClassAI(){}
-
-void PlayerbotClassAI::DoNextCombatManeuver(Unit *){}
-
-void PlayerbotClassAI::DoNonCombatActions(){}
-
-void PlayerbotClassAI::LoadSpells(){}
-
-void PlayerbotClassAI::Pull(){}
-
-bool PlayerbotClassAI::BuffPlayer(Unit *target){ return false; }
-
-bool PlayerbotClassAI::FindMount(){ return true; }
-
-bool PlayerbotClassAI::Unmount(){ return true; }
-
-bool PlayerbotClassAI::HealTarget (Unit *target, uint8 hp){ return false; }
-
-bool PlayerbotClassAI::HealGroup (Unit *target, uint8 hp, uint8 &countNeedHeal){ return false; }
-
-bool PlayerbotClassAI::CureTarget (Unit *target){ return false; }
-
-bool PlayerbotClassAI::RezTarget (Unit *target){ return false; }
-
-bool PlayerbotClassAI::IsMounted(){ return m_bot->IsMounted(); }
-
-bool PlayerbotClassAI::CastSpell(uint32 spellId, Unit *target, bool checkFirst, bool castExistingAura, bool skipFriendlyCheck, bool skipEquipStanceCheck, bool triggered)
-{return m_ai->CastSpell(spellId, target, checkFirst, castExistingAura, skipFriendlyCheck, skipEquipStanceCheck, triggered); }
-bool PlayerbotClassAI::CastSpell(const SpellEntry * pSpellInfo, Unit *target, bool checkFirst, bool castExistingAura, bool skipFriendlyCheck, bool skipEquipStanceCheck, bool triggered)
-{return m_ai->CastSpell(pSpellInfo, target, checkFirst, castExistingAura, skipFriendlyCheck, skipEquipStanceCheck, triggered);}
-
-bool PlayerbotClassAI::CanCast(uint32 spellId, Unit *target, bool castExistingAura, bool skipFriendlyCheck, bool skipEquipStanceCheck)
-{return m_ai->CanCast(spellId, target, castExistingAura, skipFriendlyCheck, skipEquipStanceCheck);}
-
-bool PlayerbotClassAI::CanCast(const SpellEntry * pSpellInfo, Unit *target, bool castExistingAura, bool skipFriendlyCheck, bool skipEquipStanceCheck)
-{return m_ai->CanCast(pSpellInfo, target, castExistingAura, skipFriendlyCheck, skipEquipStanceCheck);}
-
-bool PlayerbotClassAI::listAuras(Unit *u)
-{
-    int loc = 0;
-    Unit *target = u;
-    typedef std::pair<uint32, uint8> spellEffectPair;
-    typedef std::multimap< spellEffectPair, Aura*> AuraMap;
-    Unit::AuraMap &vAuras = target->GetOwnedAuras();
-    for(Unit::AuraMap::const_iterator itr = vAuras.begin(); itr!=vAuras.end(); ++itr)
-    {
-        //SpellEntry const *spellInfo = (*itr).second->GetSpellInfo();
-        const SpellInfo *spellInfo = itr->second->GetSpellInfo();
-        const std::string name = spellInfo->SpellName[loc];
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "aura = %u %s", spellInfo->Id, name.c_str());
-    }
-    return true;
-};//end listAuras
-
-bool PlayerbotClassAI::HasAuraName (Unit *unit, uint32 spellId, uint64 casterGuid)
-{
-    //const SpellInfo *const pSpellInfo = sSpellMgr->GetSpellInfo()->LookupEntry (spellId);
-	SpellInfo const* pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if(!pSpellInfo) return false;
-    int loc = m_bot->GetSession()->GetSessionDbcLocale();
-    const std::string  name = pSpellInfo->SpellName[loc];
-    if(name.length() == 0) return false;
-    return HasAuraName(unit, name, casterGuid);
-}
-
-bool PlayerbotClassAI::HasAuraName (Unit *target, std::string spell, uint64 casterGuid)
-{
-    int loc = m_bot->GetSession()->GetSessionDbcLocale();
-    typedef std::pair<uint32, uint8>spellEffectPair;
-    typedef std::multimap<spellEffectPair, Aura*>AuraMap;
-
-    Unit::AuraMap &vAuras = target->GetOwnedAuras();
-    for(Unit::AuraMap::const_iterator itr = vAuras.begin(); itr!=vAuras.end(); ++itr)
-    {
-        //SpellEntry const *spellInfo = (*itr).second->GetSpellInfo();
-        const SpellInfo *spellInfo = itr->second->GetSpellInfo();
-        const std::string name = spellInfo->SpellName[loc];
-        if(!spell.compare(name))
-        //if(!strcmp(name.c_str(),spell.c_str()))
-        {
-            if(casterGuid == 0) //don't care who casted it
-                return true;
-            else if(casterGuid == itr->second->GetCasterGUID()) //only if correct caster casted it
-                return true;
-        }
-    }
+    // return false, if done with opening moves/spells
     return false;
-};
+}
+bool PlayerbotClassAI::DoNextCombatManeuver(Unit *) { return false; }
 
-bool PlayerbotClassAI::castDispel (uint32 dispelSpell, Unit *dTarget, bool checkFirst, bool castExistingAura, bool skipFriendlyCheck, bool skipEquipStanceCheck)
+void PlayerbotClassAI::DoNonCombatActions() {}
+
+bool PlayerbotClassAI::BuffPlayer(Player* target)
 {
-    if (dispelSpell == 0 || !dTarget ) return false;
-    //if (!canCast(dispelSpell, dTarget, true)) return false; //Needless cpu cycles wasted, usually a playerbot can cast a dispell
-    //const SpellEntry *dSpell = GetSpellStore()->LookupEntry(dispelSpell);
-	SpellInfo const* dSpell = sSpellMgr->GetSpellInfo(dispelSpell);
-    if (!dSpell) return false;
-
-    for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS ; ++i)
-    {
-        if (dSpell->Effects[i].MiscValue != (uint32)SPELL_EFFECT_DISPEL) continue;
-        uint32 dispel_type = dSpell->Effects[i].MiscValue;
-        //uint32 dispelMask  = GetDispellMask(DispelType(dispel_type));
-        Unit::AuraMap const& auras = dTarget->GetOwnedAuras();
-        for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); itr++)
-        {
-            Aura * aura = itr->second;
-            AuraApplication * aurApp = aura->GetApplicationOfTarget(dTarget->GetGUID());
-            if (!aurApp)
-                continue;
-
-            /*if ((1<<aura->GetSpellInfo()->Dispel) & dispellMask)
-            {*/
-                if(aura->GetSpellInfo()->Dispel == DISPEL_MAGIC)
-                {
-                    bool positive = aurApp->IsPositive() ? (!(aura->GetSpellInfo()->AttributesEx & SPELL_ATTR0_HIDDEN_CLIENTSIDE)) : false;
-
-                    // do not remove positive auras if friendly target
-                    //               negative auras if non-friendly target
-                    if(positive == dTarget->IsFriendlyTo(GetPlayerBot()))
-                        continue;
-                }
-                // If there is a successfull match return, else continue searching.
-                //if (CastSpell(dSpell, dTarget, checkFirst, castExistingAura, skipFriendlyCheck, skipEquipStanceCheck)) { return true; }
-            //}
-        }
-    }
     return false;
 }
 
-bool PlayerbotClassAI::castSelfCCBreakers (uint32 castList[])
+bool PlayerbotClassAI::CastSpellNoRanged(uint32 nextAction, Unit *pTarget)
 {
-    uint32 dispelSpell = 0;
-    Player *dTarget = GetPlayerBot();
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
 
-    for (uint8 j = 0; j <  sizeof (castList); j++)
-    {
-        dispelSpell = castList[j];
-        if (dispelSpell == 0 || !dTarget->HasSpell(dispelSpell) || !CanCast(dispelSpell, dTarget, true)) continue;
-        SpellInfo const *dSpell = sSpellMgr->GetSpellInfo(dispelSpell);
-        if (!dSpell) continue;
+    if (nextAction == 0)
+        return true; // Asked to do nothing so... yeh... Dooone.
 
-            Unit::AuraMap const& auras = dTarget->GetOwnedAuras();
-            for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); itr++)
-            {
-                Aura * aura = itr->second;
-                AuraApplication * aurApp = aura->GetApplicationOfTarget(dTarget->GetGUID());
-                if (!aurApp) continue;
-
-                    if(aura->GetSpellInfo()->Dispel == DISPEL_MAGIC)
-                    {
-                        bool positive = aurApp->IsPositive() ? (!(aura->GetSpellInfo()->AttributesEx & SPELL_ATTR0_HIDDEN_CLIENTSIDE)) : false;
-                        if(positive)continue;
-                    }
-                    return CastSpell(dispelSpell, dTarget, false);
-            }
-        }return false;
-    }
-    
-
-
-bool PlayerbotClassAI::DoSupportRaid(Player *gPlayer, float radius, bool dResurrect, bool dGroupHeal, bool dHeal, bool dCure, bool dBuff)
-{
-    bool needHeal = false;
-    if (dGroupHeal || dHeal)
-    {
-        uint8 cntNeedHeal = 0;
-        uint8 raidHPPercent = GetHealthPercentRaid(gPlayer, cntNeedHeal);
-        if (dGroupHeal && raidHPPercent <=90 && cntNeedHeal > 1)
-        {
-            if (HealGroup(gPlayer, raidHPPercent, cntNeedHeal)) return true;
-        }
-        if (raidHPPercent < 60 ) needHeal = true;
-    }
-
-    Group *pGroup = gPlayer->GetGroup();
-    if (!pGroup) return false;
-    for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-    {
-        Unit* tPlayer = itr->getSource();
-        if(!tPlayer || gPlayer->IsHostileTo(tPlayer)) continue;
-        if(GetPlayerBot()->GetAreaId() != tPlayer->GetAreaId()) continue;
-        if(!m_bot->IsWithinDistInMap(tPlayer, radius)) { continue; }
-        if(tPlayer->isDead()) // May be we can rez
-        {
-            if(!dResurrect) continue;
-            if(needHeal) continue; //First heal others needing heal
-            if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
-            if(tPlayer->IsNonMeleeSpellCasted(true)) continue; //Already rez
-            if(RezTarget(tPlayer)) { return true; }
-            else continue;
-        }
-        if (dHeal)
-        {
-            uint8 tarHPPercent = tPlayer->GetHealth()*100 / tPlayer->GetMaxHealth();
-            if (tarHPPercent < 100 && HealTarget(tPlayer, tarHPPercent)) return true;
-        }
-        if (needHeal && dHeal) continue; //First heal others needing heal
-        if (dCure && CureTarget(tPlayer)) return true;
-        if (dBuff && BuffPlayer(tPlayer)) return true;
-    }
-    return false;
-}
-
-bool PlayerbotClassAI::TakePosition(Unit *followTarget, BotRole bRole, float bDist, float bMinDist, float bMaxDist, float bAngle, Unit *faceTarget)
-{
-	if(this->bAngle)
-		bAngle = this->bAngle;
-
-	bool doFollow = true;
-    bool omitAngle = false;
-    bool angleIsAutoSet = false;
-    if (!bAngle) angleIsAutoSet = true;
-    if (bAngle < 0) bAngle += 2 * M_PI;
-    //if (bAngle > 2 * M_PI) bAngle -= 2 * M_PI; //Do not send values higher than 2 PI, lower than -2 PI
-    bool rval = false;
-    if (followTarget == NULL) { followTarget = GetMaster(); if (followTarget == NULL) { return false; } }
-    if (faceTarget == NULL) { faceTarget = followTarget; }
-    if (bRole == BOT_ROLE_NONE) { bRole = ( (m_role == BOT_ROLE_NONE) ? BOT_ROLE_DPS_MELEE : m_role);  }
-    //Default values
-    Unit *pVictim = followTarget->getVictim();
-    if (pVictim && pVictim->GetGUID() == m_bot->GetGUID()) //if target is attacking me
-    {
-        if (bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE)
-        {
-            //Move to target
-            if (!bDist || bDist > 0.7f) bDist = 0.7f;
-            if (bMinDist < 0 || bMinDist > 1) bMinDist = 0;
-            if (bMaxDist <= 0 || bMaxDist > MELEE_RANGE) bMaxDist = MELEE_RANGE;
-            bAngle = 0;
-        }
-        else {doFollow = false;} //Do not move, creature will come
-    }
+    if (pTarget != NULL)
+        return m_ai->CastSpell(nextAction, *pTarget);
     else
+        return m_ai->CastSpell(nextAction);
+}
+
+bool PlayerbotClassAI::CastSpellWand(uint32 nextAction, Unit *pTarget, uint32 SHOOT)
+{
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
+
+    if (SHOOT > 0 && m_bot->FindCurrentSpellBySpellId(SHOOT) && m_bot->GetWeaponForAttack(RANGED_ATTACK, true))
     {
-        // calculating distance to follow
-        switch (bRole)
-        {
-            case BOT_ROLE_TANK:
-            case BOT_ROLE_OFFTANK:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0; bMaxDist = MELEE_RANGE; bAngle = 0;}
-                break;
-            case BOT_ROLE_HEALER:
-            case BOT_ROLE_SUPPORT:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 9, 12); bMinDist = MELEE_RANGE + 4; bMaxDist = 20; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
-                break;
-            case BOT_ROLE_DPS_RANGED:
-                if (!bDist) { bDist = urand(MELEE_RANGE + 9, 12); bMinDist = MELEE_RANGE + 4;  bMaxDist = 26; bAngle = ((urand(0,1) * 90 ) + urand(110,160)) * M_PI / 180; }
-                break;
-            default:
-                if (!bDist) { bDist = 0.7f; bMinDist = 0.0f; bMaxDist = MELEE_RANGE; bAngle = ((urand(0,1) * 90 ) + urand(120,150)) * M_PI / 180; }
-                break;
-        }
+        if (nextAction == SHOOT)
+            // At this point we're already shooting and are asked to shoot. Don't cause a global cooldown by stopping to shoot! Leave it be.
+            return true; // ... We're asked to shoot and are already shooting so... Task accomplished?
+
+        // We are shooting but wish to cast a spell. Stop 'casting' shoot.
+        m_bot->InterruptNonMeleeSpells(true, SHOOT);
+        // ai->TellMaster("Interrupting auto shot.");
     }
-    //Do not try to go behind if ranged and creature is not boss like
-    if (bDist > MELEE_RANGE && followTarget->GetTypeId() != TYPEID_PLAYER)
+
+    // We've stopped ranged (if applicable), if no nextAction just return
+    if (nextAction == 0)
+        return true; // Asked to do nothing so... yeh... Dooone.
+
+    if (nextAction == SHOOT)
     {
-        const CreatureTemplate *cInfo = ((Creature*) followTarget)->GetCreatureTemplate();
-        if (!cInfo || cInfo->rank != 3) { omitAngle = true; }
+        if (SHOOT > 0 && m_ai->GetCombatStyle() == PlayerbotAI::COMBAT_RANGED && !m_bot->FindCurrentSpellBySpellId(SHOOT) && m_bot->GetWeaponForAttack(RANGED_ATTACK, true))
+            return m_ai->CastSpell(SHOOT, *pTarget);
+        else
+            // Do Melee attack
+            return false; // We're asked to shoot and aren't.
     }
 
-	float x, y, z;
-    //Move
-	float curDist = m_bot->GetDistance(followTarget);
-
-    if (doFollow && !m_bot->HasUnitState(UNIT_STATE_CASTING))
-    {
-        if (m_pulling ||
-            (((bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE) || !m_bot->isMoving()) &&
-            ((curDist > bMaxDist || curDist < bMinDist)  //Outside range boundries
-            || (!omitAngle && ((!followTarget->HasInArc(M_PI,m_bot)) ^ (bAngle > 0.5f * M_PI && bAngle < 1.5f * M_PI)))))//is at right position front/behind?
-            )
-        {
-			//GetAI()->SetIgnoreUpdateTime(0.1);
-			sLog->outString("Current distance: %f [%f-%f] allowed", curDist, bMinDist, bMaxDist);
-
-			if (angleIsAutoSet && omitAngle)
-				followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist);
-			else 
-				followTarget->GetClosePoint(x, y, z, followTarget->GetObjectSize(), bDist, bAngle);
-			
-			m_bot->GetMotionMaster()->MovePoint(followTarget->GetMapId(), x, y, z);
-
-            rval |= true;
-		}
-    }
-
-	if(m_bot->isMoving()) // When we are moving, we need to update our ai quite frequently to change destination in case creature moves
-		GetAI()->SetIgnoreUpdateTime(0.1);
-
-    if (!m_bot->isMoving() && !m_bot->HasUnitState(UNIT_STATE_CASTING) && !m_bot->HasInArc(M_PI/16, followTarget)) // And when rotating we need to do this as well, to, well, rotate quickly. :)
-	{ 
-		GetAI()->SetIgnoreUpdateTime(0.1);
-		float angle = m_bot->GetAngle(followTarget);
-		m_bot->SetOrientation(angle);
-		sLog->outString("Orientation changed");
-		// FUCKING TRINITYCORE SHOULD HAVE FUCKING DOCUMENTATION. SPENT THREE FUCKING DAYS ON THIS FUCKING HEARTHBEATMESSAGE, FIGURING WHY BOTS DO NOT ROTATE THEMSELF!!! GRRR!!
-		if(curDist < MELEE_RANGE)
-		{	// Melee sends HeartBeat, MoveChase wont rotate them for some reason, casters mess their z coord
-			m_bot->m_positionZ = followTarget->GetPositionZ();
-			WorldPacket data; 
-			m_bot->BuildHeartBeatMsg(&data);
-			m_bot->SendMessageToSet(&data, true);
-		}
-		else
-		{
-			if (angleIsAutoSet && omitAngle) 
-				m_bot->GetMotionMaster()->MoveChase(followTarget, bDist);
-			else
-				m_bot->GetMotionMaster()->MoveChase(followTarget, bDist, bAngle);
-		}
-
-		rval |= true; 
-	}
-
-	/*if (bRole == BOT_ROLE_TANK || bRole == BOT_ROLE_OFFTANK || bRole == BOT_ROLE_DPS_MELEE)
-		if(m_bot->isInCombat() && !m_bot->isMoving() && m_bot->getAttackTimer(BASE_ATTACK) < 500 && m_bot->getAttackTimer(BASE_ATTACK) > 0 && !m_bot->HasUnitState(UNIT_STATE_CASTING))
-			GetAI()->SetIgnoreUpdateTime(1.5);*/
-
-    return rval;
+    if (pTarget != NULL)
+        return m_ai->CastSpell(nextAction, *pTarget);
+    else
+        return m_ai->CastSpell(nextAction);
 }
-
-uint8 PlayerbotClassAI::GetThreatPercent(Unit *pTarget, Unit *pFrom)
-{
-    uint8 tPercent = 0;
-    Unit *pVictim = pTarget->getVictim();
-    if (!pVictim) return 100; //Not Attacking anyone yet, somehow..
-    if (!pFrom) { pFrom = m_bot; }
-    if (pVictim->GetGUID() == pFrom->GetGUID()) return 100; //I'm already being attacked, too late for alert, kill it..
-    //if (m_tank->GetGUID() == m_bot->GetGUID()) {} //If I am not tank and there is a target
-
-    ThreatManager &pthreatManager = pTarget->getThreatManager();
-    float maxThreat = pthreatManager.getThreat(pTarget->getVictim()) ;
-    if (maxThreat <= 0) { return 100; } //0 threat
-    float curThreat = pthreatManager.getThreat(pFrom);
-    return (curThreat * 100 / maxThreat);
-}
-//Gets if the unit is under attack by # of attackers
-bool PlayerbotClassAI::isUnderAttack(Unit *pAttacked,const uint8 &minNumberOfAttackers)
-{
-    if (!pAttacked) { pAttacked = m_bot; if (!pAttacked) { return false; } }
-    Unit::AttackerSet fAttackerSet = pAttacked->getAttackers();
-    if (fAttackerSet.size() >= minNumberOfAttackers) { return true; }
-    return false;
-}
-
-//Gets the first found attacker of Unit
-Unit *PlayerbotClassAI::GetAttackerOf(Unit *pAttacked)
-{
-    if (!pAttacked) { pAttacked = m_bot; if (!pAttacked) { return NULL; } }
-    Unit::AttackerSet fAttackerSet = pAttacked->getAttackers();
-    if (fAttackerSet.size() <= 0) { return NULL; }
-    return (*fAttackerSet.begin());
-}
-//Gets the first found attacker of Unit if not nearestToAttacked > finds the one nearest to bot
-Unit *PlayerbotClassAI::GetNearestAttackerOf(Unit *pAttacked, bool nearestToAttacked)
-{
-    if (!pAttacked) { pAttacked = m_bot; if (!pAttacked) return NULL;}
-
-    Unit::AttackerSet fAttackerSet = pAttacked->getAttackers();
-    if (fAttackerSet.size() <= 0) { return NULL; }
-
-    Unit *nearestTo = m_bot;
-    if (nearestToAttacked) { nearestTo = pAttacked; }
-
-    Unit *curAtt = NULL;
-    float minDist = 30;
-
-
-    for (Unit::AttackerSet::const_iterator itr = fAttackerSet.begin(); itr != fAttackerSet.end(); ++itr)
-    {
-        Unit *tAtt = (*itr);
-        if (!tAtt) break; // Something is wrong.. How can a non existing mob attack?
-        if (tAtt->isDead()) break;
-        if (m_bot->GetDistance(tAtt) >= minDist) continue; //Get the nearest one
-        curAtt = tAtt;
-        minDist = tAtt->GetDistance(nearestTo);
-    }
-    return curAtt;
-
-}
-
-uint8 PlayerbotClassAI::GetHealthPercentRaid(Player *gPlayer, uint8 &countNeedHealing)
-{
-    uint8 validMemberCount=0;
-    uint16 totalHPPercent=0;
-	if(gPlayer->GetGroup()->isRaidGroup())
-	{
-		Player* tPlayer;
-		for (Group::member_citerator citr = gPlayer->GetGroup()->GetMemberSlots().begin(); citr != gPlayer->GetGroup()->GetMemberSlots().end(); ++citr)
-		{
-			tPlayer = ObjectAccessor::FindPlayer(citr->guid);
-			if (!tPlayer)
-				continue;
-			//Player *tPlayer = GetPlayerBot()->GetObjPlayer((*itr)->GetGUID());
-			if(tPlayer == NULL) continue;
-			if(tPlayer->isDead()) continue;
-			if(GetPlayerBot()->GetAreaId() != tPlayer->GetAreaId()) continue;
-			//if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
-			if(GetPlayerBot()->GetDistance(tPlayer) > 30) continue;
-			uint8 fndHPPercent =  tPlayer->GetHealth()*100 / tPlayer->GetMaxHealth();
-			totalHPPercent+=fndHPPercent;
-			validMemberCount++;
-			if (fndHPPercent < 100) countNeedHealing++;
-
-			//const std::string myname = GetPlayerBot()->GetName();
-			//const std::string hisname = tPlayer->GetName();
-			//sLog->outDebug(LOG_FILTER_NETWORKIO, "me = %s, checked= %s %u [%u / %u]", myname.c_str(), hisname.c_str(), fndHPPercent, tPlayer->GetHealth(), tPlayer->GetMaxHealth());
-
-		}
-	}
-    if (validMemberCount == 0) return 100;
-		return totalHPPercent / validMemberCount;
-}
-
-Unit *PlayerbotClassAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
-{
-    Unit *pUnit = NULL;
-    Trinity::MostHPMissingInRange u_check(GetPlayerBot(), range, MinHPDiff);
-    Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(GetPlayerBot(), pUnit, u_check);
-
-    GetPlayerBot()->VisitNearbyObject(range, searcher);
-
-    return pUnit;
-}
-
-void PlayerbotClassAI::SetMainTank(Unit *tank)
-{
-    mainTank = tank;
-}
-
-// is Resource heavy, do not spam or use heavily in loop
-Unit *PlayerbotClassAI::FindMainTankInRaid(Player *gPlayer)
-{
-    // check if original main tank is still alive. No point regetting main
-    // tank b/c chances are slim that it will not get reset in the middle of a fight.
-    // But if main tank dies, try to find next best canidate
-    if (mainTank!=NULL && mainTank->isAlive()) {
-        return mainTank;
-    }
-
-    if (!gPlayer) return NULL;
-    Group *pGroup = gPlayer->GetGroup();
-    if (!pGroup) return NULL;
-    uint64 pLeaderGuid = pGroup->GetLeaderGUID();
-
-    Unit *pPlayer = NULL;
-
-    // Check if set in raid
-    if (pGroup->isRaidGroup())
-    {
-        QueryResult result = CharacterDatabase.PQuery("SELECT memberGuid FROM group_member WHERE memberFlags='%u' AND guid = '%u'",MEMBER_FLAG_MAINTANK, pGroup->GetGUID());
-        if(result)
-        {
-            uint64 pGuid = MAKE_NEW_GUID(result->Fetch()->GetInt32(),0,HIGHGUID_PLAYER);
-            pPlayer = ObjectAccessor::FindPlayer(pGuid);
-            if (pPlayer && pGroup->IsMember(pGuid) && pPlayer->isAlive()){
-                mainTank = pPlayer;
-                return pPlayer;
-            }
-        }
-    }
-
-
-    // if could not find tank try assuming
-    // Assume the one with highest health is the main tank
-    uint32 maxhpfound=0;
-    if(gPlayer->GetGroup()->isRaidGroup())
-	{
-		Player* tPlayer;
-		for (Group::member_citerator citr = gPlayer->GetGroup()->GetMemberSlots().begin(); citr != gPlayer->GetGroup()->GetMemberSlots().end(); ++citr)
-		{
-			tPlayer = ObjectAccessor::FindPlayer(citr->guid);
-			if (!tPlayer)
-				continue;
-			if (tPlayer == NULL) continue;
-			if (tPlayer->isDead()) continue;
-			if (GetPlayerBot()->GetAreaId() != tPlayer->GetAreaId()) continue;
-			//if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
-			if (GetPlayerBot()->GetDistance(tPlayer) > 50) continue;
-			if (tPlayer->GetMaxHealth() > maxhpfound) { maxhpfound = tPlayer->GetMaxHealth(); pPlayer=tPlayer; }
-			// Also check pets
-			if ( (tPlayer->getClass() == (uint8) CLASS_HUNTER || tPlayer->getClass() == (uint8) CLASS_WARLOCK) && IS_PET_GUID(tPlayer->GetPetGUID()) )
-			{
-				Pet* tpet = ObjectAccessor::GetPet(*tPlayer, tPlayer->GetPetGUID());
-				if (!tpet || !tpet->IsInWorld() || !tpet->isDead()) continue;
-				if (tpet->GetArmor() > tPlayer->GetArmor()) //Probably a tanking capable pet..
-				{
-					if (tpet->GetMaxHealth() > maxhpfound) { maxhpfound = tpet->GetMaxHealth(); pPlayer=tpet; }
-					else if (tPlayer->GetGUID() == pPlayer->GetGUID()) {pPlayer = tpet;} //set pet as tank instead of owner
-				}
-			}
-      }
-    }
-
-    mainTank = pPlayer;
-    return pPlayer;
-}
-
-Unit *PlayerbotClassAI::FindMainAssistInRaid(Player *gPlayer)
-{
-    if (!gPlayer) return NULL;
-    Group *pGroup = gPlayer->GetGroup();
-    if (!pGroup) return NULL;
-    uint64 pLeaderGuid = pGroup->GetLeaderGUID();
-
-
-    Unit *pPlayer = NULL;
-
-    // Check if set in raid
-    if (pGroup->isRaidGroup())
-    {
-        QueryResult result = CharacterDatabase.PQuery("SELECT memberGuid FROM group_member WHERE memberFlags='%u' AND guid = '%u'",MEMBER_FLAG_MAINASSIST, pGroup->GetGUID());
-          if(result)
-        {
-            uint64 pGuid = MAKE_NEW_GUID(result->Fetch()->GetInt32(),0,HIGHGUID_PLAYER);
-            pPlayer = ObjectAccessor::FindPlayer(pGuid);
-            if (pPlayer && pGroup->IsMember(pGuid) && pPlayer->isAlive()){
-                return pPlayer;
-            }
-        }
-    }
-
-    // default to main tank
-    return FindMainTankInRaid(gPlayer);
-}
-
-Player * PlayerbotClassAI::FindMage(Player *gPlayer)
-{
-    Group::MemberSlotList const &groupSlot = gPlayer->GetGroup()->GetMemberSlots();
-    for(Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
-    {
-        Player *tPlayer = ObjectAccessor::FindPlayer(itr->guid);
-
-        if(tPlayer == NULL) continue;
-        if(tPlayer->GetGUID() == GetPlayerBot()->GetGUID()) continue;
-        if(GetPlayerBot()->GetAreaId() != gPlayer->GetAreaId()) continue;
-        if(GetPlayerBot()->GetDistance(tPlayer) > 30) continue;
-
-        if (tPlayer->getClass() == CLASS_MAGE) return tPlayer;
-    }
-    return NULL;
-}
-
-

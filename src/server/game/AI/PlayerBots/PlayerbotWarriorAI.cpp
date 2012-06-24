@@ -1,400 +1,485 @@
 /*
-Name : PlayerbotWarrior.cpp
-Complete: maybe around 75%
-
-Limitations:    - Talent build decision is made by key talent spells, which makes them viable only after level 50-ish.. Until then default behaviour is Blood dps/offtank type
-                - Tanking bots should taunt if any group member is under attack, currently only saves master
-                - Situations needing Intervene casting : limited / non-existant..
-                - Intervene / Piercing Howl / Hamstring are not used..
-
-Authors : SwaLLoweD
-Version : 0.40
+* Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+* Copyright (C) 2012 Playerbot Team
+* Copyright (C) 2012 MangosR2
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+/*
+   Name    : PlayerbotWarriorAI.cpp
+   Complete: maybe around 37%
+   Author  : Natsukawa
+   Version : 0.39
+ */
 #include "PlayerbotWarriorAI.h"
+#include "PlayerbotMgr.h"
 
 class PlayerbotAI;
-PlayerbotWarriorAI::PlayerbotWarriorAI(Player *const master, Player *const bot, PlayerbotAI *const ai): PlayerbotClassAI(master, bot, ai)
+PlayerbotWarriorAI::PlayerbotWarriorAI(Player* const master, Player* const bot, PlayerbotAI* const ai) : PlayerbotClassAI(master, bot, ai)
 {
-    foodDrinkSpamTimer = 0;
-    LoadSpells();
+    BATTLE_STANCE           = m_ai->initSpell(BATTLE_STANCE_1); //ARMS
+    CHARGE                  = m_ai->initSpell(CHARGE_1); //ARMS
+    OVERPOWER               = m_ai->initSpell(OVERPOWER_1); // ARMS
+    HEROIC_STRIKE           = m_ai->initSpell(HEROIC_STRIKE_1); //ARMS
+    REND                    = m_ai->initSpell(REND_1); //ARMS
+    THUNDER_CLAP            = m_ai->initSpell(THUNDER_CLAP_1);  //ARMS
+    HAMSTRING               = m_ai->initSpell(HAMSTRING_1);  //ARMS
+    MOCKING_BLOW            = m_ai->initSpell(MOCKING_BLOW_1);  //ARMS
+    RETALIATION             = m_ai->initSpell(RETALIATION_1);  //ARMS
+    SWEEPING_STRIKES        = m_ai->initSpell(SWEEPING_STRIKES_1); //ARMS
+    MORTAL_STRIKE           = m_ai->initSpell(MORTAL_STRIKE_1);  //ARMS
+    BLADESTORM              = m_ai->initSpell(BLADESTORM_1);  //ARMS
+    HEROIC_THROW            = m_ai->initSpell(HEROIC_THROW_1);  //ARMS
+    SHATTERING_THROW        = m_ai->initSpell(SHATTERING_THROW_1);  //ARMS
+    BLOODRAGE               = m_ai->initSpell(BLOODRAGE_1); //PROTECTION
+    DEFENSIVE_STANCE        = m_ai->initSpell(DEFENSIVE_STANCE_1); //PROTECTION
+    DEVASTATE               = m_ai->initSpell(DEVASTATE_1); //PROTECTION
+    SUNDER_ARMOR            = m_ai->initSpell(SUNDER_ARMOR_1); //PROTECTION
+    TAUNT                   = m_ai->initSpell(TAUNT_1); //PROTECTION
+    SHIELD_BASH             = m_ai->initSpell(SHIELD_BASH_1); //PROTECTION
+    REVENGE                 = m_ai->initSpell(REVENGE_1); //PROTECTION
+    SHIELD_BLOCK            = m_ai->initSpell(SHIELD_BLOCK_1); //PROTECTION
+    DISARM                  = m_ai->initSpell(DISARM_1); //PROTECTION
+    SHIELD_WALL             = m_ai->initSpell(SHIELD_WALL_1); //PROTECTION
+    SHIELD_SLAM             = m_ai->initSpell(SHIELD_SLAM_1); //PROTECTION
+    VIGILANCE               = m_ai->initSpell(VIGILANCE_1); //PROTECTION
+    DEVASTATE               = m_ai->initSpell(DEVASTATE_1); //PROTECTION
+    SHOCKWAVE               = m_ai->initSpell(SHOCKWAVE_1); //PROTECTION
+    CONCUSSION_BLOW         = m_ai->initSpell(CONCUSSION_BLOW_1); //PROTECTION
+    SPELL_REFLECTION        = m_ai->initSpell(SPELL_REFLECTION_1); //PROTECTION
+    LAST_STAND              = m_ai->initSpell(LAST_STAND_1); //PROTECTION
+    BATTLE_SHOUT            = m_ai->initSpell(BATTLE_SHOUT_1); //FURY
+    DEMORALIZING_SHOUT      = m_ai->initSpell(DEMORALIZING_SHOUT_1); //FURY
+    CLEAVE                  = m_ai->initSpell(CLEAVE_1); //FURY
+    INTIMIDATING_SHOUT      = m_ai->initSpell(INTIMIDATING_SHOUT_1); //FURY
+    EXECUTE                 = m_ai->initSpell(EXECUTE_1); //FURY
+    CHALLENGING_SHOUT       = m_ai->initSpell(CHALLENGING_SHOUT_1); //FURY
+    SLAM                    = m_ai->initSpell(SLAM_1); //FURY
+    BERSERKER_STANCE        = m_ai->initSpell(BERSERKER_STANCE_1); //FURY
+    INTERCEPT               = m_ai->initSpell(INTERCEPT_1); //FURY
+    DEATH_WISH              = m_ai->initSpell(DEATH_WISH_1); //FURY
+    BERSERKER_RAGE          = m_ai->initSpell(BERSERKER_RAGE_1); //FURY
+    WHIRLWIND               = m_ai->initSpell(WHIRLWIND_1); //FURY
+    PUMMEL                  = m_ai->initSpell(PUMMEL_1); //FURY
+    BLOODTHIRST             = m_ai->initSpell(BLOODTHIRST_1); //FURY
+    RECKLESSNESS            = m_ai->initSpell(RECKLESSNESS_1); //FURY
+    RAMPAGE                 = 0; // passive
+    HEROIC_FURY             = m_ai->initSpell(HEROIC_FURY_1); //FURY
+    COMMANDING_SHOUT        = m_ai->initSpell(COMMANDING_SHOUT_1); //FURY
+    ENRAGED_REGENERATION    = m_ai->initSpell(ENRAGED_REGENERATION_1); //FURY
+    PIERCING_HOWL           = m_ai->initSpell(PIERCING_HOWL_1); //FURY
+
+    RECENTLY_BANDAGED       = 11196; // first aid check
+
+    // racial
+    GIFT_OF_THE_NAARU       = m_ai->initSpell(GIFT_OF_THE_NAARU_WARRIOR); // draenei
+    STONEFORM               = m_ai->initSpell(STONEFORM_ALL); // dwarf
+    ESCAPE_ARTIST           = m_ai->initSpell(ESCAPE_ARTIST_ALL); // gnome
+    EVERY_MAN_FOR_HIMSELF   = m_ai->initSpell(EVERY_MAN_FOR_HIMSELF_ALL); // human
+    SHADOWMELD              = m_ai->initSpell(SHADOWMELD_ALL); // night elf
+    BLOOD_FURY              = m_ai->initSpell(BLOOD_FURY_MELEE_CLASSES); // orc
+    WAR_STOMP               = m_ai->initSpell(WAR_STOMP_ALL); // tauren
+    BERSERKING              = m_ai->initSpell(BERSERKING_ALL); // troll
+    WILL_OF_THE_FORSAKEN    = m_ai->initSpell(WILL_OF_THE_FORSAKEN_ALL); // undead
+
+    //Procs
+    SLAM_PROC               = m_ai->initSpell(SLAM_PROC_1);
+    BLOODSURGE              = m_ai->initSpell(BLOODSURGE_1);
+    TASTE_FOR_BLOOD         = m_ai->initSpell(TASTE_FOR_BLOOD_1);
+    SUDDEN_DEATH            = m_ai->initSpell(SUDDEN_DEATH_1);
 }
-PlayerbotWarriorAI::~PlayerbotWarriorAI(){}
+PlayerbotWarriorAI::~PlayerbotWarriorAI() {}
 
-void PlayerbotWarriorAI::LoadSpells() {
-    PlayerbotAI *ai = GetAI();
-    if (!ai) return;
-   #pragma region SpellId Fill
-    //Defensive Stance
-    SHIELD_WALL = ai->getSpellIdExact("Shield Wall");
-    REVENGE = ai->getSpellIdExact("Revenge");
-    SHIELD_BLOCK = ai->getSpellIdExact("Shield Block");
-    DISARM = ai->getSpellIdExact("Disarm");
-    INTERVENE = ai->getSpellIdExact("Intervene");
-
-    //Berserker Stance
-    RECKLESSNESS = ai->getSpellIdExact("Recklessness");
-    WHIRLWIND = ai->getSpellIdExact("Whirlwind");
-    PUMMEL = ai->getSpellIdExact("Pummel");
-    INTERCEPT = ai->getSpellIdExact("Intercept");
-
-    //Battle Stance
-    RETALIATION = ai->getSpellIdExact("Retaliation");
-    CHARGE = ai->getSpellIdExact("Charge");
-    OVERPOWER = ai->getSpellIdExact("Overpower");
-    SHATTERING_THROW = ai->getSpellIdExact("Shattering Throw");
-
-    //Mixed Attacks
-    REND = ai->getSpellIdExact("Rend");                                // 1 2
-    THUNDER_CLAP = ai->getSpellIdExact("Thunder Clap");
-    SPELL_REFLECTION = ai->getSpellIdExact("Spell Reflection");
-    SHIELD_BASH = ai->getSpellIdExact("Shield Bash");
-    EXECUTE = ai->getSpellIdExact("Execute");                        // 1 3
-    HAMSTRING = ai->getSpellIdExact("Hamstring");
-    SWEEPING_STRIKES = ai->getSpellIdExact("Sweeping Strikes");
-    VICTORY_RUSH = ai->getSpellIdExact("Victory Rush");
-
-
-    //General attacks
-    HEROIC_STRIKE = ai->getSpellIdExact("Heroic Strike");
-    MORTAL_STRIKE = ai->getSpellIdExact("Mortal Strike");
-    BLOODTHIRST = ai->getSpellIdExact("Bloodthirst");
-    SHIELD_SLAM = ai->getSpellIdExact("Shield Slam");
-    SHOCKWAVE = ai->getSpellIdExact("Shockwave");
-    SLAM = ai->getSpellIdExact("Slam");
-    CLEAVE = ai->getSpellIdExact("Cleave");
-    BLADESTORM = ai->getSpellIdExact("Bladestorm");
-    HEROIC_THROW = ai->getSpellIdExact("Heroic Throw");
-    CONCUSSION_BLOW = ai->getSpellIdExact("Concussion Blow");
-    SUNDER_ARMOR = ai->getSpellIdExact("Sunder Armor");
-    DEMORALIZING_SHOUT = ai->getSpellIdExact("Demoralizing Shout");
-    INTIMIDATING_SHOUT = ai->getSpellIdExact("Intimidating Shout");
-    PIERCING_HOWL = ai->getSpellIdExact("Piercing Howl");
-    DEVASTATE = ai->getSpellIdExact("Devastate");
-
-
-    //buffs
-    COMMANDING_SHOUT = ai->getSpellIdExact("Commanding Shout");
-    BATTLE_SHOUT = ai->getSpellIdExact("Battle Shout");
-    VIGILANCE = ai->getSpellIdExact("Vigilance");
-    BERSERKER_RAGE = ai->getSpellIdExact("Berserker Rage");
-    ENRAGED_REGENERATION = ai->getSpellIdExact("Enraged Regeneration");
-    BLOODRAGE = ai->getSpellIdExact("Bloodrage");
-    LAST_STAND = ai->getSpellIdExact("Last Stand");
-    HEROIC_FURY = ai->getSpellIdExact("Heroic Fury");
-    DEATH_WISH = ai->getSpellIdExact("Death Wish");
-
-
-    //Stances
-    DEFENSIVE_STANCE = ai->getSpellIdExact("Defensive Stance");
-    BATTLE_STANCE = ai->getSpellIdExact("Battle Stance");
-    BERSERKER_STANCE = ai->getSpellIdExact("Berserker Stance");
-
-
-    //Taunts
-    TAUNT = ai->getSpellIdExact("Taunt");
-    CHALLENGING_SHOUT = ai->getSpellIdExact("Challenging Shout");
-    MOCKING_BLOW = ai->getSpellIdExact("Mocking Blow");
-
-    //Special
-    SLAMM = 46916; //Instant Slam (Blood Surge)
-
-    TALENT_ARMS = MORTAL_STRIKE;
-    TALENT_FURY = BLOODTHIRST;
-    TALENT_PROT = DEVASTATE;
-
-    SHOOT = ai->getSpellIdExact("Shoot");
-
-    uint8 talentCounter = 0;
-    if (TALENT_ARMS) talentCounter++;
-    if (TALENT_FURY) talentCounter++;
-    if (TALENT_PROT) talentCounter++;
-    if (talentCounter > 1) { TALENT_ARMS = 0; TALENT_FURY = 0; TALENT_PROT = 0; } //Unreliable Talent detection.
-    #pragma endregion
-}
-
-void PlayerbotWarriorAI::DoNextCombatManeuver(Unit *pTarget)
+bool PlayerbotWarriorAI::DoFirstCombatManeuver(Unit *pTarget)
 {
-    if (!pTarget || pTarget->isDead()) return;
-    PlayerbotAI *ai = GetAI();
-    if (!ai) return;
-    Player *m_bot = GetPlayerBot();
-    if (!m_bot || m_bot->isDead()) return;
-    Unit *pVictim = pTarget->getVictim();
-    Unit *m_tank = FindMainTankInRaid(GetMaster());
-    if (!m_tank && m_bot->GetGroup() && GetMaster()->GetGroup() != m_bot->GetGroup()) { FindMainTankInRaid(m_bot); }
-    if (!m_tank) { m_tank = m_bot; }
-    uint32 masterHP = GetMaster()->GetHealth()*100 / GetMaster()->GetMaxHealth();
-    float pDist = m_bot->GetDistance(pTarget);
-    uint8 pThreat = GetThreatPercent(pTarget);
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
 
-    if (!m_pulling){
-        #pragma region Choose Role / Stance
+    PlayerbotAI::CombatOrderType co = m_ai->GetCombatOrder();
+    float fTargetDist = m_bot->GetDistance(pTarget); //m_bot->GetCombatDistance(pTarget);
 
-        m_role = BOT_ROLE_DPS_MELEE;
-
-        // Choose Stance
-        if (m_tank->GetGUID() == m_bot->GetGUID()) // Hey! I am Main Tank
+    /*if ((co & PlayerbotAI::ORDERS_TANK) && DEFENSIVE_STANCE > 0 && !m_bot->HasAura(DEFENSIVE_STANCE, EFFECT_0) && m_ai->CastSpell(DEFENSIVE_STANCE))
+       {
+        return true;
+       }
+       else if ((co & PlayerbotAI::ORDERS_TANK) && TAUNT > 0 && m_bot->HasAura(DEFENSIVE_STANCE, EFFECT_0) && m_ai->CastSpell(TAUNT, *pTarget))
+       {
+        return false;
+       }
+       else if (BERSERKER_STANCE > 0 && !m_bot->HasAura(BERSERKER_STANCE, EFFECT_0) && m_ai->CastSpell(BERSERKER_STANCE))
+       {
+        return true;
+       }
+       else if (BLOODRAGE > 0 && m_bot->HasAura(BERSERKER_STANCE, EFFECT_0) && m_ai->GetRageAmount() <= 10)
+       {
+        m_ai->CastSpell(BLOODRAGE);
+        return false;
+       }
+       else if (BERSERKER_STANCE > 0 && INTERCEPT > 0 && m_bot->HasAura(BERSERKER_STANCE, EFFECT_0))
+       {
+        if (fTargetDist < 8.0f)
+            return false;
+        else if (fTargetDist > 25.0f)
+            return true;
+        else if (INTERCEPT > 0 && m_ai->CastSpell(INTERCEPT, *pTarget))
         {
-            if (ChangeStance(DEFENSIVE_STANCE)) { m_role = BOT_ROLE_TANK; return; }  //m_bot->GetShield(true)
+            float x, y, z;
+            pTarget->GetContactPoint(m_bot, x, y, z, 3.666666f);
+            m_bot->Relocate(x, y, z);
+            return false;
         }
-        else if (isUnderAttack()) // I am under attack
+       }
+       else if (BATTLE_STANCE > 0 && !m_bot->HasAura(BATTLE_STANCE, EFFECT_0) && m_ai->CastSpell(BATTLE_STANCE))
+       {
+        return true;
+       }
+       else if (BATTLE_STANCE > 0 && CHARGE > 0 && m_bot->HasAura(BATTLE_STANCE, EFFECT_0))
+       {
+        if (fTargetDist < 8.0f)
+            return false;
+        else if (fTargetDist > 25.0f)
+            return true;
+        else if (CHARGE > 0 && m_ai->CastSpell(CHARGE, *pTarget))
         {
-            if (pVictim && pVictim->GetGUID() == m_bot->GetGUID() && pDist <= 2)  {} // My target is almost up to me, no need to search
-            else //Have to select nearest target
-            {
-                Unit *curAtt = GetNearestAttackerOf(m_bot);
-                if (curAtt && curAtt->GetGUID() != pTarget->GetGUID())
-                {
-                    m_bot->SetSelection(curAtt->GetGUID());
-                    //ai->AddLootGUID(curAtt->GetGUID());
-                    DoNextCombatManeuver(curAtt); //Restart new update to get variables fixed..
-                    return;
-                }
-            }
-            //my target is attacking me
-            //if (m_bot->getRace() == (uint8) RACE_NIGHTELF && CanCast(R_SHADOWMELD,m_bot) && CastSpell(R_SHADOWMELD,m_bot) ) { return; }
-            if (m_bot->GetShield(true)) { if (ChangeStance(DEFENSIVE_STANCE)) { m_role = BOT_ROLE_OFFTANK; return; } }
-            else if (ChangeStance(BATTLE_STANCE)) { return; }
+            float x, y, z;
+            pTarget->GetContactPoint(m_bot, x, y, z, 3.666666f);
+            m_bot->Relocate(x, y, z);
+            return false;
         }
-        else if (ai->GetHealthPercent() > 90)
-        {
-            if (ChangeStance(BERSERKER_STANCE)) { return; }
-        }
-        else if (ai->GetForm() != FORM_BERSERKERSTANCE || ai->GetHealthPercent() < 70 ) { if (ChangeStance(BATTLE_STANCE)) { return; } }
-        #pragma endregion
-    }
+       }*/
 
-    // Cast CC breakers if any match found  (does not work yet)
-    // uint32 ccSpells[7] = { HEROIC_FURY, BERSERKER_RAGE, BLADESTORM, R_ESCAPE_ARTIST, R_EVERY_MAN_FOR_HIMSELF, R_WILL_OF_FORSAKEN, R_STONEFORM };
-    // if (castSelfCCBreakers(ccSpells)) { } //most of them dont have gcd
-
-    TakePosition(pTarget);
-
-    // If there's a cast stop
-    if(m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
-
-    if (m_pulling) {
-        if (GetAI()->CastSpell(SHOOT,pTarget)) {
-            m_pulling = false;
-            GetAI()->SetCombatOrder(ORDERS_NONE);
-            GetAI()->Follow(*GetMaster());
-            GetAI()->SetIgnoreUpdateTime(2);
-         }
-          return;
-    }
-
-    #pragma region Buff Heal Interrupt
-    //Buff UP
-    if (!m_bot->HasAura(BATTLE_SHOUT) && CastSpell(BATTLE_SHOUT,m_bot)) { return; }
-    if (!m_bot->HasAura(BATTLE_SHOUT,m_bot->GetGUID()) && !m_bot->HasAura(COMMANDING_SHOUT) && CastSpell(COMMANDING_SHOUT,m_bot)) { return; }
-
-
-    //HEAL UP && PROTECT UP
-    if (ai->GetHealthPercent() <= 85 && CastSpell(SHIELD_BLOCK, m_bot)) { } //no GCD
-    if (ai->GetHealthPercent() <= 45 && CastSpell(SHIELD_WALL, m_bot)) { return; }
-    if (ai->GetHealthPercent() < 55 &&
-        (m_bot->HasAura(BERSERKER_RAGE) || m_bot->HasAura(BLOODRAGE) || m_bot->HasAura(DEATH_WISH)) //There are other spells that count as enrage
-        && CastSpell(ENRAGED_REGENERATION,m_bot)) { return; }
-    if (ai->GetHealthPercent() < 25 && CastSpell(INTIMIDATING_SHOUT, m_bot)) { return; }
-    if (ai->GetHealthPercent() <= 75 && CastSpell(LAST_STAND, m_bot)) { return; }
-    if (m_bot->getRace() == (uint8) RACE_DWARF && ai->GetHealthPercent() < 75 && CastSpell(R_STONEFORM,m_bot)) { } //no gcd
-    if (m_bot->getRace() == (uint8) RACE_DRAENEI && ai->GetHealthPercent() < 55 && CastSpell(R_GIFT_OF_NAARU,m_bot)) { return; } //no Gcd, but has cast
-
-    //Break spells being cast
-    if (pTarget->IsNonMeleeSpellCasted(true))
-    {
-        if (pVictim && pVictim->GetGUID() == m_bot->GetGUID() && CastSpell(SPELL_REFLECTION,pTarget)) { return; }
-        if (m_bot->HasAura(SPELL_REFLECTION))
-        {
-            if (CastSpell(SHIELD_BASH,pTarget)) {} // No GCD
-            else if (CastSpell(PUMMEL,pTarget)) { return; }
-            else if (m_bot->getRace() == (uint8) RACE_BLOODELF && pDist < 8 && CastSpell(R_ARCANE_TORRENT, pTarget)) { } //no gcd
-        }
-    }
-    #pragma endregion
-
-    #pragma region Taunt / Threat
-    // if i am main tank, protect master by taunt
-    if(m_tank->GetGUID() == m_bot->GetGUID())
-    {
-        // Taunt if needed (Only for master)
-        Unit *curAtt = GetAttackerOf(GetMaster());
-        if (curAtt)
-        {
-            if (isUnderAttack(GetMaster(),2) && CastSpell(CHALLENGING_SHOUT, curAtt)) { return; }
-            if (CastSpell(TAUNT, curAtt,true,true))  { return; }
-            if (CastSpell(VIGILANCE, GetMaster())) { return; }
-            if (CastSpell(TAUNT, curAtt))  { return; }
-            if (CastSpell(MOCKING_BLOW, curAtt)) { return; }
-        }
-        // My target is not attacking me, taunt..
-        if (pVictim && pVictim->GetGUID() != m_bot->GetGUID())
-        {
-            if (CastSpell(VIGILANCE, pVictim)) { return; }
-            if (CastSpell(TAUNT, pTarget))  { return; }
-            if (CastSpell(MOCKING_BLOW, pTarget)) { return; }
-        }
-    }
-
-    // If not in Defensive Stance slow down due to threat
-    if (pThreat > threatThreshold && ai->GetForm() != FORM_DEFENSIVESTANCE && m_tank->GetGUID() != m_bot->GetGUID() && !isUnderAttack() )
-    {
-        if (m_tank->getVictim() && m_tank->getVictim()->GetGUID() != pTarget->GetGUID()) // I am attacking wrong target!!
-        {
-            m_bot->SetSelection(m_tank->getVictim()->GetGUID());
-            return;
-        }
-        else { return; } //Warrior has no threat reducing spells, just slow down
-    }
-    #pragma endregion
-
-    #pragma region Dps
-
-    //Ranged Stuff (Openers)
-    if (CastSpell(CHARGE,pTarget)) { } //no GCD
-    else if (CastSpell(INTERCEPT,pTarget)) { } //no GCD
-    if (pDist > MELEE_RANGE && ai->GetForm() == FORM_DEFENSIVESTANCE && CastSpell(HEROIC_THROW,pTarget)) { return; } //High threat
-    if (pDist > MELEE_RANGE && CastSpell(SHATTERING_THROW,pTarget)) { return; }
-
-    //Catch
-    if (pTarget->HasUnitMovementFlag(UNIT_FLAG_FLEEING))
-    {
-        if (CastSpell(HAMSTRING,pTarget)) return;
-        if (CastSpell(PIERCING_HOWL,pTarget)) return;
-    }
-
-
-    //Dps up
-    if (ai->GetHealthPercent() > 90 && ai->GetRageAmount() < 20 && CastSpell(BLOODRAGE,m_bot))  { return; }
-    if (isUnderAttack() && CastSpell(RETALIATION,m_bot)) { return; }
-    if (ai->GetHealthPercent() > 90 && CastSpell(DEATH_WISH,m_bot)) { return; }
-    if (ai->GetHealthPercent() > 80 && CastSpell(RECKLESSNESS,m_bot)) { return; }
-    if (m_bot->getRace() == (uint8) RACE_TROLL && CastSpell(R_BERSERKING,m_bot)) {} //no GCD
-    if (m_bot->getRace() == (uint8) RACE_ORC && CastSpell(R_BLOOD_FURY,m_bot)) {} //no GCD
-
-    //Tank only stuff
-    if ((ai->GetForm() == FORM_DEFENSIVESTANCE || ai->GetRageAmount() > 85) && CastSpell(THUNDER_CLAP)) { return; } //High threat
-    if ((ai->GetForm() == FORM_DEFENSIVESTANCE || ai->GetRageAmount() > 75) && CastSpell(HEROIC_STRIKE)) {} //nogcd high threat
-
-    //Finishing Move / Timed moves
-    if (ai->GetHealthPercent(*pTarget) < 20 && CastSpell(EXECUTE,pTarget)) { return; }
-    if (CastSpell(VICTORY_RUSH,pTarget)) { return; }
-
-    //AOE
-    if (CastSpell(SHOCKWAVE,pTarget)) { return; }
-    if ((isUnderAttack(m_tank,3) || m_tank->GetGUID() == m_bot->GetGUID()) && CastSpell(CLEAVE,pTarget)) {} //no GCD
-    if (isUnderAttack(m_tank,3) && CastSpell(SWEEPING_STRIKES,m_bot)) {} //no GCD
-    if (isUnderAttack(m_tank,4) && CastSpell(BLADESTORM,m_bot)) { return; }
-    if (isUnderAttack(m_tank,4) && CastSpell(WHIRLWIND,pTarget)) { return; }
-
-    //Main dps
-    if (m_bot->HasAura(SLAMM) && CastSpell(SLAM,pTarget)) { return; }  //instant slam only
-    if (CastSpell(REVENGE,pTarget)) { return; } //Def stance only
-    if (CastSpell(OVERPOWER,pTarget)) { return; }
-    if (CastSpell(SHIELD_SLAM,pTarget)) { return; }
-    if (CastSpell(BLOODTHIRST,pTarget)) { return; }
-    if (CastSpell(MORTAL_STRIKE,pTarget)) { return; }
-
-
-    //Support/Debuff
-    if (CastSpell(DEMORALIZING_SHOUT,pTarget)) { return; }
-    if (DEVASTATE) { if (CastSpell(DEVASTATE,pTarget,1,1)) { return; } }  //High threat
-    else if (CastSpell(SUNDER_ARMOR)) { return; } //Only 1 - High threat
-    if (CastSpell(CONCUSSION_BLOW,pTarget)) { return; }
-    if (CastSpell(REND,pTarget)) { return; }
-    if (CastSpell(DISARM,pTarget)) { return; }
-    #pragma endregion
-
-} //end DoNextCombatManeuver
-
-void PlayerbotWarriorAI::DoNonCombatActions()
-{
-    PlayerbotAI *ai = GetAI();
-    Player *m_bot = GetPlayerBot();
-    if (!m_bot || !ai || m_bot->isDead()) { return; }
-
-    //If Casting or Eating/Drinking return
-    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
-    if (m_bot->getStandState() == UNIT_STAND_STATE_SIT) { return; }
-
-    //Buff Up
-    if (!m_bot->HasAura(BATTLE_SHOUT) && CastSpell(BATTLE_SHOUT,m_bot)) { return; }
-    if (!m_bot->HasAura(BATTLE_SHOUT,m_bot->GetGUID()) && !m_bot->HasAura(COMMANDING_SHOUT) && CastSpell(COMMANDING_SHOUT,m_bot)) { return; }
-
-    if (GetMaster()->isAlive() && CastSpell(VIGILANCE, GetMaster())) { return; }
-
-    //want to start off in battle stance so we can CHARGE
-    //if(ai->GetRageAmount() < 20 && ai->GetForm() != FORM_BATTLESTANCE && ChangeStance(BATTLE_STANCE)) { return; }
-
-    //mana/hp check
-    if (m_bot->getRace() == (uint8) RACE_UNDEAD_PLAYER && ai->GetHealthPercent() < 75 && CastSpell(R_CANNIBALIZE,m_bot)) { return; }
-    if (ai->GetHealthPercent() < 75) { ai->Feast(); }
-} //end DoNonCombatActions
-
-bool PlayerbotWarriorAI::ChangeStance(uint32 stance)
-{
-    if (stance == 0) return false;
-    if (CastSpell(stance, GetPlayerBot())) { return true; }
     return false;
 }
 
-void PlayerbotWarriorAI::Pull()
+//Buff and rebuff shouts
+void PlayerbotWarriorAI::CheckShouts()
 {
-    if (!SHOOT) return;
+    if (!m_ai)  return;
+    if (!m_bot) return;
 
-    // check ammo
-    uint32 ammo_id = GetPlayerBot()->GetUInt32Value(PLAYER_AMMO_ID);
-    if (!ammo_id) {
-        GetPlayerBot()->Say("I'm out of ammo.", LANG_UNIVERSAL);
-        return;
-    }
+    uint32 spec = m_bot->GetSpec();
 
-    Unit* pTarget = ObjectAccessor::GetUnit(*GetMaster(), GetMaster()->GetSelection());
-    if (pTarget==NULL || pTarget->IsFriendlyTo(GetMaster()))
-    {
-        GetPlayerBot()->Say("Invalid target", LANG_UNIVERSAL);
-        m_pulling = false;
-        GetAI()->Follow(*GetMaster());
-        return;
-    }
-
-    m_role = BOT_ROLE_DPS_RANGED;
-    m_pulling = true;
-    GetAI()->SetIgnoreUpdateTime(0);
+    if ((spec == WARRIOR_SPEC_ARMS || spec == WARRIOR_SPEC_FURY) && BATTLE_SHOUT > 0 && m_ai->GetRageAmount() >= 10 && !m_bot->HasAura(BATTLE_SHOUT, EFFECT_0))
+        m_ai->CastSpell(BATTLE_SHOUT);
+    else if (spec == WARRIOR_SPEC_PROTECTION && COMMANDING_SHOUT > 0 && m_ai->GetRageAmount() >= 10 && !m_bot->HasAura(COMMANDING_SHOUT, EFFECT_0))
+        m_ai->CastSpell(COMMANDING_SHOUT);
+    //Buff battle shout if bot doesn't have commanding yet
+    else if (spec == WARRIOR_SPEC_PROTECTION && COMMANDING_SHOUT == 0 && BATTLE_SHOUT > 0 && m_ai->GetRageAmount() >= 10 && !m_bot->HasAura(BATTLE_SHOUT, EFFECT_0))
+        m_ai->CastSpell(BATTLE_SHOUT);
 }
 
-/*
-void PlayerbotWarriorAI::BreakCC(const uint32 diff)
+bool PlayerbotWarriorAI::DoNextCombatManeuver(Unit *pTarget)
 {
-    if(pvpTrinket_cd < diff && GCD < diff)
-    {
-        if(m_creature->HasAuraType(SPELL_AURA_MOD_ROOT) ||
-        m_creature->HasAuraType(SPELL_AURA_MOD_CONFUSE) || //dragons breath/blind/poly
-        m_creature->HasAura(8983)                       || //Druid bash rank 3
-        m_creature->HasAura(27006)                      || //Druid pounce rank 4
-        m_creature->HasAura(33786)                      || //Druid cyclone
-        m_creature->HasAura(22570, 1)                   || //Druid maim
-        m_creature->HasAura(10308)                      || //Paladin hammer of justice rank 4
-        m_creature->HasAura(30414, 1)                   || //Warlock shadowfury rank 3
-        m_creature->HasAura(6215)                       || //Warlock fear rank 3 **REMOVE THIS & IMPLEMENT IN BERSERKER RAGE**
-        m_creature->HasAura(17928)                      || //Warlock howlofterror rank 3 **REMOVE THIS & IMPLEMENT IN BERSERKER RAGE**
-        m_creature->HasAura(10890)                      || //Priest psychic scream rank 4 **REMOVE THIS & IMPLEMENT IN BERSERKER RAGE**
-        m_creature->HasAura(14902)                      || //Rogue Cheap shot
-        m_creature->HasAura(8643)                       || //Rogue Kidney shot Rank 2
-        m_creature->HasAura(38764, 2)                   || //Rogue Gouge Rank 6 **REMOVE THIS & IMPLEMENT IN BERSERKER RAGE**
-        m_creature->HasAura(12809))                        //Warrior concussion blow
-        {
-            doCast(m_creature, PVPTRINKET); //I think it would be better to instead of applying individual spells that apply the
-            pvpTrinket_cd = PVPTRINKET_CD;  //effect SPELL_AURA_MOD_STUN, just add that type and start removing bad choices e.g. impact.
-        }
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
 
-        if(m_creature->HasAura(11297) && m_creature->GetDistance(m_creature->getVictim()) < 10)
-        {      //if warrior sapped and creature is less then 10 yards from war, cast pvp trinket and attempt to demo shout him out of stealth
-            doCast(m_creature, PVPTRINKET);
-            pvpTrinket_cd = PVPTRINKET_CD;
-            castDemoralizingShout = true;
-        }
+    //switch (m_ai->GetScenarioType())
+    //{
+    //    case PlayerbotAI::SCENARIO_DUEL:
+    //        if (HEROIC_STRIKE > 0)
+    //            m_ai->CastSpell(HEROIC_STRIKE);
+    //        return;
+    //}
+    // ------- Non Duel combat ----------
+
+    // Damage Attacks
+
+    Player *m_bot = GetPlayerBot();
+    Unit* pVictim = pTarget->getVictim();
+    float fTargetDist = m_bot->GetDistance(pTarget);//m_bot->GetCombatDistance(pTarget);
+    PlayerbotAI::CombatOrderType co = m_ai->GetCombatOrder();
+    uint32 spec = m_bot->GetSpec();
+
+    //If we have devastate it will replace SA in our rotation
+    uint32 SUNDER = (DEVASTATE > 0 ? DEVASTATE : SUNDER_ARMOR);
+
+    //Used to determine if this bot is highest on threat
+    Unit *newTarget = m_ai->FindAttacker((PlayerbotAI::ATTACKERINFOTYPE) (PlayerbotAI::AIT_VICTIMSELF | PlayerbotAI::AIT_HIGHESTTHREAT), m_bot);
+
+    // do shouts, berserker rage, etc...
+    if (BERSERKER_RAGE > 0 && !m_bot->HasAura(BERSERKER_RAGE, EFFECT_0))
+        m_ai->CastSpell(BERSERKER_RAGE);
+    else if (BLOODRAGE > 0 && m_ai->GetRageAmount() <= 10)
+        m_ai->CastSpell(BLOODRAGE);
+
+    CheckShouts();
+    switch (spec)
+    {
+        case WARRIOR_SPEC_ARMS:
+
+            if (EXECUTE > 0 && (pTarget->GetHealth() < pTarget->GetMaxHealth() * 0.20) && m_ai->GetRageAmount() >= 15)
+            {
+                m_ai->CastSpell (EXECUTE, *pTarget);
+                break;
+            }
+            //Haven't found a way to make sudden death work yet, either wrong spell or it needs an effect index(probably)
+            else if (EXECUTE > 0 && m_bot->HasAura(SUDDEN_DEATH))
+            {
+                m_ai->CastSpell (EXECUTE, *pTarget);
+                break;
+            }
+            else if (REND > 0 && m_ai->GetRageAmount() >= 10 && !pTarget->HasAura(REND, EFFECT_0))
+            {
+                m_ai->CastSpell(REND, *pTarget);
+                break;
+            }
+            else if (MORTAL_STRIKE > 0 && m_ai->GetRageAmount() >= 30 && !m_bot->HasSpellCooldown(MORTAL_STRIKE))
+            {
+                m_ai->CastSpell(MORTAL_STRIKE, *pTarget);
+                break;
+            }
+            else if (SHATTERING_THROW > 0 && !pTarget->HasAura(SHATTERING_THROW, EFFECT_0) && !m_bot->HasSpellCooldown(SHATTERING_THROW))
+            {
+                m_ai->CastSpell(SHATTERING_THROW, *pTarget);
+                break;
+            }
+            else if (BLADESTORM > 0 && m_ai->GetRageAmount() >= 25 && !m_bot->HasSpellCooldown(BLADESTORM) /*&& m_ai->GetAttackerCount() >= 3*/)
+            {
+                m_ai->CastSpell(BLADESTORM, *pTarget);
+                break;
+            }
+            //No way to tell if overpoweris active(yet), however taste for blood works
+            else if (OVERPOWER > 0 && m_ai->GetRageAmount() >= 5 && m_bot->HasAura(TASTE_FOR_BLOOD))
+            {
+                m_ai->CastSpell(OVERPOWER, *pTarget);
+                break;
+            }
+            else if (HEROIC_STRIKE > 0 && m_ai->GetRageAmount() >= 60)
+            {
+                m_ai->CastSpell(HEROIC_STRIKE, *pTarget);
+                break;
+            }
+            else if (SLAM > 0 && m_ai->GetRageAmount() >= 15)
+            {
+                m_ai->CastSpell(SLAM, *pTarget);
+                m_ai->SetIgnoreUpdateTime(1.5);
+                break;
+            }
+
+        case WARRIOR_SPEC_FURY:
+
+            if (EXECUTE > 0 && pTarget->GetHealth() < pTarget->GetMaxHealth() * 0.20 && m_ai->GetRageAmount() >= 15)
+            {
+                m_ai->CastSpell (EXECUTE, *pTarget);
+                break;
+            }
+            else if (BLOODTHIRST > 0 && m_ai->GetRageAmount() >= 20 && !m_bot->HasSpellCooldown(BLOODTHIRST))
+            {
+                m_ai->CastSpell(BLOODTHIRST, *pTarget);
+                break;
+            }
+            else if (WHIRLWIND > 0 && m_ai->GetRageAmount() >= 25 && !m_bot->HasSpellCooldown(WHIRLWIND))
+            {
+                m_ai->CastSpell(WHIRLWIND, *pTarget);
+                break;
+            }
+            else if (SLAM > 0 && m_ai->GetRageAmount() >= 15 && m_bot->HasAura(BLOODSURGE, EFFECT_0))
+            {
+                m_ai->CastSpell(SLAM, *pTarget);
+                break;
+            }
+            else if (HEROIC_STRIKE > 0 && m_ai->GetRageAmount() >= 60)
+            {
+                m_ai->CastSpell(HEROIC_STRIKE, *pTarget);
+                break;
+            }
+
+        case WARRIOR_SPEC_PROTECTION:
+
+            if (m_ai->GetCombatOrder() == PlayerbotAI::ORDERS_TANK && !newTarget && TAUNT > 0 && !m_bot->HasSpellCooldown(TAUNT))
+            {
+                m_ai->CastSpell(TAUNT, *pTarget);
+                break;
+            }
+            //No way to tell if revenge is active(yet)
+            /*else if (REVENGE > 0 && m_ai->GetRageAmount() >= 5)
+               {
+                m_ai->CastSpell(REVENGE, *pTarget);
+                break;
+               }*/
+            else if (REND > 0 && m_ai->GetRageAmount() >= 10 && !pTarget->HasAura(REND, EFFECT_0))
+            {
+                m_ai->CastSpell(REND, *pTarget);
+                break;
+            }
+            else if (THUNDER_CLAP > 0 && m_ai->GetRageAmount() >= 20 && !pTarget->HasAura(THUNDER_CLAP))
+            {
+                m_ai->CastSpell(THUNDER_CLAP, *pTarget);
+                break;
+            }
+            else if (DEMORALIZING_SHOUT > 0 && m_ai->GetRageAmount() >= 10 && !pTarget->HasAura(DEMORALIZING_SHOUT, EFFECT_0))
+            {
+                m_ai->CastSpell(DEMORALIZING_SHOUT, *pTarget);
+                break;
+            }
+            else if (CONCUSSION_BLOW > 0 && m_ai->GetRageAmount() >= 15 && !m_bot->HasSpellCooldown(CONCUSSION_BLOW))
+            {
+                m_ai->CastSpell(CONCUSSION_BLOW, *pTarget);
+                break;
+            }
+            else if (SHOCKWAVE > 0 && m_ai->GetRageAmount() >= 15  && !m_bot->HasSpellCooldown(SHOCKWAVE))
+            {
+                m_ai->CastSpell(SHOCKWAVE, *pTarget);
+                break;
+            }
+            else if (SHIELD_SLAM > 0 && m_ai->GetRageAmount() >= 20 && !m_bot->HasSpellCooldown(SHIELD_SLAM))
+            {
+                m_ai->CastSpell(SHIELD_SLAM, *pTarget);
+                break;
+            }
+            //else if (SUNDER > 0 && m_ai->GetRageAmount() >= 15 && !pTarget->HasAura(SUNDER_ARMOR))
+            //{
+            //  m_ai->CastSpell(SUNDER, *pTarget);
+            //  break;
+            //}
+            //Devastate seems to be broken in current build
+            //else if (DEVASTATE > 0 && m_ai->GetRageAmount() >= 15)
+            //{
+            //   m_ai->CastSpell(DEVASTATE, *pTarget);
+            //   break;
+            //}
+            else if (HEROIC_STRIKE > 0 && m_ai->GetRageAmount() >= 60)
+            {
+                m_ai->CastSpell(HEROIC_STRIKE, *pTarget);
+                break;
+            }
+
+
+            /*case WarriorSpellPreventing:
+                out << "Case Prevent";
+                if (SHIELD_BASH > 0 && m_ai->GetRageAmount() >= 10 && m_ai->CastSpell(SHIELD_BASH, *pTarget))
+                    out << " > Shield Bash";
+                else if (PUMMEL > 0 && m_ai->GetRageAmount() >= 10 && m_ai->CastSpell(PUMMEL, *pTarget))
+                    out << " > Pummel";
+                else if (SPELL_REFLECTION > 0 && m_ai->GetRageAmount() >= 15 && !m_bot->HasAura(SPELL_REFLECTION, EFFECT_0) && m_ai->CastSpell(SPELL_REFLECTION, *m_bot))
+                    out << " > Spell Reflection";
+                else
+                    out << " > NONE";
+                break;
+
+               case WarriorBattle:
+                out << "Case Battle";
+                else if (LAST_STAND > 0 && !m_bot->HasAura(LAST_STAND, EFFECT_0) && m_bot->GetHealth() < m_bot->GetMaxHealth() * 0.5 && m_ai->CastSpell(LAST_STAND, *m_bot))
+                    out << " > Last Stand!";
+                else if (DEATH_WISH > 0 && m_ai->GetRageAmount() >= 10 && !m_bot->HasAura(DEATH_WISH, EFFECT_0) && m_ai->CastSpell(DEATH_WISH, *m_bot))
+                    out << " > Death Wish";
+                else if (RETALIATION > 0 && pVictim == m_bot && m_ai->GetAttackerCount() >= 2 && !m_bot->HasAura(RETALIATION, EFFECT_0) && m_ai->CastSpell(RETALIATION, *m_bot))
+                    out << " > Retaliation";
+                else if (SWEEPING_STRIKES > 0 && m_ai->GetRageAmount() >= 30 && m_ai->GetAttackerCount() >= 2 && !m_bot->HasAura(SWEEPING_STRIKES, EFFECT_0) && m_ai->CastSpell(SWEEPING_STRIKES, *m_bot))
+                    out << " > Sweeping Strikes!";
+                else if (INTIMIDATING_SHOUT > 0 && m_ai->GetRageAmount() >= 25 && m_ai->GetAttackerCount() > 5 && m_ai->CastSpell(INTIMIDATING_SHOUT, *pTarget))
+                    out << " > Intimidating Shout";
+                else if (ENRAGED_REGENERATION > 0 && m_ai->GetRageAmount() >= 15 && !m_bot->HasAura(BERSERKER_RAGE, EFFECT_0) && !m_bot->HasAura(ENRAGED_REGENERATION, EFFECT_0) && m_bot->GetHealth() < m_bot->GetMaxHealth() * 0.5 && m_ai->CastSpell(ENRAGED_REGENERATION, *m_bot))
+                    out << " > Enraged Regeneration";
+                else if (HAMSTRING > 0 && m_ai->GetRageAmount() >= 10 && !pTarget->HasAura(HAMSTRING, EFFECT_0) && m_ai->CastSpell(HAMSTRING, *pTarget))
+                    out << " > Hamstring";
+                else if (CHALLENGING_SHOUT > 0 && m_ai->GetRageAmount() >= 5 && pVictim != m_bot && m_ai->GetHealthPercent() > 25 && !pTarget->HasAura(MOCKING_BLOW, EFFECT_0) && !pTarget->HasAura(CHALLENGING_SHOUT, EFFECT_0) && m_ai->CastSpell(CHALLENGING_SHOUT, *pTarget))
+                    out << " > Challenging Shout";
+                else if (CLEAVE > 0 && m_ai->GetRageAmount() >= 20 && m_ai->CastSpell(CLEAVE, *pTarget))
+                    out << " > Cleave";
+
+                else if (PIERCING_HOWL > 0 && m_ai->GetRageAmount() >= 10 && m_ai->GetAttackerCount() >= 3 && !pTarget->HasAura(WAR_STOMP, EFFECT_0) && !pTarget->HasAura(PIERCING_HOWL, EFFECT_0) && !pTarget->HasAura(SHOCKWAVE, EFFECT_0) && !pTarget->HasAura(CONCUSSION_BLOW, EFFECT_0) && m_ai->CastSpell(PIERCING_HOWL, *pTarget))
+                    out << " > Piercing Howl";
+                else if (MOCKING_BLOW > 0 && m_ai->GetRageAmount() >= 10 && pVictim != m_bot && m_ai->GetHealthPercent() > 25 && !pTarget->HasAura(MOCKING_BLOW, EFFECT_0) && !pTarget->HasAura(CHALLENGING_SHOUT, EFFECT_0) && m_ai->CastSpell(MOCKING_BLOW, *pTarget))
+                    out << " > Mocking Blow";
+                else if (HEROIC_THROW > 0 && m_ai->CastSpell(HEROIC_THROW, *pTarget))
+                    out << " > Heroic Throw";
+                else if (m_bot->getRace() == RACE_TAUREN && !pTarget->HasAura(WAR_STOMP, EFFECT_0) && !pTarget->HasAura(PIERCING_HOWL, EFFECT_0) && !pTarget->HasAura(SHOCKWAVE, EFFECT_0) && !pTarget->HasAura(CONCUSSION_BLOW, EFFECT_0) && m_ai->CastSpell(WAR_STOMP, *pTarget))
+                    out << " > War Stomp";
+                else if (m_bot->getRace() == RACE_HUMAN && m_bot->hasUnitState(UNIT_STAT_STUNNED) || m_bot->HasAuraType(SPELL_AURA_MOD_FEAR) || m_bot->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED) || m_bot->HasAuraType(SPELL_AURA_MOD_CHARM) && m_ai->CastSpell(EVERY_MAN_FOR_HIMSELF, *m_bot))
+                    out << " > Every Man for Himself";
+                else if (m_bot->getRace() == RACE_UNDEAD && m_bot->HasAuraType(SPELL_AURA_MOD_FEAR) || m_bot->HasAuraType(SPELL_AURA_MOD_CHARM) && m_ai->CastSpell(WILL_OF_THE_FORSAKEN, *m_bot))
+                    out << " > Will of the Forsaken";
+                else if (m_bot->getRace() == RACE_DWARF && m_bot->HasAuraState(AURA_STATE_DEADLY_POISON) && m_ai->CastSpell(STONEFORM, *m_bot))
+                    out << " > Stoneform";
+                else if (m_bot->getRace() == RACE_GNOME && m_bot->hasUnitState(UNIT_STAT_STUNNED) || m_bot->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED) && m_ai->CastSpell(ESCAPE_ARTIST, *m_bot))
+                    out << " > Escape Artist";
+                else if (m_bot->getRace() == RACE_NIGHTELF && pVictim == m_bot && m_ai->GetHealthPercent() < 25 && !m_bot->HasAura(SHADOWMELD, EFFECT_0) && m_ai->CastSpell(SHADOWMELD, *m_bot))
+                    out << " > Shadowmeld";
+                else if (m_bot->getRace() == RACE_ORC && !m_bot->HasAura(BLOOD_FURY, EFFECT_0) && m_ai->CastSpell(BLOOD_FURY, *m_bot))
+                    out << " > Blood Fury";
+                else if (m_bot->getRace() == RACE_TROLL && !m_bot->HasAura(BERSERKING, EFFECT_0) && m_ai->CastSpell(BERSERKING, *m_bot))
+                    out << " > Berserking";
+                else if (m_bot->getRace() == RACE_DRAENEI && m_ai->GetHealthPercent() < 25 && !m_bot->HasAura(GIFT_OF_THE_NAARU, EFFECT_0) && m_ai->CastSpell(GIFT_OF_THE_NAARU, *m_bot))
+                    out << " > Gift of the Naaru";
+                else
+                    out << " > NONE";
+                break;
+
+               case WarriorDefensive:
+                out << "Case Defensive";
+                if (DISARM > 0 && m_ai->GetRageAmount() >= 15 && !pTarget->HasAura(DISARM, EFFECT_0) && m_ai->CastSpell(DISARM, *pTarget))
+                    out << " > Disarm";
+                else if (SHIELD_BLOCK > 0 && !m_bot->HasAura(SHIELD_BLOCK, EFFECT_0) && m_ai->CastSpell(SHIELD_BLOCK, *m_bot))
+                    out << " > Shield Block";
+                else if (SHIELD_WALL > 0 && !m_bot->HasAura(SHIELD_WALL, EFFECT_0) && m_ai->CastSpell(SHIELD_WALL, *m_bot))
+                    out << " > Shield Wall";
+                else
+                    out << " > NONE";
+                break;*/
+
     }
-} //BreakCC
-*/
+
+    return false;
+}
+
+void PlayerbotWarriorAI::DoNonCombatActions()
+{
+    if (!m_ai)  return;
+    if (!m_bot) return;
+
+    uint32 spec = m_bot->GetSpec();
+    if (!m_bot)
+        return;
+
+    //Stance Check
+    if (spec == WARRIOR_SPEC_ARMS && !m_bot->HasAura(BATTLE_STANCE, EFFECT_0))
+        m_ai->CastSpell(BATTLE_STANCE);
+    else if (spec == WARRIOR_SPEC_FURY && !m_bot->HasAura(BERSERKER_STANCE, EFFECT_0))
+        m_ai->CastSpell(BERSERKER_STANCE);
+    else if (spec == WARRIOR_SPEC_PROTECTION && !m_bot->HasAura(DEFENSIVE_STANCE, EFFECT_0))
+        m_ai->CastSpell(DEFENSIVE_STANCE);
+
+    // buff master with VIGILANCE
+    if (VIGILANCE > 0)
+        (!GetMaster()->HasAura(VIGILANCE, EFFECT_0) && m_ai->CastSpell(VIGILANCE, *GetMaster()));
+
+    // hp check
+    if (m_bot->getStandState() != UNIT_STAND_STATE_STAND)
+        m_bot->SetStandState(UNIT_STAND_STATE_STAND);
+
+    Item* pItem = m_ai->FindFood();
+    Item* fItem = m_ai->FindBandage();
+
+    if (pItem != NULL && m_ai->GetHealthPercent() < 30)
+    {
+        m_ai->TellMaster("I could use some food.");
+        m_ai->UseItem(pItem);
+        return;
+    }
+    else if (pItem == NULL && fItem != NULL && !m_bot->HasAura(RECENTLY_BANDAGED, EFFECT_0) && m_ai->GetHealthPercent() < 70)
+    {
+        m_ai->TellMaster("I could use first aid.");
+        m_ai->UseItem(fItem);
+        return;
+    }
+    else if (pItem == NULL && fItem == NULL && m_bot->getRace() == RACE_DRAENEI && !m_bot->HasAura(GIFT_OF_THE_NAARU, EFFECT_0) && m_ai->GetHealthPercent() < 70)
+    {
+        m_ai->TellMaster("I'm casting gift of the naaru.");
+        m_ai->CastSpell(GIFT_OF_THE_NAARU, *m_bot);
+        return;
+    }
+} // end DoNonCombatActions

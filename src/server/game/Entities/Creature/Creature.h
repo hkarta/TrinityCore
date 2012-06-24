@@ -445,6 +445,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         explicit Creature(bool isWorldObject = false);
         virtual ~Creature();
 
+		void LoadBotMenu(Player *pPlayer);
+
         void AddToWorld();
         void RemoveFromWorld();
 

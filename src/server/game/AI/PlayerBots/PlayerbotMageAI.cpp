@@ -1,384 +1,388 @@
+/*
+* Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+* Copyright (C) 2012 Playerbot Team
+* Copyright (C) 2012 MangosR2
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
 #include "PlayerbotMageAI.h"
+#include "GroupMgr.h"
+#include "Group.h"
+
 class PlayerbotAI;
-PlayerbotMageAI::PlayerbotMageAI(Player *const master, Player *const bot, PlayerbotAI *const ai): PlayerbotClassAI(master, bot, ai){\
-    foodDrinkSpamTimer = 0;
-    LoadSpells();
-}
-PlayerbotMageAI::~PlayerbotMageAI(){}
 
-void PlayerbotMageAI::LoadSpells() {
-    PlayerbotAI *ai = GetAI();
-    if (!ai) return;
-    #pragma region SpellId Fill
-    //arcane
-    ARCANE_MISSILES = ai->getSpellIdExact("Arcane Missiles");
-    ARCANE_EXPLOSION = ai->getSpellIdExact("Arcane Explosion");
-    ARCANE_BLAST = ai->getSpellIdExact("Arcane Blast");
-    ARCANE_BARRAGE = ai->getSpellIdExact("Arcane Barrage");
-
-
-    //fire
-    FIREBALL = ai->getSpellIdExact("Fireball");
-    FROSTFIRE_BOLT = ai->getSpellIdExact("Frostfire Bolt");
-    FIRE_BLAST = ai->getSpellIdExact("Fire Blast");
-    FLAMESTRIKE = ai->getSpellIdExact("Flamestrike");
-    BLAST_WAVE = ai->getSpellIdExact("Blastwave");
-    SCORCH = ai->getSpellIdExact("Scorch");
-    PYROBLAST = ai->getSpellIdExact("Pyroblast");
-    LIVING_BOMB = ai->getSpellIdExact("Living Bomb");
-
-
-    //cold
-    FROSTBOLT = ai->getSpellIdExact("Frostbolt");
-    FROST_NOVA = ai->getSpellIdExact("Frost Nova");
-    ICE_LANCE = ai->getSpellIdExact("Ice Lance");
-    BLIZZARD = ai->getSpellIdExact("Blizzard");
-    CONE_OF_COLD = ai->getSpellIdExact("Cone of Cold");
-
-    WATER_ELEMENTAL = ai->getSpellIdExact("Summon Water Elemental");
-
-
-    // buffs
-    FROST_ARMOR = ai->getSpellIdExact("Ice Armor");
-    if (!FROST_ARMOR) FROST_ARMOR = ai->getSpellIdExact("Frost Armor");
-    MAGE_ARMOR = ai->getSpellIdExact("Mage Armor");
-    MOLTEN_ARMOR = ai->getSpellIdExact("Molten Armor");
-    FIRE_WARD = ai->getSpellIdExact("Fire Ward");
-    FROST_WARD = ai->getSpellIdExact("Frost Ward");
-    MANA_SHIELD = ai->getSpellIdExact("Mana Shield");
-    ICE_BARRIER = ai->getSpellIdExact("Ice Barrier");
-    POM = ai->getSpellIdExact("Presence of Mind");
-    FOCUS_MAGIC = ai->getSpellIdExact("Focus Magic");
-    ARCANE_POWER = ai->getSpellIdExact("Arance Power");
-    COMBUSTION = ai->getSpellIdExact("Combustion");
-    ICY_VEINS = ai->getSpellIdExact("Icy Veins");
-
-    ARCANE_INTELLECT = ai->getSpellIdExact("Arcane Intellect");
-    ARCANE_BRILLIANCE = ai->getSpellIdExact("Arcane Brilliance");
-    DALARAN_INTELLECT = ai->getSpellIdExact("Dalaran Intellect");
-    DALARAN_BRILLIANCE = ai->getSpellIdExact("Dalaran Brilliance");
-    DAMPEN_MAGIC = ai->getSpellIdExact("Dampen Magic");
-    AMPLIFY_MAGIC = ai->getSpellIdExact("Amplify Magic");
-
-
-    //CC
-    POLYMORPH = ai->getSpellIdExact("Polymorph");
-    DRAGONS_BREATH = ai->getSpellIdExact("Dragon's Breath");
-    DEEP_FREEZE = ai->getSpellIdExact("Deep Freeze");
-
-
-    //other
-    CONJURE_REFRESHMENT = ai->getSpellIdExact("Conjure Refreshment");
-    CONJURE_WATER = ai->getSpellIdExact("Conjure Water");
-    CONJURE_FOOD = ai->getSpellIdExact("Conjure Food");
-    CONJURE_MANA_GEM = ai->getSpellIdExact("Conjure Mana Gem");
-    MIRROR_IMAGE = ai->getSpellIdExact("Mirror Image");
-    BLINK = ai->getSpellIdExact("Blink");
-    ICE_BLOCK = ai->getSpellIdExact("Ice Block");
-    INVISIBILITY = ai->getSpellIdExact("Invisibility");
-    EVOCATION = ai->getSpellIdExact("Evocation");
-    REMOVE_CURSE = ai->getSpellIdExact("Remove Curse");
-    COUNTER_SPELL = ai->getSpellIdExact("Counterspell");
-    SLOW = ai->getSpellIdExact("Slow");
-
-    //Special
-    P_BRAIN_FREEZE = 57761; //Brain Freeze proc
-    P_FIRESTARTER = 54741; //Firestarter proc
-    P_HOT_STREAK = 48108; //Hot Sreak proc
-    P_ARCANE_BLAST = 36032; //Arcane blast proc
-	P_MISSILE_BARRAGE = 54490; //Missle Barrage proc
-	P_FINGERS_OF_FROST = 44545; //Fingers of Frost proc
-	IMP_SCORCH = 12873; //IMP SCORCH
-
-    SHOOT = ai->getSpellIdExact("Shoot");
-
-    TALENT_ARCANE = ARCANE_BARRAGE;
-    TALENT_FIRE = COMBUSTION;
-    TALENT_FROST = ICE_BARRIER;
-
-    uint8 talentCounter = 0;
-    if (TALENT_ARCANE) talentCounter++;
-    if (TALENT_FIRE) talentCounter++;
-    if (TALENT_FROST) talentCounter++;
-    //if (talentCounter > 1) { TALENT_ARCANE = 0; TALENT_FIRE = 0; TALENT_FROST = 0; } //Unreliable Talent detection.
-    #pragma endregion
-}
-
-void PlayerbotMageAI::DoNextCombatManeuver(Unit *pTarget)
+PlayerbotMageAI::PlayerbotMageAI(Player* const master, Player* const bot, PlayerbotAI* const ai) : PlayerbotClassAI(master, bot, ai)
 {
-    if (!pTarget || pTarget->isDead()) return;
-    PlayerbotAI *ai = GetAI();
-    if (!ai) return;
-    Player *m_bot = GetPlayerBot();
-    if (!m_bot || m_bot->isDead()) return;
-    Unit *pVictim = pTarget->getVictim();
-    Unit *m_tank = FindMainTankInRaid(GetMaster());
-    if (!m_tank && m_bot->GetGroup() && GetMaster()->GetGroup() != m_bot->GetGroup()) { FindMainTankInRaid(m_bot); }
-    if (!m_tank) { m_tank = m_bot; }
-    uint32 masterHP = GetMaster()->GetHealth()*100 / GetMaster()->GetMaxHealth();
-    float pDist = m_bot->GetDistance(pTarget);
-    uint8 pThreat = GetThreatPercent(pTarget);
+    ARCANE_MISSILES         = m_ai->initSpell(ARCANE_MISSILES_1);
+    ARCANE_EXPLOSION        = m_ai->initSpell(ARCANE_EXPLOSION_1);
+    COUNTERSPELL            = m_ai->initSpell(COUNTERSPELL_1);
+    SLOW                    = m_ai->initSpell(SLOW_1);
+    ARCANE_BARRAGE          = m_ai->initSpell(ARCANE_BARRAGE_1);
+    ARCANE_BLAST            = m_ai->initSpell(ARCANE_BLAST_1);
+    ARCANE_POWER            = m_ai->initSpell(ARCANE_POWER_1);
+    DAMPEN_MAGIC            = m_ai->initSpell(DAMPEN_MAGIC_1);
+    AMPLIFY_MAGIC           = m_ai->initSpell(AMPLIFY_MAGIC_1);
+    MAGE_ARMOR              = m_ai->initSpell(MAGE_ARMOR_1);
+    MIRROR_IMAGE            = m_ai->initSpell(MIRROR_IMAGE_1);
+    ARCANE_INTELLECT        = m_ai->initSpell(ARCANE_INTELLECT_1);
+    ARCANE_BRILLIANCE       = m_ai->initSpell(ARCANE_BRILLIANCE_1);
+    DALARAN_INTELLECT       = m_ai->initSpell(DALARAN_INTELLECT_1);
+    DALARAN_BRILLIANCE      = m_ai->initSpell(DALARAN_BRILLIANCE_1);
+    MANA_SHIELD             = m_ai->initSpell(MANA_SHIELD_1);
+    CONJURE_WATER           = m_ai->initSpell(CONJURE_WATER_1);
+    CONJURE_FOOD            = m_ai->initSpell(CONJURE_FOOD_1);
+    FIREBALL                = m_ai->initSpell(FIREBALL_1);
+    FIRE_BLAST              = m_ai->initSpell(FIRE_BLAST_1);
+    FLAMESTRIKE             = m_ai->initSpell(FLAMESTRIKE_1);
+    SCORCH                  = m_ai->initSpell(SCORCH_1);
+    PYROBLAST               = m_ai->initSpell(PYROBLAST_1);
+    BLAST_WAVE              = m_ai->initSpell(BLAST_WAVE_1);
+    COMBUSTION              = m_ai->initSpell(COMBUSTION_1);
+    DRAGONS_BREATH          = m_ai->initSpell(DRAGONS_BREATH_1);
+    LIVING_BOMB             = m_ai->initSpell(LIVING_BOMB_1);
+    FROSTFIRE_BOLT          = m_ai->initSpell(FROSTFIRE_BOLT_1);
+    FIRE_WARD               = m_ai->initSpell(FIRE_WARD_1);
+    MOLTEN_ARMOR            = m_ai->initSpell(MOLTEN_ARMOR_1);
+    ICY_VEINS               = m_ai->initSpell(ICY_VEINS_1);
+    DEEP_FREEZE             = m_ai->initSpell(DEEP_FREEZE_1);
+    FROSTBOLT               = m_ai->initSpell(FROSTBOLT_1);
+    FROST_NOVA              = m_ai->initSpell(FROST_NOVA_1);
+    BLIZZARD                = m_ai->initSpell(BLIZZARD_1);
+    CONE_OF_COLD            = m_ai->initSpell(CONE_OF_COLD_1);
+    ICE_BARRIER             = m_ai->initSpell(ICE_BARRIER_1);
+    SUMMON_WATER_ELEMENTAL  = m_ai->initSpell(SUMMON_WATER_ELEMENTAL_1);
+    FROST_WARD              = m_ai->initSpell(FROST_WARD_1);
+    ICE_LANCE               = m_ai->initSpell(ICE_LANCE_1);
+    FROST_ARMOR             = m_ai->initSpell(FROST_ARMOR_1);
+    ICE_ARMOR               = m_ai->initSpell(ICE_ARMOR_1);
+    ICE_BLOCK               = m_ai->initSpell(ICE_BLOCK_1);
+    COLD_SNAP               = m_ai->initSpell(COLD_SNAP_1);
 
-    #pragma region Choose Actions
-    // Choose actions accoring to talents (MAGE is always ranged dps)
-    m_role = BOT_ROLE_DPS_RANGED;
+    // RANGED COMBAT
+    SHOOT                   = m_ai->initSpell(SHOOT_2);
 
-    // if i am under attack and if i am not tank or offtank: change target if needed
-    if (isUnderAttack())
+    RECENTLY_BANDAGED       = 11196; // first aid check
+
+    // racial
+    ARCANE_TORRENT          = m_ai->initSpell(ARCANE_TORRENT_MANA_CLASSES); // blood elf
+    GIFT_OF_THE_NAARU       = m_ai->initSpell(GIFT_OF_THE_NAARU_MAGE); // draenei
+    ESCAPE_ARTIST           = m_ai->initSpell(ESCAPE_ARTIST_ALL); // gnome
+    EVERY_MAN_FOR_HIMSELF   = m_ai->initSpell(EVERY_MAN_FOR_HIMSELF_ALL); // human
+    BERSERKING              = m_ai->initSpell(BERSERKING_ALL); // troll
+    WILL_OF_THE_FORSAKEN    = m_ai->initSpell(WILL_OF_THE_FORSAKEN_ALL); // undead
+}
+
+PlayerbotMageAI::~PlayerbotMageAI() {}
+
+bool PlayerbotMageAI::DoFirstCombatManeuver(Unit *pTarget)
+{
+    return false;
+}
+
+bool PlayerbotMageAI::DoNextCombatManeuver(Unit *pTarget)
+{
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
+
+    Unit* pVictim = pTarget->getVictim();
+    float dist = m_bot->GetDistance(pTarget);
+    uint32 spec = m_bot->GetSpec();
+
+    switch (m_ai->GetScenarioType())
     {
-        // Keep hitting but reduce threat
-        //else if (m_bot->getRace() == (uint8) RACE_NIGHTELF && CastSpell(R_SHADOWMELD,m_bot)) { return; }
-            if (pVictim && pVictim->GetGUID() == m_bot->GetGUID() && pDist <= 2) {  } // My target is almost up to me, no need to search
-            else //Have to select nearest target
+        case PlayerbotAI::SCENARIO_DUEL:
+            if (FIREBALL > 0)
+                if (CastSpell(FIREBALL, pTarget))
+                    return true;
+
+            return false;
+        default:
+            break;
+    }
+
+    // ------- Non Duel combat ----------
+    if (m_ai->GetCombatStyle() != PlayerbotAI::COMBAT_RANGED && dist > ATTACK_DISTANCE)
+        m_ai->SetCombatStyle(PlayerbotAI::COMBAT_RANGED);
+    // if in melee range OR can't shoot OR have no ranged (wand) equipped
+    else if(m_ai->GetCombatStyle() != PlayerbotAI::COMBAT_MELEE && (dist <= ATTACK_DISTANCE || SHOOT == 0 || !m_bot->GetWeaponForAttack(RANGED_ATTACK, true)))
+        m_ai->SetCombatStyle(PlayerbotAI::COMBAT_MELEE);
+
+    //Used to determine if this bot is highest on threat
+    Unit *newTarget = m_ai->FindAttacker((PlayerbotAI::ATTACKERINFOTYPE) (PlayerbotAI::AIT_VICTIMSELF | PlayerbotAI::AIT_HIGHESTTHREAT), m_bot);
+    if (newTarget) // TODO: && party has a tank
+    {
+        // Insert instant threat reducing spell (if a mage has one)
+
+        // Have threat, can't quickly lower it. 3 options remain: Stop attacking, lowlevel damage (wand), keep on keeping on.
+        if (newTarget->GetHealthPct() > 25)
+        {
+            // If elite, do nothing and pray tank gets aggro off you
+            // TODO: Is there an IsElite function? If so, find it and insert.
+            //if (newTarget->IsElite())
+            //    return;
+
+            // Not an elite. You could insert FEAR here but in any PvE situation that's 90-95% likely
+            // to worsen the situation for the group. ... So please don't.
+            CastSpell(SHOOT, pTarget);
+            return true;
+        }
+    }
+
+    switch (spec)
+    {
+        case MAGE_SPEC_FROST:
+            if (ICY_VEINS > 0 && !m_bot->HasAura(ICY_VEINS, EFFECT_0) && m_ai->GetManaPercent() >= 3)
+                return CastSpell(ICY_VEINS, m_bot);
+            if (ICE_BLOCK > 0 && pVictim == m_bot && !m_bot->HasAura(ICE_BLOCK, EFFECT_0) && m_ai->GetHealthPercent() < 30)
+                return CastSpell(ICE_BLOCK, m_bot);
+            if (ICE_BARRIER > 0 && pVictim == m_bot && !m_bot->HasAura(ICE_BARRIER, EFFECT_0) && m_ai->GetHealthPercent() < 50 && m_ai->GetManaPercent() >= 30)
+                return CastSpell(ICE_BARRIER, m_bot);
+            if (DEEP_FREEZE > 0 && pTarget->HasAura(AURA_STATE_FROZEN, EFFECT_0) && !pTarget->HasAura(DEEP_FREEZE, EFFECT_0) && m_ai->GetManaPercent() >= 9)
+                return CastSpell(DEEP_FREEZE, pTarget);
+            if (BLIZZARD > 0 && m_ai->GetAttackerCount() >= 5 && m_ai->GetManaPercent() >= 89)
             {
-                Unit *curAtt = GetNearestAttackerOf(m_bot);
-                if (curAtt && curAtt->GetGUID() != pTarget->GetGUID())
+                if (CastSpell(BLIZZARD, pTarget))
                 {
-                    m_bot->SetSelection(curAtt->GetGUID());
-                    DoNextCombatManeuver(curAtt); //Restart new update to get variables fixed..
-                    return;
+                    m_ai->SetIgnoreUpdateTime(8);
+                    return true;
                 }
             }
-            //my target is attacking me
-    }
-    #pragma endregion
+            if (CONE_OF_COLD > 0 && dist <= ATTACK_DISTANCE && !pTarget->HasAura(CONE_OF_COLD, EFFECT_0) && m_ai->GetManaPercent() >= 35)
+                return CastSpell(CONE_OF_COLD, pTarget);
+            if (FROSTBOLT > 0 && !pTarget->HasAura(FROSTBOLT, EFFECT_0) && m_ai->GetManaPercent() >= 16)
+                return CastSpell(FROSTBOLT, pTarget);
+            if (FROST_WARD > 0 && !m_bot->HasAura(FROST_WARD, EFFECT_0) && m_ai->GetManaPercent() >= 19)
+                return CastSpell(FROST_WARD, m_bot);
+            if (FROST_NOVA > 0 && dist <= ATTACK_DISTANCE && !pTarget->HasAura(FROST_NOVA, EFFECT_0) && m_ai->GetManaPercent() >= 10)
+                return CastSpell(FROST_NOVA, pTarget);
+            if (ICE_LANCE > 0 && m_ai->GetManaPercent() >= 7)
+                return CastSpell(ICE_LANCE, pTarget);
+            if (SUMMON_WATER_ELEMENTAL > 0 && m_ai->GetManaPercent() >= 16)
+                return CastSpell(SUMMON_WATER_ELEMENTAL);
+            if (COLD_SNAP > 0)
+                return CastSpell(COLD_SNAP, m_bot);
 
-    TakePosition(pTarget);
-    // If there's a cast stop
-    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
+            if (FROSTBOLT > 0 && m_ai->GetManaPercent() >= 16)
+                return CastSpell(FROSTBOLT, pTarget);
+            break;
 
-    if (DoSupportRaid(m_bot,30,0,0,0,1,1)) { return; }
+        case MAGE_SPEC_FIRE:
+            if (FIRE_WARD > 0 && !m_bot->HasAura(FIRE_WARD, EFFECT_0) && m_ai->GetManaPercent() >= 3)
+                return CastSpell(FIRE_WARD, m_bot);
+            if (COMBUSTION > 0 && !m_bot->HasAura(COMBUSTION, EFFECT_0))
+                return CastSpell(COMBUSTION, m_bot);
+            if (FIREBALL > 0 && m_ai->GetManaPercent() >= 23)
+                return CastSpell(FIREBALL, pTarget);
+            if (FIRE_BLAST > 0 && m_ai->GetManaPercent() >= 25)
+                return CastSpell(FIRE_BLAST, pTarget);
+            if (FLAMESTRIKE > 0 && m_ai->GetManaPercent() >= 35)
+                return CastSpell(FLAMESTRIKE, pTarget);
+            if (SCORCH > 0 && m_ai->GetManaPercent() >= 10)
+                return CastSpell(SCORCH, pTarget);
+            if (PYROBLAST > 0 && !pTarget->HasAura(PYROBLAST, EFFECT_0) && m_ai->GetManaPercent() >= 27)
+                return CastSpell(PYROBLAST, pTarget);
+            if (BLAST_WAVE > 0 && m_ai->GetAttackerCount() >= 3 && dist <= ATTACK_DISTANCE && m_ai->GetManaPercent() >= 34)
+                return CastSpell(BLAST_WAVE, pTarget);
+            if (DRAGONS_BREATH > 0 && dist <= ATTACK_DISTANCE && m_ai->GetManaPercent() >= 37)
+                return CastSpell(DRAGONS_BREATH, pTarget);
+            if (LIVING_BOMB > 0 && !pTarget->HasAura(LIVING_BOMB, EFFECT_0) && m_ai->GetManaPercent() >= 27)
+                return CastSpell(LIVING_BOMB, pTarget);
+            if (FROSTFIRE_BOLT > 0 && !pTarget->HasAura(FROSTFIRE_BOLT, EFFECT_0) && m_ai->GetManaPercent() >= 14)
+                return CastSpell(FROSTFIRE_BOLT, pTarget);
 
-    if (m_tank->GetGUID() != m_bot->GetGUID() && pVictim && pVictim->GetGUID() == m_bot->GetGUID() )
-    {
-        //if (CastSpell(INVISIBILITY, m_bot)) { return; }
-        if (ai->GetHealthPercent(*pTarget) > 50 && CastSpell(POLYMORPH)) { return; }
-        //if (m_bot->getRace() == (uint8) RACE_NIGHTELF && isUnderAttack() && CastSpell(R_SHADOWMELD, m_bot)) { return; }
-    }
-    if (isUnderAttack() && pDist > 5 && CastSpell(FROST_NOVA, pTarget)) { return; }
-    if (DEEP_FREEZE && pTarget->isFrozen() && CastSpell(DEEP_FREEZE,pTarget)) { return; }
-    if (isUnderAttack() && CastSpell(DRAGONS_BREATH, pTarget)) { return; }
-    if ((isUnderAttack() || ai->GetHealthPercent() < 75 && !HasAuraName(m_bot, MANA_SHIELD))  && ai->GetManaPercent() > 40 && CastSpell(MANA_SHIELD,m_bot)) { return; }
-    if (m_bot->getRace() == (uint8) RACE_DWARF && ai->GetHealthPercent() < 75 && CastSpell(R_STONEFORM,m_bot)) { } //no gcd
-    if (m_bot->getRace() == (uint8) RACE_DRAENEI && ai->GetHealthPercent() < 55 && CastSpell(R_GIFT_OF_NAARU,m_bot)) { return; } //no Gcd, but has cast
-    if (m_bot->getRace() == (uint8) RACE_TAUREN && pDist < 8 && CastSpell(R_WAR_STOMP, pTarget)) { return; } //no gcd but is cast
-    if ((ai->GetHealthPercent() < 65 || ai->GetManaPercent() < 5) && CastSpell(ICE_BLOCK,m_bot)) { return; }
-    if (isUnderAttack() && CastSpell(ICE_BARRIER, pTarget)) { return; }
-    if (ai->GetManaPercent() < 30 && CastSpell (EVOCATION, m_bot)) { return; }
+            if (FIREBALL > 0 && m_ai->GetManaPercent() >= 23)
+                return CastSpell(FIREBALL, pTarget);
+            break;
 
-
-    //Break spells
-    if (m_bot->getRace() == (uint8) RACE_BLOODELF && pDist < 8 && (pTarget->IsNonMeleeSpellCasted(true) || ai->GetManaPercent() < 40) && CastSpell(R_ARCANE_TORRENT, pTarget)) { } //no gcd
-    else if (pThreat < threatThreshold && pTarget->IsNonMeleeSpellCasted(true) && CastSpell(COUNTER_SPELL, pTarget)) { return; } //High threat
-	if (!m_bot->HasAura(MOLTEN_ARMOR) && CastSpell(MOLTEN_ARMOR,m_bot)) { return; }
-
-    if (ai->GetHealthPercent(*pTarget) > 96) { return; } // dont dps too early
-
-    //Catch
-    if (pTarget->HasUnitMovementFlag(UNIT_FLAG_FLEEING))
-    {
-        if (CastSpell(FROST_NOVA,pTarget)) return;
-        if (CastSpell(FROSTBOLT,pTarget)) return;
-    }
-
-    // If at threat limit, try to reduce threat
-    if (pThreat > threatThreshold && m_tank->GetGUID() != m_bot->GetGUID() && !isUnderAttack())
-    {
-        if (m_tank->getVictim() && m_tank->getVictim()->GetGUID() != pTarget->GetGUID()) // I am attacking wrong target!!
-        {
-            m_bot->SetSelection(m_tank->getVictim()->GetGUID());
-            return;
-        }
-        else
-        {
-            if (CastSpell(INVISIBILITY,m_bot)) { return; } //Lets see if we can manage
-            else if (m_bot->FindCurrentSpellBySpellId(SHOOT)) { m_bot->InterruptNonMeleeSpells( true, SHOOT ); return; } //Disable wand
-            else { return; } //use no spells and wait threat to be reduced
-        }
-    }
-
-
-    // buff up
-    if (CastSpell(ICY_VEINS,m_bot)) {} //nogcd
-    if (m_bot->getRace() == (uint8) RACE_TROLL && CastSpell(R_BERSERKING,m_bot)) {} //no GCD
-    if (m_bot->getRace() == (uint8) RACE_ORC && CastSpell(R_BLOOD_FURY,m_bot)) {} //no GCD
-    if (CastSpell(POM,m_bot)) {} //nogcd
-
-	if (TALENT_ARCANE)
-	{
-		if (CastSpell(ARCANE_POWER,m_bot)) {} //nogcd
-		if (CastSpell(MIRROR_IMAGE,m_bot)) { return; }
-		//AOE
-		if (isUnderAttack(m_tank,5))
-		{
-			if (CastSpell(BLIZZARD,pTarget)) { return; }
-		}
-		//DPS
-		if (ARCANE_BLAST)
-        {
-            Aura *abaura = m_bot->GetAura(P_ARCANE_BLAST);
-            if (abaura && abaura->GetStackAmount() >= 3)
-			{
-				if (m_bot->HasAura(P_MISSILE_BARRAGE) && CastSpell(ARCANE_MISSILES,pTarget)) { return; }
-				else if (CastSpell(ARCANE_BARRAGE,pTarget)) { return; }
-			}
-        }
-        if (CastSpell(ARCANE_BARRAGE,pTarget) ) { return; }
-
-	}
-	if (TALENT_FIRE)
-	{
-		if (CastSpell(COMBUSTION,m_bot)) { } //nogcd
-		if (CastSpell(MIRROR_IMAGE,m_bot)) { return; }
-
-		//AOE
-		if (isUnderAttack(m_tank,5))
-		{
-			if (CastSpell(FLAMESTRIKE,pTarget)) { return; }
-			if (CastSpell(BLAST_WAVE,pTarget)) { return; }
-			if (CastSpell(LIVING_BOMB,pTarget)) { return; }
-			if (CastSpell(DRAGONS_BREATH,pTarget)) { return; }
-		}
-
-		//DPS
-		if (m_bot->HasAura(P_HOT_STREAK) && CastSpell(PYROBLAST,pTarget)) { return; }
-		if (!pTarget->HasAura(LIVING_BOMB,m_bot->GetGUID()) && CastSpell(LIVING_BOMB,pTarget)) { return; }
-		//if (!pTarget->HasAura(IMP_SCORCH) && CastSpell(SCORCH,pTarget)) { return; }
-		if (CastSpell(FIREBALL,pTarget)) { return; }
-	}
-	if (TALENT_FROST)
-	{
-		if (CastSpell(MIRROR_IMAGE,m_bot)) { return; }
-        if (CastSpell(WATER_ELEMENTAL,m_bot)) { return; }
-
-        uint64 pet_guid = m_bot->GetPetGUID();
-        if (pet_guid>0){
-            Pet* pet = ObjectAccessor::GetPet(*m_bot, pet_guid);
-            Unit *unit = ObjectAccessor::GetUnit(*m_bot, pet_guid);
-            if (unit!=NULL){
-				if (!unit->isInCombat()) {
-                    m_bot->GetSession()->HandlePetActionHelper(unit, pet_guid, COMMAND_ATTACK, ACT_COMMAND, pTarget->GetGUID());
-				}
+        case MAGE_SPEC_ARCANE:
+            if (ARCANE_POWER > 0 && m_ai->GetManaPercent() >= 37)
+                return CastSpell(ARCANE_POWER, pTarget);
+            if (ARCANE_MISSILES > 0 && m_ai->GetManaPercent() >= 37)
+            {
+                if (CastSpell(ARCANE_MISSILES, pTarget))
+                {
+                    m_ai->SetIgnoreUpdateTime(3);
+                    return true;
+                }
             }
-        }
-
-        //if (CastSpell(33395, pTarget)) // pet freeze spell
-        //    sLog.outError ("successfully casted freeze");
-
-        //AOE
-        if (isUnderAttack(m_tank,5))
-        {
-            if (CastSpell(BLIZZARD,pTarget)) { return; }
-        }
-
-        //DPS
-        if (m_bot->HasAura(P_FINGERS_OF_FROST) && CastSpell(DEEP_FREEZE,pTarget)) { return; }
-        if (m_bot->HasAura(P_BRAIN_FREEZE) && CastSpell(FROSTFIRE_BOLT,pTarget)) { return; }
-        if (CastSpell(FROSTBOLT,pTarget,true,true)) { return; }
-
+            if (ARCANE_EXPLOSION > 0 && m_ai->GetAttackerCount() >= 3 && dist <= ATTACK_DISTANCE && m_ai->GetManaPercent() >= 27)
+                return CastSpell(ARCANE_EXPLOSION, pTarget);
+            if (COUNTERSPELL > 0 && pTarget->IsNonMeleeSpellCasted(true) && m_ai->GetManaPercent() >= 9)
+                return CastSpell(COUNTERSPELL, pTarget);
+            if (SLOW > 0 && !pTarget->HasAura(SLOW, EFFECT_0) && m_ai->GetManaPercent() >= 12)
+                return CastSpell(SLOW, pTarget);
+            if (ARCANE_BARRAGE > 0 && m_ai->GetManaPercent() >= 27)
+                return CastSpell(ARCANE_BARRAGE, pTarget);
+            if (ARCANE_BLAST > 0 && m_ai->GetManaPercent() >= 8)
+                return CastSpell(ARCANE_BLAST, pTarget);
+            if (MIRROR_IMAGE > 0 && m_ai->GetManaPercent() >= 10)
+                return CastSpell(MIRROR_IMAGE);
+            if (MANA_SHIELD > 0 && m_ai->GetHealthPercent() < 70 && pVictim == m_bot && !m_bot->HasAura(MANA_SHIELD, EFFECT_0) && m_ai->GetManaPercent() >= 8)
+                return CastSpell(MANA_SHIELD, m_bot);
+            if (FIREBALL > 0 && m_ai->GetManaPercent() >= 23)
+                return CastSpell(FIREBALL, pTarget);
+            break;
+        default:
+            break;
     }
 
-    // Defaults especialy for lower levels
-    if (m_bot->HasAura(P_BRAIN_FREEZE) && CastSpell(FIREBALL,pTarget,1,1)) { return; }
-        if (m_bot->HasAura(P_FIRESTARTER) && CastSpell(FLAMESTRIKE,pTarget,1,1)) { return; }
-        if (m_bot->HasAura(P_HOT_STREAK) && CastSpell(PYROBLAST,pTarget,1,1)) { return; }
-        if (m_bot->HasAura(POM) && (CastSpell(PYROBLAST,pTarget,1,1) || CastSpell(FIREBALL,pTarget,1,1) || CastSpell(FROSTBOLT,pTarget,1,1))) { return; }
-        if (pTarget->isFrozen() && CastSpell(ICE_LANCE,pTarget)) { return; }
-        if (m_bot->isMoving() && (CastSpell(FIRE_BLAST,pTarget,1,1) || CastSpell(ARCANE_BARRAGE,pTarget) || CastSpell(ICE_LANCE,pTarget))) { return; }
-        if (CastSpell(FIREBALL,pTarget)) { return; }
-        if (CastSpell(FROSTBOLT,pTarget)) { return; }
-        if (CastSpell(ARCANE_MISSILES,pTarget)) { return; }
+    // No spec due to low level OR no spell found yet
+    if (FROSTBOLT > 0 && !pTarget->HasAura(FROSTBOLT, EFFECT_0) && m_ai->GetManaPercent() >= 16)
+        return CastSpell(FROSTBOLT, pTarget);
+    if (FIREBALL > 0 && m_ai->GetManaPercent() >= 23) // Very low levels
+        return CastSpell(FIREBALL, pTarget);
 
-    // drink potion
-    if(ai->GetManaPercent() < 5 )
+    // definitely not OOM yet
+    if (m_ai->GetManaPercent() >= 25)
     {
-        Item *pItem = ai->FindPotion();
-        if(pItem != NULL)
-        {
-            if (pItem->GetSpell() && m_bot->HasSpellCooldown(pItem->GetSpell()) ) { return; } //pot is in cooldown
-            ai->UseItem(*pItem);
-        }
+        m_ai->TellMaster("Couldn't find an appropriate spell.");
+        return false;
     }
 
-    // if we get down here, it means we are out of mana, so use wand
-    CastSpell(SHOOT, pTarget);
+    return false;
+} // end DoNextCombatManeuver
 
-} //end DoNextCombatManeuver
 void PlayerbotMageAI::DoNonCombatActions()
 {
-    PlayerbotAI *ai = GetAI();
-    Player *m_bot = GetPlayerBot();
-    if (!m_bot || !ai || m_bot->isDead()) { return; }
+    Player* master = GetMaster();
 
-    // make sure pet stays by your side
-    uint64 pet_guid = m_bot->GetPetGUID();
-    if (pet_guid>0){
-        Pet* pet = ObjectAccessor::GetPet(*m_bot, pet_guid);
-        Unit *unit = ObjectAccessor::GetUnit(*m_bot, pet_guid);
-        if (unit!=NULL){
-            m_bot->GetSession()->HandlePetActionHelper(unit, pet_guid, COMMAND_FOLLOW, ACT_COMMAND, 0);
-            m_bot->GetSession()->HandlePetActionHelper(unit, pet_guid, REACT_DEFENSIVE, ACT_REACTION, 0);
+    if (!m_bot || !master)
+        return;
+
+    // Buff armor
+    if (MOLTEN_ARMOR)
+    {
+        if (m_ai->SelfBuff(MOLTEN_ARMOR))
+            return;
+    }
+    else if (MAGE_ARMOR)
+    {
+        if (m_ai->SelfBuff(MAGE_ARMOR))
+            return;
+    }
+    else if (ICE_ARMOR)
+    {
+        if (m_ai->SelfBuff(ICE_ARMOR))
+            return;
+    }
+    else if (FROST_ARMOR)
+        if (m_ai->SelfBuff(FROST_ARMOR))
+            return;
+
+    // buff master's group
+    if (master->GetGroup())
+    {
+        // Buff master with group buff...
+        if (!master->IsInDuel(master))
+            if (ARCANE_BRILLIANCE && m_ai->HasSpellReagents(ARCANE_BRILLIANCE))
+                if (m_ai->Buff(ARCANE_BRILLIANCE, master))
+                    return;
+
+        // ...and check group for new members joined or resurrected, or just buff everyone if no group buff available
+        Group::MemberSlotList const& groupSlot = GetMaster()->GetGroup()->GetMemberSlots();
+        for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+        {
+            Player *tPlayer = ObjectAccessor::FindPlayer(itr->guid);
+            if (!tPlayer || !tPlayer->isAlive() || tPlayer == m_bot)
+                continue;
+
+            if (tPlayer->IsInDuelWith(master))
+                continue;
+
+            // buff
+            if (BuffPlayer(tPlayer))
+                return;
+        }
+
+    }
+    // There is no group, buff master
+    else if (master->isAlive() && !master->IsInDuel(master))
+        if (BuffPlayer(master))
+            return;
+
+    // Buff self finally
+    if (BuffPlayer(m_bot))
+        return;
+
+    // conjure food & water
+    if (m_bot->getStandState() != UNIT_STAND_STATE_STAND)
+        m_bot->SetStandState(UNIT_STAND_STATE_STAND);
+
+    Item* pItem = m_ai->FindDrink();
+    Item* fItem = m_ai->FindBandage();
+
+    // TODO: The beauty of a mage is not only its ability to supply itself with water, but to share its water
+    // So, conjure at *least* 1.25 stacks, ready to trade a stack and still have some left for self
+    if (pItem == NULL && CONJURE_WATER && m_ai->GetBaseManaPercent() >= 48)
+    {
+        if (m_ai->CastSpell(CONJURE_WATER, *m_bot))
+        {
+            m_ai->TellMaster("I'm conjuring some water.");
+            m_ai->SetIgnoreUpdateTime(3);
+            return;
+        }
+    }
+    if (pItem != NULL && m_ai->GetManaPercent() < 30)
+    {
+        m_ai->TellMaster("I could use a drink.");
+        m_ai->UseItem(pItem);
+        return;
+    }
+
+    pItem = m_ai->FindFood();
+
+    if (pItem == NULL && CONJURE_FOOD && m_ai->GetBaseManaPercent() >= 48)
+    {
+        if (m_ai->CastSpell(CONJURE_FOOD, *m_bot))
+        {
+            m_ai->TellMaster("I'm conjuring some food.");
+            m_ai->SetIgnoreUpdateTime(3);
+            return;
         }
     }
 
+    // hp check
+    if (m_bot->getStandState() != UNIT_STAND_STATE_STAND)
+        m_bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-    //If Casting or Eating/Drinking return
-    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
-    if (m_bot->getStandState() == UNIT_STAND_STATE_SIT) { return; }
+    pItem = m_ai->FindFood();
 
-    //buff and heal raid
-    if (DoSupportRaid(m_bot,30,0,0,0,1,1)) { return; }
-
-    //Own Buffs
-    if (MOLTEN_ARMOR) { if ( CastSpell(MOLTEN_ARMOR,m_bot)) { return; } }
-    else if (CastSpell(MAGE_ARMOR,m_bot)) { return; }
-    if (CastSpell(COMBUSTION,m_bot)) { } //nogcd
-    if (!HasAuraName(m_bot, MANA_SHIELD)) CastSpell (MANA_SHIELD);
-
-    //conjure food & water
-    Item *pItem = ai->FindDrink();
-	if(pItem == NULL && ai->GetManaPercent() >= 48)
+    if (pItem != NULL && m_ai->GetHealthPercent() < 30)
     {
-        if (CastSpell(CONJURE_REFRESHMENT, m_bot)) { return; }
-        if (CastSpell(CONJURE_WATER, m_bot)) { return; }
+        m_ai->TellMaster("I could use some food.");
+        m_ai->UseItem(pItem);
         return;
     }
-    pItem = ai->FindFood();
-    if(pItem == NULL && ai->GetManaPercent() >= 48)
+    else if (pItem == NULL && fItem != NULL && !m_bot->HasAura(RECENTLY_BANDAGED, EFFECT_0) && m_ai->GetHealthPercent() < 70)
     {
-        if (CastSpell(CONJURE_REFRESHMENT, m_bot)) { return; }
-        if (CastSpell(CONJURE_FOOD, m_bot)) { return; }
+        m_ai->TellMaster("I could use first aid.");
+        m_ai->UseItem(fItem);
         return;
     }
-    //Conjure mana gem??
+} // end DoNonCombatActions
 
-    //mana/hp check
-    //Don't bother with eating, if low on hp, just let it heal themself
-    if (m_bot->getRace() == (uint8) RACE_UNDEAD_PLAYER && ai->GetHealthPercent() < 75 && CastSpell(R_CANNIBALIZE,m_bot)) { return; }
-    if (ai->GetManaPercent() < 50 && CastSpell (EVOCATION, m_bot)) { return; }
-    if (ai->GetManaPercent() < 50 || ai->GetHealthPercent() < 50) { ai->Feast(); }
-} //end DoNonCombatActions
-
-
-bool PlayerbotMageAI::BuffPlayer(Unit *target)
+bool PlayerbotMageAI::BuffPlayer(Player* target)
 {
-    if (!target || target->isDead()) return false;
+    Pet * pet = target->GetPet();
 
-    if (target->getClass() == CLASS_WARRIOR || target->getClass() == CLASS_DEATH_KNIGHT || target->getClass() == CLASS_ROGUE) return false;
+    if ((pet && !pet->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE)) && pet->getPowerType() == POWER_MANA && m_ai->Buff(ARCANE_INTELLECT, pet))
+        return true;
 
-    if (!HasAuraName(target, ARCANE_INTELLECT) && !HasAuraName(target, ARCANE_BRILLIANCE) && !HasAuraName(target, DALARAN_INTELLECT) && !HasAuraName(target, DALARAN_BRILLIANCE))
-    {
-        if (CastSpell(ARCANE_BRILLIANCE, target)) return true;
-        else if (CastSpell (ARCANE_INTELLECT, target)) return true;
-    }
-    return false;
-}
-bool PlayerbotMageAI::CureTarget(Unit *target)
-{
-	//Cures the target
-    Player *m_bot = GetPlayerBot();
-
-    if(!target || target->isDead()) { return false; }
-    if (castDispel(DISPEL_CURSE, target)) return true;
-    return false;
+    if (ARCANE_INTELLECT)
+        return m_ai->Buff(ARCANE_INTELLECT, target);
+    else
+        return false;
 }

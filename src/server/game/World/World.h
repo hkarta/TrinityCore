@@ -165,8 +165,17 @@ enum WorldBoolConfigs
     CONFIG_QUEST_IGNORE_AUTO_ACCEPT,
     CONFIG_QUEST_IGNORE_AUTO_COMPLETE,
     CONFIG_WARDEN_ENABLED,
-    CONFIG_ENABLE_MMAPS,
-    BOOL_CONFIG_VALUE_COUNT
+    CONFIG_ENABLE_MMAPS,   
+	PlayerbotAI_DisableBots,
+	PlayerbotAI_DebugWhisper,
+	PlayerbotAI_SellGarbage,
+	PlayerbotAI_Collect_Combat,
+	PlayerbotAI_Collect_Quest,
+	PlayerbotAI_Collect_Profession,
+	PlayerbotAI_Collect_Loot,
+	PlayerbotAI_Collect_Skin,
+	PlayerbotAI_Collect_Objects,
+	BOOL_CONFIG_VALUE_COUNT
 };
 
 enum WorldFloatConfigs
@@ -188,6 +197,8 @@ enum WorldFloatConfigs
 	VAS_Min_HP_Mod,
 	VAS_VAS_Group_Modifer,
 	VAS_VAS_Damage_Modifer,
+	PlayerbotAI_FollowDistanceMin,
+	PlayerbotAI_FollowDistanceMax,
     FLOAT_CONFIG_VALUE_COUNT
 };
 
@@ -330,6 +341,12 @@ enum WorldIntConfigs
 	VAS_DebugByID,
 	VAS_AutoInstance,
 	VAS_PlayerChangeNotify,
+	PlayerbotAI_MaxNumBots,
+	PlayerbotAI_RestrictBotLevel,
+	PlayerbotAI_BotguyCost,
+	PlayerbotAI_Collect_DistanceMax,
+	PlayerbotAI_Collect_Distance,
+	PlayerbotAI_SellAll_LevelDiff,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -628,6 +645,7 @@ class World
 		std::string GetVAS5() const { return VAS_AutoBalance_5_Name; }
 		std::string GetVAS2() const { return VAS_AutoBalance_2_Name; }
 		std::string GetVASColor() const { return VAS_color; }
+		std::string GetPlayerbotAI_BotguyQuests() const { return PlayerbotAI_BotguyQuests; }
 
         /// When server started?
         time_t const& GetStartTime() const { return m_startTime; }
@@ -799,6 +817,7 @@ class World
 		std::string VAS_AutoBalance_5_Name;
 		std::string VAS_AutoBalance_2_Name;
 		std::string VAS_color;
+		std::string PlayerbotAI_BotguyQuests;
 
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;

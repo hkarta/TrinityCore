@@ -175,8 +175,7 @@ class ChatHandler
         bool HandleBindSightCommand(const char* args);
         bool HandleUnbindSightCommand(const char* args);
 
-        bool HandlePlayerbotCommand(const char *args);
-        bool HandlePlayerbotMainTankCommand(const char *args);
+        bool HandlePlayerbotCommand(const char* args);
 
         bool HandleGuildCreateCommand(const char* args);
         bool HandleGuildInviteCommand(const char* args);

@@ -413,8 +413,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "unbindsight",    SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleUnbindSightCommand>,         "", NULL },
         { "playall",        SEC_GAMEMASTER,  false, OldHandler<&ChatHandler::HandlePlayAllCommand>,             "", NULL },
         // Playerbot mod
-        { "bot",            SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandlePlayerbotCommand>,           "", NULL },
-        { "maintank",       SEC_PLAYER,  false, OldHandler<&ChatHandler::HandlePlayerbotMainTankCommand>,          "", NULL },
+        { "bot",            SEC_PLAYER,         false, OldHandler<&ChatHandler::HandlePlayerbotCommand>,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

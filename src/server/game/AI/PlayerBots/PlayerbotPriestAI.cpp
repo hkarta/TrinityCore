@@ -1,400 +1,507 @@
 /*
-Name : PlayerbotPriest.cpp
-Complete: maybe around 55%
-
-Limitations:    - Talent build decision is made by key talent spells, which makes them viable only after level 50-ish.. Behaviour does not change though..
-                - Holy And Disc builds do not cast any offensive spells requiring cast time..(To compensate for the fact that Healing decision is not that intelligent)
-                - Priest breaks her own CCs.. Need a check for bots to not attack CC ed mobs..
-                - Wand usage is not very smooth..
-
-
-Authors : SwaLLoweD
-Version : 0.40
+* Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+* Copyright (C) 2012 Playerbot Team
+* Copyright (C) 2012 MangosR2
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 #include "PlayerbotPriestAI.h"
+#include "SpellAuras.h"
+#include "GroupMgr.h"
+#include "Group.h"
 
 class PlayerbotAI;
-PlayerbotPriestAI::PlayerbotPriestAI(Player *const master, Player *const bot, PlayerbotAI *const ai): PlayerbotClassAI(master, bot, ai)
+
+PlayerbotPriestAI::PlayerbotPriestAI(Player* const master, Player* const bot, PlayerbotAI* const ai) : PlayerbotClassAI(master, bot, ai)
 {
-    foodDrinkSpamTimer = 0;
-    LoadSpells();
-}
-PlayerbotPriestAI::~PlayerbotPriestAI(){}
+    RENEW                         = m_ai->initSpell(RENEW_1);
+    LESSER_HEAL                   = m_ai->initSpell(LESSER_HEAL_1);
+    FLASH_HEAL                    = m_ai->initSpell(FLASH_HEAL_1);
+    (FLASH_HEAL > 0) ? FLASH_HEAL : FLASH_HEAL = LESSER_HEAL;
+    HEAL                          = m_ai->initSpell(HEAL_1);
+    (HEAL > 0) ? HEAL : HEAL = FLASH_HEAL;
+    GREATER_HEAL                  = m_ai->initSpell(GREATER_HEAL_1);
+    (GREATER_HEAL > 0) ? GREATER_HEAL : GREATER_HEAL = HEAL;
+    RESURRECTION                  = m_ai->initSpell(RESURRECTION_1);
+    SMITE                         = m_ai->initSpell(SMITE_1);
+    MANA_BURN                     = m_ai->initSpell(MANA_BURN_1);
+    HOLY_NOVA                     = m_ai->initSpell(HOLY_NOVA_1);
+    HOLY_FIRE                     = m_ai->initSpell(HOLY_FIRE_1);
+    DESPERATE_PRAYER              = m_ai->initSpell(DESPERATE_PRAYER_1);
+    PRAYER_OF_HEALING             = m_ai->initSpell(PRAYER_OF_HEALING_1);
+    CIRCLE_OF_HEALING             = m_ai->initSpell(CIRCLE_OF_HEALING_1);
+    BINDING_HEAL                  = m_ai->initSpell(BINDING_HEAL_1);
+    PRAYER_OF_MENDING             = m_ai->initSpell(PRAYER_OF_MENDING_1);
+    CURE_DISEASE                  = m_ai->initSpell(CURE_DISEASE_1);
 
-void PlayerbotPriestAI::LoadSpells() {
-    PlayerbotAI *ai = GetAI();
-    if (!ai) return;
-    #pragma region SpellId Fill
-    //heals
-    RENEW = ai->getSpellIdExact("Renew");
-    FLASH_HEAL = ai->getSpellIdExact("Flash Heal");
-    if (!FLASH_HEAL) FLASH_HEAL = ai->getSpellIdExact("Lesser Heal");
-    HEAL = ai->getSpellIdExact("Greater Heal");
-    if (!HEAL) HEAL = ai->getSpellIdExact("Heal");
-    if (!HEAL) HEAL = FLASH_HEAL;
-    BINDING_HEAL = ai->getSpellIdExact("Binding Heal");
-    PO_MENDING = ai->getSpellIdExact("Prayer of Mending");
-    DESPERATE_PRAYER = ai->getSpellIdExact("Desperate Prayer");
-    PO_HEALING = ai->getSpellIdExact("Prayer of Healing");
-    CIRCLE_OF_HEALING = ai->getSpellIdExact("Circle of Healing");
-    DIVINE_HYMN = ai->getSpellIdExact("Divine Hymn");
-    RESURRECTION = ai->getSpellIdExact("Resurrection");
-    HYMN_OF_HOPE = ai->getSpellIdExact("Hymn of Hope");
-    CURE_DISEASE = ai->getSpellIdExact("Abolish Disease");
-    if (!CURE_DISEASE) CURE_DISEASE = ai->getSpellIdExact("Abolish Disease");
-    DISPEL_MAGIC = ai->getSpellIdExact("Dispel Magic");
-    MASS_DISPEL = ai->getSpellIdExact("Mass Dispel");
+    // SHADOW
+    FADE                          = m_ai->initSpell(FADE_1);
+    SHADOW_WORD_PAIN              = m_ai->initSpell(SHADOW_WORD_PAIN_1);
+    MIND_BLAST                    = m_ai->initSpell(MIND_BLAST_1);
+    SCREAM                        = m_ai->initSpell(PSYCHIC_SCREAM_1);
+    MIND_FLAY                     = m_ai->initSpell(MIND_FLAY_1);
+    DEVOURING_PLAGUE              = m_ai->initSpell(DEVOURING_PLAGUE_1);
+    SHADOW_PROTECTION             = m_ai->initSpell(SHADOW_PROTECTION_1);
+    VAMPIRIC_TOUCH                = m_ai->initSpell(VAMPIRIC_TOUCH_1);
+    PRAYER_OF_SHADOW_PROTECTION   = m_ai->initSpell(PRAYER_OF_SHADOW_PROTECTION_1);
+    SHADOWFIEND                   = m_ai->initSpell(SHADOWFIEND_1);
+    MIND_SEAR                     = m_ai->initSpell(MIND_SEAR_1);
+    SHADOWFORM                    = m_ai->initSpell(SHADOWFORM_1);
+    VAMPIRIC_EMBRACE              = m_ai->initSpell(VAMPIRIC_EMBRACE_1);
 
-    //Holy Offensive
-    SMITE = ai->getSpellIdExact("Smite");
-    HOLY_FIRE = ai->getSpellIdExact("Holy Fire");
-    PENANCE = ai->getSpellIdExact("Penance");
-    HOLY_NOVA = ai->getSpellIdExact("Holy Nova");
+    // RANGED COMBAT
+    SHOOT                         = m_ai->initSpell(SHOOT_1);
 
-    //Shadow Offensive
-    MIND_BLAST = ai->getSpellIdExact("Mind Blast");
-    SW_PAIN = ai->getSpellIdExact("Shadow Word: Pain");
-    DEVOURING_PLAGUE = ai->getSpellIdExact("Devouring Plague");
-    MIND_FLAY = ai->getSpellIdExact("Mind Flay");
-    VAMPIRIC_EMBRACE = ai->getSpellIdExact("Vampiric Embrace");
-    VAMPIRIC_TOUCH = ai->getSpellIdExact("Vampiric Touch");
-    SW_DEATH = ai->getSpellIdExact("Shadow Word: Death");
-    MIND_SEAR = ai->getSpellIdExact("Mind Sear");
-    MANA_BURN = ai->getSpellIdExact("Mana Burn");
-    SHADOWFIEND = ai->getSpellIdExact("Shadowfiend");
+    // DISCIPLINE
+    PENANCE                       = m_ai->initSpell(PENANCE_1);
+    INNER_FIRE                    = m_ai->initSpell(INNER_FIRE_1);
+    POWER_WORD_SHIELD             = m_ai->initSpell(POWER_WORD_SHIELD_1);
+    POWER_WORD_FORTITUDE          = m_ai->initSpell(POWER_WORD_FORTITUDE_1);
+    PRAYER_OF_FORTITUDE           = m_ai->initSpell(PRAYER_OF_FORTITUDE_1);
+    FEAR_WARD                     = m_ai->initSpell(FEAR_WARD_1);
+    DIVINE_SPIRIT                 = m_ai->initSpell(DIVINE_SPIRIT_1);
+    PRAYER_OF_SPIRIT              = m_ai->initSpell(PRAYER_OF_SPIRIT_1);
+    MASS_DISPEL                   = m_ai->initSpell(MASS_DISPEL_1);
+    POWER_INFUSION                = m_ai->initSpell(POWER_INFUSION_1);
+    INNER_FOCUS                   = m_ai->initSpell(INNER_FOCUS_1);
 
-    //CC - Breaker
-    PSYCHIC_SCREAM = ai->getSpellIdExact("Psychic Scream");
-    PSYCHIC_HORROR = ai->getSpellIdExact("Psychic Horror");
-    MIND_SOOTHE = ai->getSpellIdExact("Mind Soothe");
-    SHACKLE_UNDEAD = ai->getSpellIdExact("Shackle Undead");
-    SILENCE = ai->getSpellIdExact("Silence");
-    MIND_CONTROL = ai->getSpellIdExact("Mind Control");
+    RECENTLY_BANDAGED  = 11196; // first aid check
 
-    //buffs
-    PW_SHIELD = ai->getSpellIdExact("Power Word: Shield");
-    INNER_FIRE = ai->getSpellIdExact("Inner Fire");
-    GUARDIAN_SPIRIT = ai->getSpellIdExact("Guardian Spirit");
-    FADE = ai->getSpellIdExact("Fade");
-    INNER_FOCUS = ai->getSpellIdExact("Inner Focus");
-    POWER_INFUSION = ai->getSpellIdExact("Power Infusion");
-    PAIN_SUPPRESSION = ai->getSpellIdExact("Pain Suppression");
-    SHADOWFORM = ai->getSpellIdExact("Shadowform");
-    DISPERSION = ai->getSpellIdExact("Dispersion");
-    LIGHTWELL = ai->getSpellIdExact("Lightwell");
-
-    PW_FORTITUDE = ai->getSpellIdExact("Power Word: Fortitude");
-    DIVINE_SPIRIT = ai->getSpellIdExact("Divine Spirit");
-    SHADOW_PROTECTION = ai->getSpellIdExact("Shadow Protection");
-    PO_FORTITUDE = ai->getSpellIdExact("Prayer of Fortitude");
-    PO_SPIRIT = ai->getSpellIdExact("Prayer of Spirit");
-    PO_SHADOW_PROTECTION = ai->getSpellIdExact("Prayer of Shadow Protection");
-    FEAR_WARD = ai->getSpellIdExact("Fear Ward");
-
-    SHOOT = ai->getSpellIdExact("Shoot");
-
-    TALENT_DISC = PAIN_SUPPRESSION;
-    TALENT_HOLY = CIRCLE_OF_HEALING;
-    TALENT_SHADOW = SHADOWFORM;
-
-    uint8 talentCounter = 0;
-    if (TALENT_DISC) talentCounter++;
-    if (TALENT_HOLY) talentCounter++;
-    if (TALENT_SHADOW) talentCounter++;
-    if (talentCounter > 1) { TALENT_DISC = 0; TALENT_HOLY = 0; TALENT_SHADOW = 0; } //Unreliable Talent detection.
-    #pragma endregion
+    // racial
+    ARCANE_TORRENT                = m_ai->initSpell(ARCANE_TORRENT_MANA_CLASSES);
+    GIFT_OF_THE_NAARU             = m_ai->initSpell(GIFT_OF_THE_NAARU_PRIEST); // draenei
+    STONEFORM                     = m_ai->initSpell(STONEFORM_ALL); // dwarf
+    EVERY_MAN_FOR_HIMSELF         = m_ai->initSpell(EVERY_MAN_FOR_HIMSELF_ALL); // human
+    SHADOWMELD                    = m_ai->initSpell(SHADOWMELD_ALL);
+    BERSERKING                    = m_ai->initSpell(BERSERKING_ALL); // troll
+    WILL_OF_THE_FORSAKEN          = m_ai->initSpell(WILL_OF_THE_FORSAKEN_ALL); // undead
 }
 
-void PlayerbotPriestAI::DoNextCombatManeuver(Unit *pTarget)
+PlayerbotPriestAI::~PlayerbotPriestAI() {}
+
+bool PlayerbotPriestAI::DoFirstCombatManeuver(Unit *pTarget)
 {
-    if (!pTarget || pTarget->isDead()) return;
-    PlayerbotAI *ai = GetAI();
-    if (!ai) return;
-    Player *m_bot = GetPlayerBot();
-    if (!m_bot || m_bot->isDead()) return;
-    Unit *pVictim = pTarget->getVictim();
-    Unit *m_tank = FindMainTankInRaid(GetMaster());
-    if (!m_tank && m_bot->GetGroup() && GetMaster()->GetGroup() != m_bot->GetGroup()) { FindMainTankInRaid(m_bot); }
-    if (!m_tank) { m_tank = m_bot; }
-    uint32 masterHP = GetMaster()->GetHealth()*100 / GetMaster()->GetMaxHealth();
-    float pDist = m_bot->GetDistance(pTarget);
-    uint8 pThreat = GetThreatPercent(pTarget);
+    return false;
+}
 
-    uint8 reqHeal = 0;
-    uint8 OwnPartyHP = GetHealthPercentRaid(m_bot, reqHeal);
+bool PlayerbotPriestAI::HealTarget(Unit* target)
+{
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
 
-    /*
-    switch(ai->GetScenarioType())
+    uint8 hp = target->GetHealth() * 100 / target->GetMaxHealth();
+    uint8 hpSelf = m_ai->GetHealthPercent();
+
+    if (CURE_DISEASE > 0 && m_ai->GetCombatOrder() != PlayerbotAI::ORDERS_NODISPEL)
     {
-        case SCENARIO_DUEL:
-            (ai->HasAura(SCREAM, pTarget) && ai->GetHealthPercent() < 60 && CastSpell(HEAL)) ||
-            CastSpell(PAIN) ||
-            (ai->GetHealthPercent() < 80 && CastSpell(RENEW)) ||
-            (m_bot->GetDistance(pTarget) <= 5 && CastSpell(SCREAM)) ||
-            CastSpell(MIND_BLAST) ||
-            (ai->GetHealthPercent() < 20 && CastSpell(FLASH_HEAL)) ||
-            CastSpell(SMITE);
-            return;
-    }*/
-
-
-    //------- Non Duel combat ----------
-
-
-    // Cast CC breakers if any match found (include any dispels first)  does not work yet
-    //uint32 ccSpells[6] = { DISPEL_MAGIC, CURE_DISEASE, DISPERSION, R_ESCAPE_ARTIST, R_EVERY_MAN_FOR_HIMSELF, R_WILL_OF_FORSAKEN, R_STONEFORM };
-    //if (ai->GetManaPercent() < 35) { ccSpells[0] = 0; ccSpells[1] = 0; } //We dont have any mana to waste...
-    //if (castSelfCCBreakers(ccSpells)) {  } // Most of them don't trigger gcd
-
-
-
-    #pragma region Choose Actions
-    // Choose actions accoring to talents
-    if (m_tank->GetGUID() == m_bot->GetGUID()) // Hey! I am Main Tank
-    {
-        m_role = BOT_ROLE_DPS_RANGED;
-    }
-    else if (TALENT_SHADOW) {
-        if ((ai->GetHealthPercent() <= 40 || masterHP <40 ) && (ai->GetManaPercent() >= 30)) { m_role = BOT_ROLE_SUPPORT; }
-        else if (OwnPartyHP < 40 && ai->GetManaPercent() >= 40) {m_role = BOT_ROLE_SUPPORT;}
-        else { m_role = BOT_ROLE_DPS_RANGED; }
-    }
-    else { m_role = BOT_ROLE_SUPPORT; } //Unknown build or low level.. Mainly attack
-
-    // if i am under attack and if i am not tank or offtank: change target if needed
-    if (m_tank->GetGUID() != m_bot->GetGUID() && isUnderAttack() )
-    {
-        // Keep hitting but reduce threat
-        if (CastSpell(FADE,m_bot)) { return; }
-        else if (CastSpell(PAIN_SUPPRESSION,m_bot)) { return; }
-        //else if (m_bot->getRace() == (uint8) RACE_NIGHTELF && CastSpell(R_SHADOWMELD,m_bot)) { return; }
-        else //I cannot reduce threat so
+        uint32 dispelMask  = SpellInfo::GetDispelMask(DISPEL_DISEASE);
+         Unit::AuraMap &auras = target->GetOwnedAuras();
+		for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
         {
-            if (pVictim && pVictim->GetGUID() == m_bot->GetGUID() && pDist <= 2) {  } // My target is almost up to me, no need to search
-            else //Have to select nearest target
+            const SpellInfo *holder = itr->second->GetSpellInfo();
+            if ((1 << holder->Dispel) & dispelMask)
             {
-                Unit *curAtt = GetNearestAttackerOf(m_bot);
-                if (curAtt && curAtt->GetGUID() != pTarget->GetGUID())
+                if (holder->Dispel == DISPEL_DISEASE)
+                    m_ai->CastSpell(CURE_DISEASE, *target);
+                return false;
+            }
+        }
+    }
+
+    if (hp >= 80)
+        return false;
+
+    if (hp < 30 && FLASH_HEAL > 0 && m_ai->CastSpell(FLASH_HEAL, *target))
+        return true;
+    else if (hp < 40 && GREATER_HEAL > 0 && m_ai->CastSpell(GREATER_HEAL, *target))
+        return true;
+    // Heals target AND self for equal amount
+    else if (hp < 60 && hpSelf < 80 && BINDING_HEAL > 0 && m_ai->CastSpell(BINDING_HEAL, *target))
+        return true;
+    else if (hp < 60 && HEAL > 0 && m_ai->CastSpell(HEAL, *target))
+        return true;
+    else if (hp < 80 && RENEW > 0 && !target->HasAura(RENEW) && m_ai->CastSpell(RENEW, *target))
+        return true;
+    else
+        return false;
+} // end HealTarget
+
+bool PlayerbotPriestAI::DoNextCombatManeuver(Unit *pTarget)
+{
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
+
+    Unit* pVictim = pTarget->getVictim();
+    float dist = m_bot->GetDistance(pTarget);
+    uint32 spec = m_bot->GetSpec();
+
+    Group *m_group = m_bot->GetGroup();
+
+    switch (m_ai->GetScenarioType())
+    {
+        case PlayerbotAI::SCENARIO_DUEL:
+            // TODO: Mana checks
+            // TODO: spec tweaking
+            if (m_ai->HasAura(SCREAM, *pTarget) && m_ai->GetHealthPercent() < 60 && HEAL)
+                return CastSpell(HEAL);
+
+            if (SHADOW_WORD_PAIN) // TODO: Check whether enemy has it active yet
+                return CastSpell(SHADOW_WORD_PAIN);
+
+            if (m_ai->GetHealthPercent() < 80 && RENEW) // TODO: Check whether you have renew active on you
+                return CastSpell(RENEW);
+
+            if (m_bot->GetDistance(pTarget) <= 5 && SCREAM) // TODO: Check for cooldown
+                return CastSpell(SCREAM);
+
+            if (MIND_BLAST) // TODO: Check for cooldown
+                return CastSpell(MIND_BLAST);
+
+            if (m_ai->GetHealthPercent() < 20 && GREATER_HEAL) // really? Will you EVER get GREATER_HEAL off before they get your last 20%?
+                return CastSpell(GREATER_HEAL);
+
+            if (SMITE)
+                return CastSpell(SMITE);
+
+            m_ai->TellMaster("Couldn't find a spell to cast while dueling");
+            return false;
+    }
+
+    // ------- Non Duel combat ----------
+    if (m_ai->GetCombatStyle() != PlayerbotAI::COMBAT_RANGED && dist > ATTACK_DISTANCE)
+        m_ai->SetCombatStyle(PlayerbotAI::COMBAT_RANGED);
+    // if in melee range OR can't shoot OR have no ranged (wand) equipped
+    else if(m_ai->GetCombatStyle() != PlayerbotAI::COMBAT_MELEE && (dist <= ATTACK_DISTANCE || SHOOT == 0 || !m_bot->GetWeaponForAttack(RANGED_ATTACK, true)))
+        m_ai->SetCombatStyle(PlayerbotAI::COMBAT_MELEE);
+
+    //Used to determine if this bot is highest on threat
+    Unit *newTarget = m_ai->FindAttacker((PlayerbotAI::ATTACKERINFOTYPE) (PlayerbotAI::AIT_VICTIMSELF | PlayerbotAI::AIT_HIGHESTTHREAT), m_bot);
+    if (newTarget) // TODO: && party has a tank
+    {
+        if (newTarget && FADE > 0 && !m_bot->HasAura(FADE, EFFECT_0))
+        {
+            m_ai->TellMaster("I'm casting fade.");
+            return CastSpell(FADE, m_bot);
+        }
+
+        // Heal myself
+        // TODO: you forgot to check for the 'temporarily immune to PW:S because you only just got it cast on you' effect
+        //       - which is different effect from the actual shield.
+        if (m_ai->GetHealthPercent() < 25 && POWER_WORD_SHIELD > 0 && !m_bot->HasAura(POWER_WORD_SHIELD, EFFECT_0))
+        {
+            m_ai->TellMaster("I'm casting PW:S on myself.");
+            return CastSpell(POWER_WORD_SHIELD);
+        }
+        if (m_ai->GetHealthPercent() < 35 && DESPERATE_PRAYER > 0)
+        {
+            m_ai->TellMaster("I'm casting desperate prayer.");
+            return CastSpell(DESPERATE_PRAYER, m_bot);
+        }
+        if (m_ai->GetHealthPercent() < 60 || (BINDING_HEAL == 0 && m_ai->GetHealthPercent() < 80))
+            return HealTarget(m_bot);
+
+        // TODO: Heal tank if necessary
+
+        // Already healed self or tank. If healer, do nothing else to anger mob.
+        if (m_ai->IsHealer())
+            return true; // In a sense, mission accomplished.
+
+        // Have threat, can't quickly lower it. 3 options remain: Stop attacking, lowlevel damage (wand), keep on keeping on.
+        if (newTarget->GetHealthPct() > 25)
+        {
+            // If elite, do nothing and pray tank gets aggro off you
+            // TODO: Is there an IsElite function? If so, find it and insert.
+            //if (newTarget->IsElite())
+            //    return;
+
+            // Not an elite. You could insert PSYCHIC SCREAM here but in any PvE situation that's 90-95% likely
+            // to worsen the situation for the group. ... So please don't.
+            return CastSpell(SHOOT, pTarget);
+        }
+    }
+
+    // Heal master
+    uint32 masterHP = GetMaster()->GetHealth() * 100 / GetMaster()->GetMaxHealth();
+    if (GetMaster()->isAlive())
+    {
+        if (masterHP < 25 && POWER_WORD_SHIELD > 0 && !GetMaster()->HasAura(POWER_WORD_SHIELD, EFFECT_0))
+            return CastSpell(POWER_WORD_SHIELD, GetMaster());
+        else if (masterHP < 25 || ((m_ai->GetCombatOrder() & PlayerbotAI::ORDERS_HEAL) && masterHP < 80))
+            HealTarget(GetMaster());
+    }
+
+    //Not sure where this should go
+    if (PRAYER_OF_MENDING > 0 && pVictim == GetMaster() && GetMaster()->GetHealth() <= GetMaster()->GetMaxHealth() * 0.7 && !GetMaster()->HasAura(PRAYER_OF_MENDING, EFFECT_0) && m_ai->GetManaPercent() >= 15)
+        return CastSpell(PRAYER_OF_MENDING, GetMaster());
+
+    // TODO: Prioritize group healing in some way. If 3 members (including master/self) should be healed, pick one of these:
+    // Group heal. Not really useful until a group check is available?
+    //else if (hp < 40 && PRAYER_OF_HEALING > 0 && m_ai->CastSpell(PRAYER_OF_HEALING, *target))
+    //    return true;
+    // Group heal. Not really useful until a group check is available?
+    //else if (hp < 50 && CIRCLE_OF_HEALING > 0 && m_ai->CastSpell(CIRCLE_OF_HEALING, *target))
+    //    return true;
+
+    // Heal group
+    if (m_group && !m_ai->IsTank())
+    {
+        // TODO: optimize to heal healer(s) first, tank(s) second, self (if not a healer) third, lowest-HP other member fourth
+        Group::MemberSlotList const& groupSlot = m_group->GetMemberSlots();
+        for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+        {
+            Player *m_groupMember = ObjectAccessor::FindPlayer(itr->guid);
+            if (!m_groupMember || !m_groupMember->isAlive())
+                continue;
+
+            uint32 memberHP = m_groupMember->GetHealth() * 100 / m_groupMember->GetMaxHealth();
+            if (memberHP < 25 && POWER_WORD_SHIELD > 0 && !m_groupMember->HasAura(POWER_WORD_SHIELD, EFFECT_0))
+                return CastSpell(POWER_WORD_SHIELD, m_groupMember);
+            else if (memberHP < 25 || ((m_ai->GetCombatOrder() & PlayerbotAI::ORDERS_HEAL) && memberHP < 80))
+                HealTarget(m_groupMember);
+        }
+    }
+
+    // Do damage tweaking for healers here
+    if (m_ai->IsHealer())
+    {
+        //if (Any target is an Elite)
+        //    return;
+
+        return CastSpell(SHOOT, pTarget);
+    }
+
+    // Damage Spells
+    switch (spec)
+    {
+        case PRIEST_SPEC_HOLY:
+            if (HOLY_FIRE > 0 && !pTarget->HasAura(HOLY_FIRE, EFFECT_0) && m_ai->GetManaPercent() >= 13)
+                return CastSpell(HOLY_FIRE, pTarget);
+            if (SMITE > 0 && m_ai->GetManaPercent() >= 17)
+                return CastSpell(SMITE, pTarget);
+            //if (HOLY_NOVA > 0 && LastSpellHoly < 3 && dist <= ATTACK_DISTANCE && m_ai->GetManaPercent() >= 22)
+            //{
+            //    //m_ai->TellMaster("I'm casting holy nova.");
+            //    m_ai->CastSpell(HOLY_NOVA);
+            //    LastSpellHoly = LastSpellHoly + 1;
+            //}
+            break;
+
+        case PRIEST_SPEC_SHADOW:
+            if (DEVOURING_PLAGUE > 0 && !pTarget->HasAura(DEVOURING_PLAGUE, EFFECT_0) && m_ai->GetManaPercent() >= 28)
+                return CastSpell(DEVOURING_PLAGUE, pTarget);
+            if (VAMPIRIC_TOUCH > 0 && !pTarget->HasAura(VAMPIRIC_TOUCH, EFFECT_0) && m_ai->GetManaPercent() >= 18)
+                return CastSpell(VAMPIRIC_TOUCH, pTarget);
+            if (SHADOW_WORD_PAIN > 0 && !pTarget->HasAura(SHADOW_WORD_PAIN, EFFECT_0) && m_ai->GetManaPercent() >= 25)
+                return CastSpell(SHADOW_WORD_PAIN, pTarget);
+            if (MIND_BLAST > 0 && (!m_bot->HasSpellCooldown(MIND_BLAST)) && m_ai->GetManaPercent() >= 19)
+                return CastSpell(MIND_BLAST, pTarget);
+            if (MIND_FLAY > 0 && m_ai->GetManaPercent() >= 10)
+            {
+                if (CastSpell(MIND_FLAY, pTarget))
                 {
-                    m_bot->SetSelection(curAtt->GetGUID());
-                    //ai->AddLootGUID(curAtt->GetGUID());
-                    DoNextCombatManeuver(curAtt); //Restart new update to get variables fixed..
-                    return;
+                    m_ai->SetIgnoreUpdateTime(3);
+                    return true;
                 }
             }
-            //my target is attacking me
-        }
+            if (SHADOWFIEND > 0) // TODO: && mana && isn't active
+                return CastSpell(SHADOWFIEND);
+            /*else if (MIND_SEAR > 0 && m_ai->GetAttackerCount() >= 3 && m_ai->GetManaPercent() >= 28)
+            {
+                CastSpell(MIND_SEAR, pTarget);
+                m_ai->SetIgnoreUpdateTime(5);
+                return;
+            }*/
+            if (SHADOWFORM == 0 && MIND_FLAY == 0 && SMITE > 0 && m_ai->GetManaPercent() >= 17) // low levels
+                return CastSpell(SMITE, pTarget);
+            break;
+
+        case PRIEST_SPEC_DISCIPLINE:
+            if (POWER_INFUSION > 0 && m_ai->GetManaPercent() >= 16)
+                return CastSpell(POWER_INFUSION, GetMaster()); // TODO: just master?
+            //if (MASS_DISPEL > 0 && m_ai->GetManaPercent() >= 33)
+            //{
+            //    //m_ai->TellMaster("I'm casting mass dispel");
+            //    return CastSpell(MASS_DISPEL);
+            //}
+            if (INNER_FOCUS > 0 && !m_bot->HasAura(INNER_FOCUS, EFFECT_0))
+                return CastSpell(INNER_FOCUS, m_bot);
+            if (PENANCE > 0 && m_ai->GetManaPercent() >= 16)
+                return CastSpell(PENANCE);
+            if (SMITE > 0 && m_ai->GetManaPercent() >= 17)
+                return CastSpell(SMITE, pTarget);
+            break;
     }
-    #pragma endregion
 
-    TakePosition(pTarget);
-    // If there's a cast stop
-    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
-
-
-    if (m_role == BOT_ROLE_DPS_RANGED && CastSpell(SHADOWFORM,m_bot)) { return; }
-    if (m_role == BOT_ROLE_SUPPORT && ai->GetForm() == FORM_SHADOW) { m_bot->RemoveAurasDueToSpell(SHADOWFORM); }
-
-    //Buff
-    if (CastSpell(INNER_FIRE,m_bot)) { } //nogcd
-    if (CastSpell(POWER_INFUSION,m_bot)) { return; }
-    if (m_bot->getRace() == (uint8) RACE_TROLL && CastSpell(R_BERSERKING,m_bot)) {} //no GCD
-    if (m_bot->getRace() == (uint8) RACE_ORC && CastSpell(R_BLOOD_FURY,m_bot)) {} //no GCD
-
-
-    if (ai->GetForm() != FORM_SHADOW)
+    // No spec due to low level OR no spell found yet
+    if (MIND_BLAST > 0 && (!m_bot->HasSpellCooldown(MIND_BLAST)) && m_ai->GetManaPercent() >= 19)
+        return CastSpell(MIND_BLAST, pTarget);
+    if (SHADOW_WORD_PAIN > 0 && !pTarget->HasAura(SHADOW_WORD_PAIN, EFFECT_0) && m_ai->GetManaPercent() >= 25)
+        return CastSpell(SHADOW_WORD_PAIN, pTarget);
+    if (MIND_FLAY > 0 && m_ai->GetManaPercent() >= 10)
     {
-        if (PO_MENDING && ai->GetHealthPercent(*m_tank) < 90 && !HasAuraName(m_tank, "Prayer of Mending") && CastSpell(PO_MENDING,m_tank)) { return; } //MEND tank first
-        if (DoSupportRaid(m_bot)) { return; }
-        //heal pets and bots
-        Unit *target = DoSelectLowestHpFriendly(30, 1000);
-        if(target && target->isAlive() && HealTarget(target, target->GetHealth()*100 / target->GetMaxHealth()) ) { return; }
-    }
-    if (ai->GetForm() == FORM_SPIRITOFREDEMPTION) { return; } //You're dead..
-
-
-    //PROTECT
-    if (m_tank->GetGUID() != m_bot->GetGUID() && pVictim && pVictim->GetGUID() == m_bot->GetGUID() )
-    {
-        if (PSYCHIC_HORROR && CastSpell(PSYCHIC_HORROR, pTarget)) { return; }
-        if (PSYCHIC_SCREAM && CastSpell(PSYCHIC_SCREAM, pTarget)) { return; }
-        if (SHACKLE_UNDEAD && pTarget->GetCreatureType() == (uint32) CREATURE_TYPE_UNDEAD && CastSpell(SHACKLE_UNDEAD, pTarget)) { return; }
-        //if (m_bot->getRace() == (uint8) RACE_NIGHTELF && isUnderAttack() && CastSpell(R_SHADOWMELD, m_bot)) { return; }
-    }
-    if (ai->GetHealthPercent() < 20 && CastSpell(DESPERATE_PRAYER)) { return; }
-    if (ai->GetHealthPercent() < 30 && CastSpell(PW_SHIELD)) { return; }
-    if (m_bot->getRace() == (uint8) RACE_DWARF && ai->GetHealthPercent() < 75 && CastSpell(R_STONEFORM,m_bot)) { } //no gcd
-    if (ai->GetHealthPercent() < 60 && CastSpell(PAIN_SUPPRESSION,m_bot)) { return; }
-    if (ai->GetHealthPercent() < 50 && ai->GetManaPercent() < 10 && CastSpell(DISPERSION,m_bot)) { return; }
-    if (ai->GetManaPercent() < 10 && CastSpell (HYMN_OF_HOPE, m_bot)) { return; }
-    if (m_bot->getRace() == (uint8) RACE_TAUREN && pDist < 8 && CastSpell(R_WAR_STOMP, pTarget)) { return; } //no gcd but is cast
-
-
-    //Break Spells
-    if (m_bot->getRace() == (uint8) RACE_BLOODELF && pDist < 8 && (pTarget->IsNonMeleeSpellCasted(true) || ai->GetManaPercent() < 40) && CastSpell(R_ARCANE_TORRENT, pTarget)) { } //no gcd
-    else if (pTarget->IsNonMeleeSpellCasted(true) && CastSpell(SILENCE, pTarget)) { return; }
-
-
-    // If at threat limit, try to reduce threat
-    if (pThreat > threatThreshold && m_tank->GetGUID() != m_bot->GetGUID() && !isUnderAttack())
-    {
-        if (m_tank->getVictim() && m_tank->getVictim()->GetGUID() != pTarget->GetGUID()) // I am attacking wrong target!!
+        if (CastSpell(MIND_FLAY, pTarget))
         {
-            m_bot->SetSelection(m_tank->getVictim()->GetGUID());
-            return;
-        }
-        else
-        {
-            if (CastSpell(PAIN_SUPPRESSION,m_bot)) { return; } //Lets see if we can manage
-            else if (CastSpell(FADE,m_bot)) { return; }
-            else if (m_bot->FindCurrentSpellBySpellId(SHOOT)) { m_bot->InterruptNonMeleeSpells( true, SHOOT ); return; } //Disable wand
-            else { return; } //use no spells and wait threat to be reduced
+            m_ai->SetIgnoreUpdateTime(3);
+            return true;
         }
     }
+    if (SHADOWFORM == 0 && SMITE > 0 && m_ai->GetManaPercent() >= 17)
+        return CastSpell(SMITE, pTarget);
 
-    //WAND
-    if (ai->GetManaPercent() < 5 ||
-        (m_role != BOT_ROLE_DPS_RANGED && SHOOT && !m_bot->FindCurrentSpellBySpellId(SHOOT) && ai->CastSpell(SHOOT,pTarget) )
-        ) { return; } //Start autoshot
-
-    // Continue spell attacking if theres excess mana (for healers)
-    if (m_role == BOT_ROLE_SUPPORT && ai->GetManaPercent() < offensiveSpellThreshold) { return; }
-
-    if (ai->GetHealthPercent(*pTarget) > 95) { return; } // dont dps too early
-
-    if (CastSpell(VAMPIRIC_EMBRACE,pTarget)) { return; }
-    if (CastSpell(VAMPIRIC_TOUCH,pTarget)) { return; }
-    if (CastSpell(DEVOURING_PLAGUE,pTarget)) { return; }
-    if (CastSpell(SW_PAIN,pTarget)) { return; }
-
-    if (ai->GetForm() == FORM_SHADOW)
+    // definitely not out of mana yet
+    if (m_ai->GetManaPercent() >= 20)
     {
-        if (castDispel(DISPEL_MAGIC, pTarget)) { return; } //Dispel buffs if any
-        if (CastSpell(MIND_BLAST,pTarget)) { return; }
-        if (CastSpell(MIND_FLAY,pTarget)) { return; }
-        if (isUnderAttack(m_tank,4) && CastSpell(MIND_SEAR,pTarget)) { return; }
+        m_ai->TellMaster("Couldn't find an appropriate spell.");
+        return false;
     }
 
-    if (ai->GetForm() == FORM_NONE && m_role == BOT_ROLE_DPS_RANGED)
-    {
-        if (CastSpell(PENANCE,pTarget)) { return; }
-        if (CastSpell(MIND_BLAST,pTarget)) { return; }
-        if (CastSpell(HOLY_FIRE,pTarget)) { return; }
-        if (CastSpell(SMITE,pTarget)) { return; }
-        if (isUnderAttack(m_tank,4) && CastSpell(MIND_SEAR,pTarget)) { return; }
-        if (isUnderAttack(m_tank,4) && CastSpell(HOLY_NOVA,pTarget)) { return; }
-    }
-
-     // drink potion if support / healer (Other builds simply overuse mana and waste mana pots)
-    if(ai->GetManaPercent() < 5 && (m_role == BOT_ROLE_SUPPORT || m_role == BOT_ROLE_HEALER) )
-    {
-        Item *pItem = ai->FindPotion();
-        if(pItem != NULL)
-        {
-            if (pItem->GetSpell() && m_bot->HasSpellCooldown(pItem->GetSpell()) ) { return; } //pot is in cooldown
-            ai->UseItem(*pItem);
-        }
-    }
-} //end DoNextCombatManeuver
+    return false;
+} // end DoNextCombatManeuver
 
 void PlayerbotPriestAI::DoNonCombatActions()
 {
-    PlayerbotAI *ai = GetAI();
-    Player *m_bot = GetPlayerBot();
-    if (!m_bot || !ai || m_bot->isDead()) { return; }
+    if (!m_ai)  return;
+    if (!m_bot) return;
 
-    //If Casting or Eating/Drinking return
-    if (m_bot->HasUnitState(UNIT_STATE_CASTING)) { return; }
-    if (m_bot->getStandState() == UNIT_STAND_STATE_SIT) { return; }
+    Player * master = GetMaster();
+    uint32 spec = m_bot->GetSpec();
+    if (!master) return;
 
-    //Own Buffs
-    if (CastSpell(INNER_FIRE,m_bot)) { return; }
+    // selfbuff goes first
+    if (m_ai->SelfBuff(INNER_FIRE))
+        return;
+    if (spec == PRIEST_SPEC_SHADOW && SHADOWFORM > 0)
+        m_ai->SelfBuff(SHADOWFORM);
+    if (VAMPIRIC_EMBRACE > 0)
+        m_ai->SelfBuff(VAMPIRIC_EMBRACE);
 
-    //buff and heal raid
-    if (DoSupportRaid(m_bot)) { return; }
+    // mana check
+    if (m_bot->getStandState() != UNIT_STAND_STATE_STAND)
+        m_bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-    //heal pets and bots
-    Unit *target = DoSelectLowestHpFriendly(30, 1000);
-    if (target && target->isAlive() && HealTarget(target, target->GetHealth()*100 / target->GetMaxHealth())) { return; }
+    Item* pItem = m_ai->FindDrink();
+    Item* fItem = m_ai->FindBandage();
 
-    //mana/hp check
-    //Don't bother with eating, if low on hp, just let it heal themself
-    if (m_bot->getRace() == (uint8) RACE_UNDEAD_PLAYER && ai->GetHealthPercent() < 75 && CastSpell(R_CANNIBALIZE,m_bot)) { return; }
-    if (m_bot->GetHealth() < m_bot->GetMaxHealth() && CastSpell(FLASH_HEAL,m_bot)) { return; }
-    if (ai->GetManaPercent() < 50) { ai->Feast(); }
+    if (pItem != NULL && m_ai->GetManaPercent() < 30)
+    {
+        m_ai->TellMaster("I could use a drink.");
+        m_ai->UseItem(pItem);
+        return;
+    }
 
-} //end DoNonCombatActions
+    // hp check
+    if (m_bot->getStandState() != UNIT_STAND_STATE_STAND)
+        m_bot->SetStandState(UNIT_STAND_STATE_STAND);
 
+    pItem = m_ai->FindFood();
 
-bool PlayerbotPriestAI::HealTarget(Unit *target, uint8 hp)
+    if (pItem != NULL && m_ai->GetHealthPercent() < 30)
+    {
+        m_ai->TellMaster("I could use some food.");
+        m_ai->UseItem(pItem);
+        return;
+    }
+    else if (pItem == NULL && fItem != NULL && !m_bot->HasAura(RECENTLY_BANDAGED, EFFECT_0) && m_ai->GetHealthPercent() < 70)
+    {
+        m_ai->TellMaster("I could use first aid.");
+        m_ai->UseItem(fItem);
+        return;
+    }
+
+    // buff and heal master's group
+    if (master->GetGroup())
+    {
+        // Buff master with group buffs
+        if (!master->IsInDuel(master) && master->isAlive())
+        {
+            if (PRAYER_OF_FORTITUDE && m_ai->HasSpellReagents(PRAYER_OF_FORTITUDE) && m_ai->Buff(PRAYER_OF_FORTITUDE, master))
+                return;
+
+            if (PRAYER_OF_SPIRIT && m_ai->HasSpellReagents(PRAYER_OF_SPIRIT) && m_ai->Buff(PRAYER_OF_SPIRIT, master))
+                return;
+
+            if (PRAYER_OF_SHADOW_PROTECTION && m_ai->HasSpellReagents(PRAYER_OF_SHADOW_PROTECTION) && m_ai->Buff(PRAYER_OF_SHADOW_PROTECTION, master))
+                return;
+        }
+
+        Group::MemberSlotList const& groupSlot = GetMaster()->GetGroup()->GetMemberSlots();
+        for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+        {
+			Player *tPlayer = ObjectAccessor::FindPlayer(itr->guid);
+            if (!tPlayer || tPlayer == m_bot)
+                continue;
+
+            if (tPlayer->IsInDuelWith(master))
+                continue;
+
+            // first rezz em
+            if (!tPlayer->isAlive())
+            {
+                if (m_ai->CastSpell(RESURRECTION, *tPlayer))
+                {
+                    std::string msg = "Resurrecting ";
+                    msg += tPlayer->GetName();
+                    m_bot->Say(msg, LANG_UNIVERSAL);
+                    return;
+                }
+                else
+                    continue;
+            }
+            else
+            {
+                // buff and heal
+                if (BuffPlayer(tPlayer))
+                    return;
+
+                if (HealTarget(tPlayer))
+                    return;
+            }
+        }
+    }
+    else
+    {
+        if (master->isAlive() && !master->IsInDuel(master))
+        {
+            if (BuffPlayer(master))
+                return;
+            if (HealTarget(master))
+                return;
+        }
+        else if (m_ai->CastSpell(RESURRECTION, *master))
+            m_ai->TellMaster("Resurrecting you, Master.");
+    }
+
+    BuffPlayer(m_bot);
+} // end DoNonCombatActions
+
+bool PlayerbotPriestAI::BuffPlayer(Player* target)
 {
-    if(!target || target->isDead()) return false;
-    Player *m_bot = GetPlayerBot();
+    if (!m_ai)  return false;
+    if (!m_bot) return false;
 
-    if (hp < 30 && m_bot->isInCombat() && CastSpell(GUARDIAN_SPIRIT,target)) { } //nogcd
-    if (hp < 30 && CastSpell(PENANCE,target,true,false,true)) { return true; } //Channeling Dual purpose
-    if (hp < 35 && m_bot->isInCombat() && CastSpell(PW_SHIELD,target)) { return true; } //Check weakened soul
-    if (hp < 80 && hp > 50 && GetAI()->GetHealthPercent() < 80 && CastSpell (BINDING_HEAL,target)) { return true; }
-    if (hp < 85 && CastSpell(RENEW,target)) { return true; }
-    if (hp < 40 && GetPlayerBot()->getRace() == (uint8) RACE_DRAENEI && CastSpell(R_GIFT_OF_NAARU,target)) { return true; } // no GCD, but has cast
-    if (hp < 55 && hp > 35 && CastSpell(HEAL,target)) { return true; }
-    if (hp < 75 && CastSpell(FLASH_HEAL,target)) { return true; }
+    Pet * pet = target->GetPet();
+
+    if ((pet && !pet->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE)) && m_ai->Buff(POWER_WORD_FORTITUDE, pet))
+        return true;
+
+    if (m_ai->Buff(POWER_WORD_FORTITUDE, target))
+        return true;
+
+    if ((target->getClass() == CLASS_DRUID || target->getPowerType() == POWER_MANA) && m_ai->Buff(DIVINE_SPIRIT, target))
+        return true;
 
     return false;
-} //end HealTarget
-
-bool PlayerbotPriestAI::HealGroup (Unit *target, uint8 hp, uint8 &countNeedHeal)
-{
-    Player *m_bot = GetPlayerBot();
-    if (countNeedHeal < 2) { return false; }
-    Unit *rTarget = DoSelectLowestHpFriendly(30,500);
-    if (!rTarget || rTarget->isDead() || rTarget->GetHealth() * 100 / rTarget->GetMaxHealth() > 80 ) { return false; }
-
-    // if (hp < 75 && CastSpell(PO_MENDING, rTarget)) { return true; } //save this for tank
-    if (hp < 35 && m_bot->isInCombat() && CastSpell(DIVINE_HYMN,rTarget)) { /*GetAI()->SetIgnoreUpdateTime(9);*/ return true; }
-    if (hp < 70 && CastSpell(CIRCLE_OF_HEALING,rTarget)) { return true; }
-    if (hp < 75 && hp > 30 && countNeedHeal > 4 && CastSpell(PO_HEALING)) { return true; }
-    if (hp < 65 && CastSpell(HOLY_NOVA,rTarget,true,false,true)) { return true; }
-
-    return false;
-}
-
-//Cures the target
-bool PlayerbotPriestAI::CureTarget(Unit *target)
-{
-    Player *m_bot = GetPlayerBot();
-
-    if(!target || target->isDead()) { return false; }
-    if (castDispel(DISPEL_MAGIC, target,true,false,true)) return true;
-    if (castDispel(CURE_DISEASE, target)) return true;
-    // if(HasAuraName(target, "Venom Spit") || HasAuraName(target, "Poison")) return CastSpell(CURE_POISON, target);
-    return false;
-}
-
-bool PlayerbotPriestAI::RezTarget (Unit *target)
-{
-    if(!target || target->isAlive()) return false;
-    Player *m_bot = GetPlayerBot();
-    if (target->IsNonMeleeSpellCasted(true)) { return false; } //Already resurrected
-    if (m_bot->isInCombat()) { return false; }
-
-    if (!CanCast(RESURRECTION,target)) return false;
-    std::string msg = "Rezzing ";
-    msg += target->GetName();
-   // msg += " with ";
-   // msg += *REZZSpell->SpellName;
-    GetPlayerBot()->Say(msg, LANG_UNIVERSAL);
-    return CastSpell(RESURRECTION, target,false);
-}
-
-bool PlayerbotPriestAI::BuffPlayer(Unit *target)
-{
-    if(!target || target->isDead()) return false;
-
-    return (
-        (!HasAuraName(target, PW_FORTITUDE) && !HasAuraName(target, PO_FORTITUDE) && CastSpell (PW_FORTITUDE, target)) ||
-        (!HasAuraName(target, SHADOW_PROTECTION) && !HasAuraName(target, PO_SHADOW_PROTECTION) && CastSpell(SHADOW_PROTECTION, target)) ||
-        (!HasAuraName(target, DIVINE_SPIRIT) && !HasAuraName(target, PO_SPIRIT) && CastSpell (DIVINE_SPIRIT, target)) ||
-        (!HasAuraName(target, FEAR_WARD) && CastSpell (FEAR_WARD, target))
-         );
 }

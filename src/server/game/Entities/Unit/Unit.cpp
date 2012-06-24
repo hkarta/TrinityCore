@@ -17621,3 +17621,22 @@ void Unit::SendMovementCanFlyChange()
     BuildMovementPacket(&data);
     SendMessageToSet(&data, false);
 }
+
+Totem * Unit::GetTotem(PlayerTotemType type)
+{
+	for(uint8 slot = SUMMON_SLOT_TOTEM; slot < MAX_TOTEM_SLOT; ++slot)
+    {
+            if(!m_SummonSlot[slot])
+                continue;
+
+			Creature* totem = GetMap()->GetCreature(m_SummonSlot[slot]);
+            if(totem && totem->isTotem())
+			{
+				if(PlayerTotemType(totem->ToTotem()->m_Properties->Id) == type)
+					return totem->ToTotem();
+			}
+	}
+
+
+	return NULL;
+}

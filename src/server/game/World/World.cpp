@@ -1231,6 +1231,25 @@ void World::LoadConfigSettings(bool reload)
 	std::string VAS_AutoBalance_2_Name = ConfigMgr::GetStringDefault("VAS.AutoBalance.2.Name", "");
 	std::string VAS_color = ConfigMgr::GetStringDefault("VAS.AutoBalance.Color", "cffFF8000");
 
+	std::string PlayerbotAI_BotguyQuests = ConfigMgr::GetStringDefault("PlayerbotAI.BotguyQuests", "");
+	m_bool_configs[PlayerbotAI_SellGarbage] = ConfigMgr::GetBoolDefault("PlayerbotAI.SellGarbage", true);
+	m_bool_configs[PlayerbotAI_DisableBots] = ConfigMgr::GetBoolDefault("PlayerbotAI.DisableBots", false);
+    m_bool_configs[PlayerbotAI_DebugWhisper] = ConfigMgr::GetBoolDefault("PlayerbotAI.DebugWhisper", false);
+	m_bool_configs[PlayerbotAI_Collect_Combat] = ConfigMgr::GetBoolDefault("PlayerbotAI.Collect.Combat", true);
+	m_bool_configs[PlayerbotAI_Collect_Quest] = ConfigMgr::GetBoolDefault("PlayerbotAI.Collect.Quest", true);
+	m_bool_configs[PlayerbotAI_Collect_Profession] = ConfigMgr::GetBoolDefault("PlayerbotAI.Collect.Profession", true);
+	m_bool_configs[PlayerbotAI_Collect_Loot] = ConfigMgr::GetBoolDefault("PlayerbotAI.Collect.Loot", true);
+	m_bool_configs[PlayerbotAI_Collect_Skin] = ConfigMgr::GetBoolDefault("PlayerbotAI.Collect.Skin", true);
+	m_bool_configs[PlayerbotAI_Collect_Objects] = ConfigMgr::GetBoolDefault("PlayerbotAI.Collect.Objects", true);
+	m_int_configs[PlayerbotAI_MaxNumBots] = ConfigMgr::GetIntDefault ("PlayerbotAI.MaxNumBots", 9);
+	m_int_configs[PlayerbotAI_RestrictBotLevel] = ConfigMgr::GetIntDefault ("PlayerbotAI.RestrictBotLevel", 80);
+	m_int_configs[PlayerbotAI_BotguyCost] = ConfigMgr::GetIntDefault ("PlayerbotAI.BotguyCost", 0);
+	m_int_configs[PlayerbotAI_Collect_DistanceMax] = ConfigMgr::GetIntDefault ("PlayerbotAI.Collect.DistanceMax", 50);
+	m_int_configs[PlayerbotAI_Collect_Distance] = ConfigMgr::GetIntDefault ("PlayerbotAI.Collect.Distance", 25);
+	m_int_configs[PlayerbotAI_SellAll_LevelDiff] = ConfigMgr::GetIntDefault ("PlayerbotAI.SellAll.LevelDiff", 10);
+	m_float_configs[PlayerbotAI_FollowDistanceMin]      = ConfigMgr::GetFloatDefault("PlayerbotAI.FollowDistanceMin", 0.5f);
+	m_float_configs[PlayerbotAI_FollowDistanceMax]      = ConfigMgr::GetFloatDefault("PlayerbotAI.FollowDistanceMax", 1.0f);
+
     // call ScriptMgr if we're reloading the configuration
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
